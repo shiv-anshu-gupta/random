@@ -1,0 +1,2465 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> components/ChannelList.js</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-analyzeGroupsAndPublish.html">analyzeGroupsAndPublish</a></li><li><a href="module-axisBuilder.html">axisBuilder</a></li><li><a href="module-axisCalculator.html">axisCalculator</a></li><li><a href="module-calculateAndPublishMaxYAxes.html">calculateAndPublishMaxYAxes</a></li><li><a href="module-chartAxisAlignment.html">chartAxisAlignment</a></li><li><a href="module-chartComponent.html">chartComponent</a></li><li><a href="module-chartDomUtils.html">chartDomUtils</a></li><li><a href="module-chartManager.html">chartManager</a></li><li><a href="module-comtradeUtils.html">comtradeUtils</a></li><li><a href="module-createDragBar.html">createDragBar</a></li><li><a href="module-createState.html">createState</a></li><li><a href="module-domUpdateQueue.html">domUpdateQueue</a></li><li><a href="module-domUpdateQueueInit.html">domUpdateQueueInit</a></li><li><a href="module-handleVerticalLineShortcuts.html">handleVerticalLineShortcuts</a></li><li><a href="module-initVerticalLineControl.html">initVerticalLineControl</a></li><li><a href="module-main.html">main</a></li><li><a href="module-maxYAxesStore.html">maxYAxesStore</a></li><li><a href="module-mergerWindowLauncher.html">mergerWindowLauncher</a></li><li><a href="module-performanceMonitor.html">performanceMonitor</a></li><li><a href="module-seriesMapper.html">seriesMapper</a></li><li><a href="module-setupChartDragAndDrop.html">setupChartDragAndDrop</a></li><li><a href="module-timeInterpolation.html">timeInterpolation</a></li><li><a href="module-verticalLineControl.html">verticalLineControl</a></li></ul><h3>Classes</h3><ul><li><a href="ComputedChannelMetadata.html">ComputedChannelMetadata</a></li><li><a href="PolarChart.html">PolarChart</a></li><li><a href="module-performanceMonitor-PhaseTracker.html">PhaseTracker</a></li></ul><h3>Global</h3><ul><li><a href="global.html#IMPLEMENTATION_COMPLETE">IMPLEMENTATION_COMPLETE</a></li><li><a href="global.html#QUICK_REFERENCE">QUICK_REFERENCE</a></li><li><a href="global.html#STORAGE_KEY">STORAGE_KEY</a></li><li><a href="global.html#THEMES">THEMES</a></li><li><a href="global.html#applyTheme">applyTheme</a></li><li><a href="global.html#autoGroupChannels">autoGroupChannels</a></li><li><a href="global.html#calculateStats">calculateStats</a></li><li><a href="global.html#chart2">chart2</a></li><li><a href="global.html#clearCaches">clearCaches</a></li><li><a href="global.html#clearChartsContainer">clearChartsContainer</a></li><li><a href="global.html#clearComputedChannelsFromStorage">clearComputedChannelsFromStorage</a></li><li><a href="global.html#clearExpressionCache">clearExpressionCache</a></li><li><a href="global.html#collectChartDeltas">collectChartDeltas</a></li><li><a href="global.html#convertLatexToMathJs">convertLatexToMathJs</a></li><li><a href="global.html#convertLatexToPlainText">convertLatexToPlainText</a></li><li><a href="global.html#createAnalogChannelGroupMap">createAnalogChannelGroupMap</a></li><li><a href="global.html#createBinaryBlob">createBinaryBlob</a></li><li><a href="global.html#createChannelItem">createChannelItem</a></li><li><a href="global.html#createChannelList">createChannelList</a></li><li><a href="global.html#createChartContainer">createChartContainer</a></li><li><a href="global.html#createChartOptions">createChartOptions</a></li><li><a href="global.html#createComputedChannelsLabels">createComputedChannelsLabels</a></li><li><a href="global.html#createComputedChannelsSidebar">createComputedChannelsSidebar</a></li><li><a href="global.html#createDebouncedRender">createDebouncedRender</a></li><li><a href="global.html#createDeltaWindow">createDeltaWindow</a></li><li><a href="global.html#createDigitalFillPlugin">createDigitalFillPlugin</a></li><li><a href="global.html#createScopeTemplate">createScopeTemplate</a></li><li><a href="global.html#createSimpleChannelList">createSimpleChannelList</a></li><li><a href="global.html#createSimpleContainer">createSimpleContainer</a></li><li><a href="global.html#createState">createState</a></li><li><a href="global.html#createTooltip">createTooltip</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#encodeFloat64">encodeFloat64</a></li><li><a href="global.html#encodeInt32">encodeInt32</a></li><li><a href="global.html#evaluateAndSaveComputedChannel">evaluateAndSaveComputedChannel</a></li><li><a href="global.html#evaluateExpression">evaluateExpression</a></li><li><a href="global.html#exportAllChannelsAsCSV">exportAllChannelsAsCSV</a></li><li><a href="global.html#exportAllComputedChannels">exportAllComputedChannels</a></li><li><a href="global.html#exportAsASCII">exportAsASCII</a></li><li><a href="global.html#exportComputedChannelAsASCII">exportComputedChannelAsASCII</a></li><li><a href="global.html#exportComputedChannelAsCFGDAT">exportComputedChannelAsCFGDAT</a></li><li><a href="global.html#exportComputedChannelsAsCSV">exportComputedChannelsAsCSV</a></li><li><a href="global.html#formatEquationForLatex">formatEquationForLatex</a></li><li><a href="global.html#generateCFGContent">generateCFGContent</a></li><li><a href="global.html#generateCFGContentBatch">generateCFGContentBatch</a></li><li><a href="global.html#generateCFGContentBinary32">generateCFGContentBinary32</a></li><li><a href="global.html#generateCFGContentBinary64">generateCFGContentBinary64</a></li><li><a href="global.html#generateCFGContentFloat32">generateCFGContentFloat32</a></li><li><a href="global.html#generateCFGContentFloat64">generateCFGContentFloat64</a></li><li><a href="global.html#generateDATContent">generateDATContent</a></li><li><a href="global.html#generateDATContentBatch">generateDATContentBatch</a></li><li><a href="global.html#generateDATContentBinary32">generateDATContentBinary32</a></li><li><a href="global.html#generateDATContentBinary64">generateDATContentBinary64</a></li><li><a href="global.html#generateDATContentFloat32">generateDATContentFloat32</a></li><li><a href="global.html#generateDATContentFloat64">generateDATContentFloat64</a></li><li><a href="global.html#getAllAvailableGroups">getAllAvailableGroups</a></li><li><a href="global.html#getCacheStats">getCacheStats</a></li><li><a href="global.html#getChannelByDisplayName">getChannelByDisplayName</a></li><li><a href="global.html#getChannelMetadata">getChannelMetadata</a></li><li><a href="global.html#getChannelsForFile">getChannelsForFile</a></li><li><a href="global.html#getCompiledExpression">getCompiledExpression</a></li><li><a href="global.html#getComputedChannelStorageMetadata">getComputedChannelStorageMetadata</a></li><li><a href="global.html#getCurrentTheme">getCurrentTheme</a></li><li><a href="global.html#getCurrentThemeColors">getCurrentThemeColors</a></li><li><a href="global.html#getFileIndexForTime">getFileIndexForTime</a></li><li><a href="global.html#getMemoryInfo">getMemoryInfo</a></li><li><a href="global.html#getOriginalChannelName">getOriginalChannelName</a></li><li><a href="global.html#getSampleIndexInFile">getSampleIndexInFile</a></li><li><a href="global.html#getThemeColor">getThemeColor</a></li><li><a href="global.html#groupCfgDatFiles">groupCfgDatFiles</a></li><li><a href="global.html#hasStoredComputedChannels">hasStoredComputedChannels</a></li><li><a href="global.html#hideTooltip">hideTooltip</a></li><li><a href="global.html#importComputedChannelFromJSON">importComputedChannelFromJSON</a></li><li><a href="global.html#initTheme">initTheme</a></li><li><a href="global.html#initUPlotChart">initUPlotChart</a></li><li><a href="global.html#initializeSidebarChannels">initializeSidebarChannels</a></li><li><a href="global.html#injectSidebarIntoUplot">injectSidebarIntoUplot</a></li><li><a href="global.html#loadComputedChannelsFromStorage">loadComputedChannelsFromStorage</a></li><li><a href="global.html#measurePerformance">measurePerformance</a></li><li><a href="global.html#mergeAnalogChannels">mergeAnalogChannels</a></li><li><a href="global.html#mergeComtradeFilesSetsSequential">mergeComtradeFilesSetsSequential</a></li><li><a href="global.html#mergeDigitalChannels">mergeDigitalChannels</a></li><li><a href="global.html#mergeTimeArraysSequential">mergeTimeArraysSequential</a></li><li><a href="global.html#openMathLiveEditor">openMathLiveEditor</a></li><li><a href="global.html#performExport">performExport</a></li><li><a href="global.html#processFilesInBatches">processFilesInBatches</a></li><li><a href="global.html#processInChunks">processInChunks</a></li><li><a href="global.html#renameChannelWithPrefix">renameChannelWithPrefix</a></li><li><a href="global.html#renderComputedChannels">renderComputedChannels</a></li><li><a href="global.html#renderComtradeCharts">renderComtradeCharts</a></li><li><a href="global.html#saveComputedChannelToGlobals">saveComputedChannelToGlobals</a></li><li><a href="global.html#saveComputedChannelsToStorage">saveComputedChannelsToStorage</a></li><li><a href="global.html#separateComputedFiles">separateComputedFiles</a></li><li><a href="global.html#setupMobileSidebar">setupMobileSidebar</a></li><li><a href="global.html#setupPolarChartWithVerticalLines">setupPolarChartWithVerticalLines</a></li><li><a href="global.html#showChannelListWindow">showChannelListWindow</a></li><li><a href="global.html#showError">showError</a></li><li><a href="global.html#showExportFormatDialog">showExportFormatDialog</a></li><li><a href="global.html#showFileInfo">showFileInfo</a></li><li><a href="global.html#sortFilePairs">sortFilePairs</a></li><li><a href="global.html#subscribeChartUpdates">subscribeChartUpdates</a></li><li><a href="global.html#toggleChartsVisibility">toggleChartsVisibility</a></li><li><a href="global.html#toggleTheme">toggleTheme</a></li><li><a href="global.html#updateComputedChannelsSidebar">updateComputedChannelsSidebar</a></li><li><a href="global.html#updateFileInfo">updateFileInfo</a></li><li><a href="global.html#updateStatsCards">updateStatsCards</a></li><li><a href="global.html#updateTooltip">updateTooltip</a></li><li><a href="global.html#validateSampleRates">validateSampleRates</a></li><li><a href="global.html#wrapChartInSection">wrapChartInSection</a></li><li><a href="global.html#yieldToEventLoop">yieldToEventLoop</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>components/ChannelList.js</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// src/components/ChannelList.js
+// import { createCustomElement } from '../utils/helpers.js';
+import { autoGroupChannels } from "../utils/autoGroupChannels.js";
+/**
+ * ChannelList component: lists all analog and digital channels with drag-and-drop support.
+ * @param {Object} cfg - COMTRADE config object with analogChannels and digitalChannels arrays.
+ * @param {Function} onChannelDrop - Callback(channelType, fromIdx, toIdx) when a channel is reordered.
+ * @returns {HTMLElement} The channel list element.
+ */
+// export function createChannelList(cfg, onChannelDrop) {
+//   const container = createCustomElement('div');
+//   container.className = 'channel-list-container';
+
+//   // Helper to create a list for a channel type
+//   function createList(type, channels) {
+//     const section = createCustomElement('section');
+//     section.className = 'channel-list-section';
+//     const title = createCustomElement('h3');
+//     title.textContent = type === 'analog' ? 'Analog Channels' : 'Digital Channels';
+//     section.appendChild(title);
+//     const list = createCustomElement('ul');
+//     list.className = 'channel-list';
+//     channels.forEach((ch, idx) => {
+//       const li = createCustomElement('li');
+//       li.className = 'channel-list-item';
+//       li.setAttribute('draggable', 'true');
+//       // Channel color swatch and color picker
+//       const color = ch.color || ch.stroke || ch.displayColor || ch.colour || '#888';
+//       const colorBox = createCustomElement('input');
+//       colorBox.type = 'color';
+//       colorBox.value = color;
+//       colorBox.className = 'channel-color-picker';
+//       colorBox.style.marginRight = '10px';
+//       colorBox.addEventListener('input', (e) => {
+//         ch.color = e.target.value;
+//         li.style.setProperty('--channel-color', e.target.value);
+//         // Use 4th argument for color change
+//         if (typeof onChannelDrop === 'function') onChannelDrop(type, idx, idx, e.target.value);
+//       });
+//       li.appendChild(colorBox);
+//       // Channel label
+//       const labelSpan = createCustomElement('span');
+//       labelSpan.textContent = ch.id || ch.name || `Channel ${idx+1}`;
+//       li.appendChild(labelSpan);
+//       li.dataset.idx = idx;
+//       li.dataset.type = type;
+//       // Drag events
+//       li.addEventListener('dragstart', e => {
+//         e.dataTransfer.effectAllowed = 'move';
+//         e.dataTransfer.setData('text/plain', JSON.stringify({ type, idx }));
+//         li.classList.add('dragging');
+//       });
+//       li.addEventListener('dragend', e => {
+//         li.classList.remove('dragging');
+//       });
+//       li.addEventListener('dragover', e => {
+//         e.preventDefault();
+//         li.classList.add('drag-over');
+//       });
+//       li.addEventListener('dragleave', e => {
+//         li.classList.remove('drag-over');
+//       });
+//       li.addEventListener('drop', e => {
+//         e.preventDefault();
+//         li.classList.remove('drag-over');
+//         const { type: fromType, idx: fromIdx } = JSON.parse(e.dataTransfer.getData('text/plain'));
+//         const toIdx = idx;
+//         if (fromType === type &amp;&amp; fromIdx !== toIdx) {
+//           onChannelDrop(type, parseInt(fromIdx), toIdx);
+//         }
+//       });
+//       list.appendChild(li);
+//     });
+//     section.appendChild(list);
+//     return section;
+//   }
+
+//   // Analog channels
+//   if (cfg.analogChannels &amp;&amp; cfg.analogChannels.length > 0) {
+//     container.appendChild(createList('analog', cfg.analogChannels));
+//   }
+//   // Digital channels
+//   if (cfg.digitalChannels &amp;&amp; cfg.digitalChannels.length > 0) {
+//     container.appendChild(createList('digital', cfg.digitalChannels));
+//   }
+
+//   return container;
+// }
+
+// export function createChannelList(cfg, onChannelUpdate) {
+//   const container = document.createElement("div");
+//   container.className = "channel-list-container bg-white rounded-lg shadow";
+
+//   // Merge analog + digital channel data
+//   const tableData = [
+//     ...cfg.analogChannels.map((ch, i) => ({
+//       id: i + 1,
+//       type: "Analog",
+//       name: ch.id || `Analog ${i + 1}`,
+//       unit: ch.unit || "",
+//       group: ch.group || "Group 1",
+//       color: ch.color || "#888",
+//       scale: ch.scale || 1,
+//       start: ch.start || 0,
+//       duration: ch.duration || "",
+//       invert: ch.invert || "",
+//     })),
+//     ...cfg.digitalChannels.map((ch, i) => ({
+//       id: i + 1,
+//       type: "Digital",
+//       name: ch.id || `Digital ${i + 1}`,
+//       unit: ch.unit || "",
+//       group: ch.group || "Group 1",
+//       color: ch.color || "#888",
+//       scale: ch.scale || 1,
+//       start: ch.start || 0,
+//       duration: ch.duration || "",
+//       invert: ch.invert || "",
+//     })),
+//   ];
+
+//   const columns = [
+//     { title: "ID", field: "id", width: 60, hozAlign: "center" },
+//     {
+//       title: "Channel Name (Unit)",
+//       field: "name",
+//       headerFilter: "input",
+//       editor: "input",
+//     },
+//     { title: "Unit", field: "unit", editor: "input", width: 80 },
+//     { title: "Group", field: "group", editor: "input", width: 120 },
+//     {
+//       title: "Color",
+//       field: "color",
+//       formatter: (cell) => {
+//         const value = cell.getValue();
+//         const input = document.createElement("input");
+//         input.type = "color";
+//         input.value = value;
+//         input.style.cssText =
+//           "width:40px;height:24px;border:none;cursor:pointer;padding:0;border-radius:0.25rem;";
+//         input.classList.add(
+//           "focus:outline-none",
+//           "focus:ring-2",
+//           "focus:ring-blue-400"
+//         );
+//         input.addEventListener("change", (e) => {
+//           cell.setValue(e.target.value);
+//         });
+//         return input;
+//       },
+//     },
+//     {
+//       title: "Scale",
+//       field: "scale",
+//       editor: "number",
+//       width: 80,
+//       headerSort: true,
+//     },
+//     {
+//       title: "Start",
+//       field: "start",
+//       editor: "number",
+//       width: 100,
+//     },
+//     {
+//       title: "Duration",
+//       field: "duration",
+//       editor: "number",
+//       width: 100,
+//     },
+//     {
+//       title: "Invert",
+//       field: "invert",
+//       editor: true,
+//       width: 80,
+//     },
+//     {
+//       title: "Delete",
+//       formatter: () =>
+//         `&lt;button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded transition duration-150">Delete&lt;/button>`,
+//       width: 80,
+//       hozAlign: "center",
+//       cellClick: (e, cell) => cell.getRow().delete(),
+//     },
+//   ];
+
+//   if (typeof Tabulator !== "undefined") {
+//     const table = new Tabulator(container, {
+//       data: tableData,
+//       layout: "fitColumns",
+//       groupBy: "type",
+//       columns,
+//       movableRows: true,
+//       pagination: "local",
+//       paginationSize: 20,
+//       paginationSizeSelector: [5, 10, 20, 50],
+//       cellEdited: (cell) => {
+//         if (typeof onChannelUpdate === "function")
+//           onChannelUpdate("update", cell.getRow().getData());
+//       },
+//       rowMoved: (row) => {
+//         if (typeof onChannelUpdate === "function")
+//           onChannelUpdate("move", row.getData());
+//       },
+//       tableBuilt: () => {
+//         const tableEl = container.querySelector(".tabulator-table");
+//         tableEl.classList.add(
+//           "w-full",
+//           "text-sm",
+//           "text-left",
+//           "border",
+//           "border-gray-200",
+//           "rounded-lg",
+//           "overflow-hidden",
+//           "bg-green-100"
+//         );
+
+//         // Header styling
+//         container.querySelectorAll(".tabulator-col").forEach((col) => {
+//           col.classList.add(
+//             "bg-green-100",
+//             "text-gray-700",
+//             "uppercase",
+//             "font-medium",
+//             "px-4",
+//             "py-2"
+//           );
+//         });
+
+//         // Rows styling with striped effect
+//         container.querySelectorAll(".tabulator-row").forEach((row, index) => {
+//           row.classList.add("border-b", "hover:bg-gray-50");
+//           row.classList.add(index % 2 === 0 ? "bg-white" : "bg-gray-50");
+//         });
+
+//         // Cells padding
+//         container.querySelectorAll(".tabulator-cell").forEach((cell) => {
+//           cell.classList.add("px-4", "py-2");
+//         });
+//       },
+//     });
+
+//     // Add button for new channels
+//     const addBtn = document.createElement("button");
+//     addBtn.textContent = "Add Channel";
+//     addBtn.className =
+//       "w-40 mt-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition duration-150";
+//     addBtn.addEventListener("click", () => {
+//       table.addRow({
+//         id: table.getDataCount(),
+//         type: "Analog",
+//         name: "New Channel",
+//         unit: "",
+//         group: "Group 1",
+//         color: "#888",
+//         scale: 1,
+//         start: 0,
+//         duration: "",
+//         invert: "",
+//       });
+//     });
+
+//     const wrapper = document.createElement("div");
+//     wrapper.className = "flex flex-col gap-2";
+
+//     wrapper.appendChild(addBtn);
+//     wrapper.appendChild(container);
+
+//     return wrapper;
+//   } else {
+//     console.error("Tabulator not loaded. Please include the CDN script.");
+//   }
+
+//   return container;
+// }
+
+// export function createChannelList(cfg, onChannelUpdate) {
+//   const container = document.createElement("div");
+//   container.className = "channel-list-container bg-white rounded-lg shadow";
+
+//   // Merge analog + digital channel data
+//   const tableData = [
+//     ...cfg.analogChannels.map((ch, i) => ({
+//       id: i + 1,
+//       type: "Analog",
+//       name: ch.id || `Analog ${i + 1}`,
+//       unit: ch.unit || "",
+//       group: ch.group || "Group 1",
+//       color: ch.color || "#888",
+//       scale: ch.scale || 1,
+//       start: ch.start || 0,
+//       duration: ch.duration || "",
+//       invert: ch.invert || "",
+//     })),
+//     ...cfg.digitalChannels.map((ch, i) => ({
+//       id: i + 1,
+//       type: "Digital",
+//       name: ch.id || `Digital ${i + 1}`,
+//       unit: ch.unit || "",
+//       group: ch.group || "Group 1",
+//       color: ch.color || "#888",
+//       scale: ch.scale || 1,
+//       start: ch.start || 0,
+//       duration: ch.duration || "",
+//       invert: ch.invert || "",
+//     })),
+//   ];
+
+//   const columns = [
+//     { title: "ID", field: "id", width: 60, hozAlign: "center" },
+//     {
+//       title: "Channel Name (Unit)",
+//       field: "name",
+//       headerFilter: "input",
+//       editor: "input",
+//     },
+//     { title: "Unit", field: "unit", editor: "input", width: 80 },
+//     { title: "Group", field: "group", editor: "input", width: 120 },
+//     {
+//       title: "Color",
+//       field: "color",
+//       formatter: (cell) => {
+//         const value = cell.getValue();
+//         const input = document.createElement("input");
+//         input.type = "color";
+//         input.value = value;
+//         input.style.cssText =
+//           "width:40px;height:24px;border:none;cursor:pointer;padding:0;border-radius:0.25rem;";
+//         input.classList.add(
+//           "focus:outline-none",
+//           "focus:ring-2",
+//           "focus:ring-blue-400"
+//         );
+//         input.addEventListener("change", (e) => {
+//           cell.setValue(e.target.value);
+//         });
+//         return input;
+//       },
+//     },
+//     {
+//       title: "Scale",
+//       field: "scale",
+//       editor: "number",
+//       width: 80,
+//       headerSort: true,
+//     },
+//     { title: "Start", field: "start", editor: "number", width: 100 },
+//     { title: "Duration", field: "duration", editor: "number", width: 100 },
+//     { title: "Invert", field: "invert", editor: true, width: 80 },
+//     {
+//       title: "Delete",
+//       formatter: () =>
+//         `&lt;button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded transition duration-150">Delete&lt;/button>`,
+//       width: 80,
+//       hozAlign: "center",
+//       cellClick: (e, cell) => cell.getRow().delete(),
+//     },
+//   ];
+
+//   if (typeof Tabulator !== "undefined") {
+//     const table = new Tabulator(container, {
+//       data: tableData,
+//       layout: "fitColumns",
+//       groupBy: "type",
+//       columns,
+//       movableRows: true,
+//       pagination: "local",
+//       paginationSize: 20,
+//       paginationSizeSelector: [5, 10, 20, 50],
+//       cellEdited: (cell) => {
+//         if (typeof onChannelUpdate === "function")
+//           onChannelUpdate("update", cell.getRow().getData());
+//       },
+//       rowMoved: (row) => {
+//         if (typeof onChannelUpdate === "function")
+//           onChannelUpdate("move", row.getData());
+//       },
+//       tableBuilt: () => {
+//         const tableEl = container.querySelector(".tabulator-table");
+//         tableEl.classList.add(
+//           "w-full",
+//           "text-sm",
+//           "text-left",
+//           "border",
+//           "border-gray-200",
+//           "rounded-lg",
+//           "overflow-hidden",
+//           "bg-green-100"
+//         );
+
+//         // Header styling
+//         container.querySelectorAll(".tabulator-col").forEach((col) => {
+//           col.classList.add(
+//             "bg-green-100",
+//             "text-gray-700",
+//             "uppercase",
+//             "font-medium",
+//             "px-4",
+//             "py-2"
+//           );
+//         });
+
+//         // Rows styling with striped effect
+//         container.querySelectorAll(".tabulator-row").forEach((row, index) => {
+//           row.classList.add("border-b", "hover:bg-gray-50");
+//           row.classList.add(index % 2 === 0 ? "bg-white" : "bg-gray-50");
+//         });
+
+//         // Cells padding
+//         container.querySelectorAll(".tabulator-cell").forEach((cell) => {
+//           cell.classList.add("px-4", "py-2");
+//         });
+//       },
+//     });
+
+//     // --- Add Channel Button with Dropdown ---
+//     const addBtn = document.createElement("button");
+//     addBtn.textContent = "Add Channel";
+//     addBtn.className =
+//       "w-40 mt-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition duration-150";
+
+//     const dropdown = document.createElement("div");
+//     dropdown.className = "absolute bg-white border rounded shadow mt-1 z-50";
+//     dropdown.style.display = "none";
+
+//     ["Analog", "Digital"].forEach((type) => {
+//       const option = document.createElement("div");
+//       option.textContent = type;
+//       option.className =
+//         "border border-rounded px-3 py-1 hover:bg-gray-200 cursor-pointer";
+//       option.addEventListener("click", () => {
+//         table.addRow({
+//           id: table.getDataCount() + 1,
+//           type: type,
+//           name: "New Channel",
+//           unit: "",
+//           group: "Group 1",
+//           color: "#888",
+//           scale: 1,
+//           start: 0,
+//           duration: "",
+//           invert: "",
+//         });
+//         dropdown.style.display = "none";
+//       });
+//       dropdown.appendChild(option);
+//     });
+
+//     addBtn.addEventListener("click", (e) => {
+//       const rect = addBtn.getBoundingClientRect();
+//       dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+//       dropdown.style.left = `${rect.left + window.scrollX}px`;
+//       dropdown.style.display =
+//         dropdown.style.display === "none" ? "block" : "none";
+//     });
+
+//     // Hide dropdown when clicking outside
+//     document.addEventListener("click", (e) => {
+//       if (!dropdown.contains(e.target) &amp;&amp; e.target !== addBtn) {
+//         dropdown.style.display = "none";
+//       }
+//     });
+
+//     const wrapper = document.createElement("div");
+//     wrapper.className = "flex flex-col gap-2";
+//     wrapper.appendChild(addBtn);
+//     wrapper.appendChild(dropdown);
+//     wrapper.appendChild(container);
+
+//     return wrapper;
+//   } else {
+//     console.error("Tabulator not loaded. Please include the CDN script.");
+//   }
+
+//   return container;
+// }
+
+// export function createChannelList(cfg, onChannelUpdate) {
+//   const container = document.createElement("div");
+//   container.className = "channel-list-container bg-white rounded-lg shadow";
+
+//   // Merge analog + digital channel data
+//   const tableData = [
+//     ...cfg.analogChannels.map((ch, i) => ({
+//       id: i + 1,
+//       type: "Analog",
+//       name: ch.id || `Analog ${i + 1}`,
+//       unit: ch.unit || "",
+//       group: ch.group || "Group 1",
+//       color: ch.color || "#888",
+//       scale: ch.scale || 1,
+//       start: ch.start || 0,
+//       duration: ch.duration || "",
+//       invert: ch.invert || "",
+//     })),
+//     ...cfg.digitalChannels.map((ch, i) => ({
+//       id: i + 1,
+//       type: "Digital",
+//       name: ch.id || `Digital ${i + 1}`,
+//       unit: ch.unit || "",
+//       group: ch.group || "Group 1",
+//       color: ch.color || "#888",
+//       scale: ch.scale || 1,
+//       start: ch.start || 0,
+//       duration: ch.duration || "",
+//       invert: ch.invert || "",
+//     })),
+//   ];
+
+//   const columns = [
+//     { title: "ID", field: "id", width: 60, hozAlign: "center" },
+//     {
+//       title: "Channel Name (Unit)",
+//       field: "name",
+//       headerFilter: "input",
+//       editor: "input",
+//       resizable: true,
+//     },
+//     { title: "Unit", field: "unit", editor: "input", width: 80 },
+//     { title: "Group", field: "group", editor: "input", width: 120 },
+//     {
+//       title: "Color",
+//       field: "color",
+//       formatter: (cell) => {
+//         const value = cell.getValue();
+//         const input = document.createElement("input");
+//         input.type = "color";
+//         input.value = value;
+//         input.style.cssText =
+//           "width:40px;height:24px;border:none;cursor:pointer;padding:0;border-radius:0.25rem;";
+//         input.classList.add(
+//           "focus:outline-none",
+//           "focus:ring-2",
+//           "focus:ring-blue-400"
+//         );
+//         input.addEventListener("change", (e) => {
+//           cell.setValue(e.target.value);
+//         });
+//         return input;
+//       },
+//     },
+//     {
+//       title: "Scale",
+//       field: "scale",
+//       editor: "number",
+//       width: 80,
+//       headerSort: true,
+//     },
+//     { title: "Start", field: "start", editor: "number", width: 100 },
+//     { title: "Duration", field: "duration", editor: "number", width: 100 },
+//     { title: "Invert", field: "invert", editor: true, width: 80 },
+//     {
+//       title: "Delete",
+//       formatter: () =>
+//         `&lt;button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded transition duration-150">Delete&lt;/button>`,
+//       width: 80,
+//       hozAlign: "center",
+//       cellClick: (e, cell) => cell.getRow().delete(),
+//     },
+//   ];
+
+//   if (typeof Tabulator !== "undefined") {
+//     const table = new Tabulator(container, {
+//       data: tableData,
+//       layout: "fitColumns",
+//       responsiveLayout: "collapse",
+//       groupBy: "type",
+//       columns,
+//       resizableColumnFit: true,
+//       movableRows: true,
+//       pagination: "local",
+//       paginationSize: 20,
+//       paginationSizeSelector: [5, 10, 20, 50],
+//       responsiveLayout: "collapse",
+//       cellEdited: (cell) => {
+//         if (typeof onChannelUpdate === "function")
+//           onChannelUpdate("update", cell.getRow().getData());
+//       },
+//       // rowMoved: (row) => {
+//       //   if (typeof onChannelUpdate === "function")
+//       //     onChannelUpdate("move", row.getData());
+//       // },
+//       tableBuilt: () => {
+//         const tableEl = container.querySelector(".tabulator-table");
+//         tableEl.classList.add(
+//           "w-full",
+//           "text-sm",
+//           "text-left",
+//           "sm:text-sm", // slightly bigger for tablets
+//           "lg:text-base",
+//           "border",
+//           "border-gray-200",
+//           "rounded-lg",
+//           "overflow-hidden",
+//           "bg-green-100"
+//         );
+
+//         container.querySelectorAll(".tabulator-col").forEach((col) => {
+//           col.classList.add(
+//             "bg-green-100",
+//             "text-gray-700",
+//             "uppercase",
+//             "font-medium",
+//             "px-4",
+//             "py-2"
+//           );
+//         });
+
+//         container.querySelectorAll(".tabulator-row").forEach((row, index) => {
+//           row.classList.add("border-b", "hover:bg-gray-50");
+//           row.classList.add(index % 2 === 0 ? "bg-white" : "bg-gray-50");
+//         });
+
+//         container.querySelectorAll(".tabulator-cell").forEach((cell) => {
+//           cell.classList.add("px-4", "py-2", "sm:px-4", "sm:py-2");
+//         });
+//       },
+//     });
+
+//     // --- Add Channel Button with Dropdown ---
+//     const addBtn = document.createElement("button");
+//     addBtn.textContent = "Add Channel";
+//     // addBtn.className =
+//     //   "w-40 mt-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition duration-150";
+//     addBtn.className =
+//       "w-full sm:w-40 mt-2 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded transition duration-150";
+
+//     const dropdown = document.createElement("div");
+//     dropdown.className =
+//       "w-40 absolute bg-white rounded shadow text-black mt-1 z-50 text-center";
+//     dropdown.style.display = "none";
+
+//     ["Analog", "Digital"].forEach((type) => {
+//       const option = document.createElement("div");
+//       option.textContent = type;
+//       option.className = "px-3 py-1 hover:bg-gray-200 cursor-pointer";
+
+//       option.addEventListener("click", () => {
+//         const allData = table.getData();
+
+//         // Find last row index of this type
+//         const lastOfTypeIndex = allData
+//           .map((row) => row.type)
+//           .lastIndexOf(type);
+
+//         // Find last ID of this type
+//         const lastIdOfType = allData
+//           .filter((row) => row.type === type)
+//           .reduce((maxId, row) => Math.max(maxId, row.id), 0);
+
+//         const newRow = {
+//           id: lastIdOfType + 1,
+//           type: type,
+//           name: "New Channel",
+//           unit: "",
+//           group: "Group 1",
+//           color: "#888",
+//           scale: 1,
+//           start: 0,
+//           duration: "",
+//           invert: "",
+//         };
+
+//         // Insert after the last row of this type
+//         table.addRow(newRow, false, lastOfTypeIndex + 1);
+
+//         dropdown.style.display = "none";
+//       });
+
+//       dropdown.appendChild(option);
+//     });
+
+//     addBtn.addEventListener("click", (e) => {
+//       const rect = addBtn.getBoundingClientRect();
+//       dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+//       dropdown.style.left = `${rect.left + window.scrollX}px`;
+//       dropdown.style.display =
+//         dropdown.style.display === "none" ? "block" : "none";
+//     });
+
+//     document.addEventListener("click", (e) => {
+//       if (!dropdown.contains(e.target) &amp;&amp; e.target !== addBtn) {
+//         dropdown.style.display = "none";
+//       }
+//     });
+
+//     const wrapper = document.createElement("div");
+//     wrapper.className =
+//       "flex flex-col gap-2 w-full overflow-x-auto sm:px-2 md:px-4 lg:px-8";
+//     wrapper.appendChild(container);
+
+//     return wrapper;
+//   } else {
+//     console.error("Tabulator not loaded. Please include the CDN script.");
+//   }
+
+//   return container;
+// }
+
+// export function createChannelList(cfg, onChannelUpdate) {
+//   // Create container for the table
+//   const container = document.createElement("div");
+//   container.className = "channel-list-container bg-green-200 rounded-lg shadow";
+
+//   // Merge analog + digital channel data
+//   const tableData = [
+//     ...cfg.analogChannels.map((ch, i) => ({
+//       id: i + 1,
+//       type: "Analog",
+//       name: ch.id || `Analog ${i + 1}`,
+//       unit: ch.unit || "",
+//       group: ch.group || "Group 1",
+//       color: ch.color || "#888",
+//       scale: ch.scale || 1,
+//       start: ch.start || 0,
+//       duration: ch.duration || "",
+//       invert: ch.invert || "",
+//     })),
+//     ...cfg.digitalChannels.map((ch, i) => ({
+//       id: i + 1,
+//       type: "Digital",
+//       name: ch.id || `Digital ${i + 1}`,
+//       unit: ch.unit || "",
+//       group: ch.group || "Group 1",
+//       color: ch.color || "#888",
+//       scale: ch.scale || 1,
+//       start: ch.start || 0,
+//       duration: ch.duration || "",
+//       invert: ch.invert || "",
+//     })),
+//   ];
+
+//   // Define table columns
+//   const columns = [
+//     { title: "ID", field: "id", width: 60, hozAlign: "center" },
+//     {
+//       title: "Channel Name (Unit)",
+//       field: "name",
+//       headerFilter: "input",
+//       editor: "input",
+//       resizable: true,
+//     },
+//     { title: "Unit", field: "unit", editor: "input" },
+//     { title: "Group", field: "group", editor: "input" },
+//     {
+//       title: "Color",
+//       field: "color",
+//       formatter: (cell) => {
+//         const value = cell.getValue();
+//         const input = document.createElement("input");
+//         input.type = "color";
+//         input.value = value;
+//         input.style.cssText =
+//           "width:40px;height:24px;border:none;cursor:pointer;padding:0;border-radius:0.25rem;";
+//         input.classList.add(
+//           "focus:outline-none",
+//           "focus:ring-2",
+//           "focus:ring-blue-400"
+//         );
+//         input.addEventListener("change", (e) => {
+//           cell.setValue(e.target.value);
+//         });
+//         return input;
+//       },
+//     },
+//     {
+//       title: "Scale",
+//       field: "scale",
+//       editor: "number",
+//       headerSort: true,
+//     },
+//     { title: "Start", field: "start", editor: "number" },
+//     { title: "Duration", field: "duration", editor: "number" },
+//     { title: "Invert", field: "invert", editor: true },
+//     {
+//       title: "Delete",
+//       formatter: () =>
+//         `&lt;button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded transition duration-150">Delete&lt;/button>`,
+//       hozAlign: "center",
+//       cellClick: (e, cell) => cell.getRow().delete(),
+//     },
+//   ];
+
+//   // Initialize Tabulator table
+//   if (typeof Tabulator !== "undefined") {
+//     const table = new Tabulator(container, {
+//       data: tableData,
+//       layout: "fitColumns",
+//       groupBy: "type",
+//       columns,
+//       resizableColumnFit: true,
+//       debugInvalidOptions: true,
+//       movableColumns: true,
+//       movableRows: true,
+//       pagination: "local",
+//       paginationSize: 20,
+//       paginationSizeSelector: [5, 10, 20, 50],
+//       cellEdited: (cell) => {
+//         if (typeof onChannelUpdate === "function")
+//           onChannelUpdate("update", cell.getRow().getData());
+//       },
+//       tableBuilt: () => {
+//         container.querySelectorAll(".tabulator-row").forEach((row, index) => {
+//           row.classList.add("border-b", "hover:bg-gray-50");
+//           row.classList.add(index % 2 === 0 ? "bg-white" : "bg-gray-50");
+//         });
+
+//         container.querySelectorAll(".tabulator-cell").forEach((cell) => {
+//           cell.classList.add("px-4", "py-2", "sm:px-4", "sm:py-2");
+//         });
+//       },
+//     });
+
+//     return container;
+//   } else {
+//     console.error("Tabulator not loaded. Please include the CDN script.");
+//   }
+
+//   return container;
+// }
+
+/**
+ * Create a Tabulator-based channel list UI.
+ *
+ * This component is used inside the channel-list popup (child window) or can
+ * be created directly in the parent. It supports two complementary
+ * communication mechanisms:
+ *  - Direct callback: the `onChannelUpdate` callback argument is invoked when
+ *    the user edits rows (keeps existing parent-side integration working).
+ *  - postMessage callbacks: when running inside a popup, the child will
+ *    post structured messages to `window.opener` (parent) describing the
+ *    change. The parent listens for these messages and applies them to the
+ *    global `channelState` (createState) so charts update.
+ *
+ * Message format sent from child -> parent:
+ *   { source: 'ChildWindow', type: string, payload: object }
+ *
+ * Known `type` values and payload shapes:
+ *   - 'callback_color': { field: 'color', row: {...}, newValue: '#rrggbb' }
+ *   - 'callback_channelName': { field: 'name', row: {...}, newValue: 'New Label' }
+ *   - 'callback_update': { field: &lt;fieldName>, row: {...}, newValue: &lt;val> }
+ *   - 'callback_addChannel': { ...newChannelRow }
+ *   - 'callback_delete': { ...deletedRow }
+ *
+ * Row payloads are expected to include at least one of:
+ *   - originalIndex: numeric index assigned when the table was created
+ *   - id or name: used as a fallback label to locate the channel in parent state
+ *
+ * Parameters
+ * @param {Object} cfg - { analogChannels: Array, digitalChannels: Array } channel data used to populate the table
+ * @param {Function} [onChannelUpdate] - Optional callback invoked for local integrations (signature varies by event)
+ * @param {Object} [TabulatorInstance] - Optional Tabulator constructor (when running in popup pass child window Tabulator)
+ * @param {Document} [ownerDocument] - Document to create DOM nodes in (important for popups)
+ * @param {Element} [attachToElement] - Optional element in `ownerDocument` to append the table container to
+ * @returns {HTMLElement} container element that contains the Tabulator table
+ */
+
+/**
+ * Converts LaTeX expression to a math.js compatible format
+ * @param {string} latex - LaTeX expression
+ * @returns {string} Math.js compatible expression
+ */
+function convertLatexToMathJs(latex) {
+  if (!latex) return "";
+
+  let expr = latex.trim();
+
+  // Convert subscripts: I_{A} → IA, I_{B} → IB, etc.
+  expr = expr.replace(/([A-Za-z])_\{([A-Za-z0-9]+)\}/g, "$1$2");
+
+  // Convert sqrt: \sqrt{x} → sqrt(x)
+  expr = expr.replace(/\\sqrt\{([^}]+)\}/g, "sqrt($1)");
+
+  // Convert fractions: \frac{a}{b} → (a)/(b)
+  expr = expr.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, "($1)/($2)");
+
+  // Convert functions: \operatorname{func} → func
+  expr = expr.replace(
+    /\\operatorname\{RMS\}\s*\\left\(\s*([^)]+)\s*\\right\)/gi,
+    "sqrt(mean(($1)^2))"
+  );
+  expr = expr.replace(
+    /\\operatorname\{AVG\}\s*\\left\(\s*([^)]+)\s*\\right\)/gi,
+    "mean($1)"
+  );
+  expr = expr.replace(/\\operatorname\{([^}]+)\}/g, "$1");
+
+  // Convert operators
+  expr = expr.replace(/\\cdot/g, "*");
+  expr = expr.replace(/\\times/g, "*");
+
+  // Convert absolute value: \left\lvert a \right\rvert → abs(a)
+  expr = expr.replace(/\\left\\lvert\s*([^\\]*)\s*\\right\\rvert/g, "abs($1)");
+
+  // Convert parentheses
+  expr = expr.replace(/\\left\(/g, "(");
+  expr = expr.replace(/\\right\)/g, ")");
+
+  // Convert power: ^{n} → ^(n)
+  expr = expr.replace(/\^\{([^}]+)\}/g, "^($1)");
+
+  // Remove remaining LaTeX artifacts
+  expr = expr.replace(/\\[a-zA-Z]+/g, ""); // Remove remaining commands
+  expr = expr.replace(/[\{\}]/g, ""); // Remove braces
+
+  return expr.trim();
+}
+
+/**
+ * Evaluates a LaTeX expression as a computed channel and saves it
+ * @param {string} latexExpression - LaTeX expression to evaluate
+ * @param {Document} doc - Document object
+ * @param {Window} win - Window object (popup window)
+ * @returns {Object|null} Computed channel data or null if error
+ */
+function evaluateAndSaveComputedChannel(latexExpression, doc, win) {
+  try {
+    // Get global cfg and data from popup window
+    const cfg = win.globalCfg || (win.opener &amp;&amp; win.opener.globalCfg);
+    const data = win.globalData || (win.opener &amp;&amp; win.opener.globalData);
+
+    if (!cfg || !data) {
+      console.error("Global cfg/data not available in popup window");
+      return null;
+    }
+
+    // Convert LaTeX to math.js format
+    const mathJsExpr = convertLatexToMathJs(latexExpression);
+    console.log(
+      `[ComputedChannel] LaTeX: ${latexExpression} → MathJS: ${mathJsExpr}`
+    );
+
+    // Compile expression with math.js
+    const compiled =
+      win.math?.compile?.(mathJsExpr) || window.math?.compile?.(mathJsExpr);
+    if (!compiled) {
+      throw new Error("Math.js not available. Please include mathjs CDN.");
+    }
+
+    // Get data arrays
+    const analogArray = Array.isArray(data?.analogData)
+      ? data.analogData
+      : Array.isArray(data?.analog)
+      ? data.analog
+      : [];
+    const digitalArray = Array.isArray(data?.digitalData)
+      ? data.digitalData
+      : Array.isArray(data?.digital)
+      ? data.digital
+      : [];
+
+    const sampleCount = analogArray?.[0]?.length || 0;
+    if (!sampleCount) {
+      throw new Error(
+        "No analog samples available. Cannot create computed channel."
+      );
+    }
+
+    const results = [];
+
+    // Evaluate for each sample
+    for (let i = 0; i &lt; sampleCount; i++) {
+      const scope = {};
+
+      // Map analog channels: a0, a1, a2, ... and by ID
+      analogArray.forEach((ch, idx) => {
+        scope[`a${idx}`] = ch?.[i] ?? 0;
+      });
+      cfg?.analogChannels?.forEach((chCfg, idx) => {
+        if (chCfg.id) {
+          scope[chCfg.id] = analogArray?.[idx]?.[i] ?? 0;
+        }
+      });
+
+      // Map digital channels: d0, d1, d2, ... and by ID
+      digitalArray.forEach((ch, idx) => {
+        scope[`d${idx}`] = ch?.[i] ?? 0;
+      });
+      cfg?.digitalChannels?.forEach((chCfg, idx) => {
+        if (chCfg.id) {
+          scope[chCfg.id] = digitalArray?.[idx]?.[i] ?? 0;
+        }
+      });
+
+      try {
+        const value = compiled.evaluate(scope);
+        const numValue = Number(value);
+        results.push(isFinite(numValue) ? numValue : 0);
+      } catch (e) {
+        results.push(0);
+      }
+    }
+
+    const validResults = results.filter((v) => isFinite(v) &amp;&amp; v !== 0);
+    if (validResults.length === 0) {
+      throw new Error("No valid computed values. Check your expression.");
+    }
+
+    const stats = {
+      count: results.length,
+      validCount: validResults.length,
+      min: Math.min(...validResults),
+      max: Math.max(...validResults),
+      avg: validResults.reduce((a, b) => a + b, 0) / validResults.length,
+    };
+
+    // Auto-detect scaling factor based on computed results
+    const resultAbsValues = validResults.map((v) => Math.abs(v));
+    const maxResult = Math.max(...resultAbsValues);
+    const scalingFactor = maxResult > 0 ? maxResult / 1000 : 1;
+
+    const scaledStats = {
+      min: stats.min / scalingFactor,
+      max: stats.max / scalingFactor,
+      avg: stats.avg / scalingFactor,
+    };
+
+    // Create computed channel data
+    const computedChannelData = {
+      equation: latexExpression,
+      mathJsExpression: mathJsExpr,
+      results,
+      stats,
+      scaledStats,
+      scalingFactor,
+      timestamp: new Date().toISOString(),
+    };
+
+    console.log(
+      "[ComputedChannel] Successfully evaluated:",
+      computedChannelData
+    );
+    return computedChannelData;
+  } catch (error) {
+    console.error(
+      "[ComputedChannel] Error evaluating expression:",
+      error.message
+    );
+    throw error;
+  }
+}
+
+/**
+ * Saves computed channel to cfg and data objects
+ * @param {Object} computedChannelData - Computed channel data from evaluateAndSaveComputedChannel
+ * @param {string} channelName - Custom channel name (optional, auto-generated if not provided)
+ * @param {Window} win - Popup window
+ * @returns {Object} Saved channel info {id, name, channelName}
+ */
+function saveComputedChannelToGlobals(computedChannelData, channelName, win) {
+  if (!computedChannelData || !computedChannelData.results) {
+    throw new Error("Invalid computed channel data");
+  }
+
+  // Get cfg and data from popup window FIRST
+  let cfg = win.globalCfg || (win.opener &amp;&amp; win.opener.globalCfg);
+  let data = win.globalData || (win.opener &amp;&amp; win.opener.globalData);
+
+  if (!cfg || !data) {
+    throw new Error("Global cfg/data not available");
+  }
+
+  // Generate channel name if not provided
+  if (!channelName) {
+    if (!data._computedChannelCounter) {
+      data._computedChannelCounter = 0;
+    }
+    channelName = `computed_${data._computedChannelCounter++}`;
+  }
+
+  // Initialize arrays if needed
+  if (!data.computedData) data.computedData = [];
+  if (!cfg.computedChannels) cfg.computedChannels = [];
+
+  // Create channel object
+  const channelData = {
+    id: channelName,
+    equation: computedChannelData.equation,
+    mathJsExpression: computedChannelData.mathJsExpression,
+    data: computedChannelData.results,
+    stats: computedChannelData.stats,
+    scaledStats: computedChannelData.scaledStats,
+    scalingFactor: computedChannelData.scalingFactor,
+    index: data.computedData.length,
+  };
+
+  // Save to data (modify the actual reference)
+  data.computedData.push(channelData);
+
+  // Register in cfg (modify the actual reference)
+  cfg.computedChannels.push({
+    id: cfg.computedChannels.length + 1, // Sequential ID like 1, 2, 3
+    name: channelName,
+    equation: computedChannelData.equation,
+    mathJsExpression: computedChannelData.mathJsExpression,
+    unit: "",
+    group: "Computed",
+    index: data.computedData.length - 1,
+  });
+
+  // Dispatch event to parent window if in popup
+  if (win.opener &amp;&amp; win.opener !== win) {
+    try {
+      win.opener.dispatchEvent(
+        new CustomEvent("computedChannelSaved", {
+          detail: {
+            channelId: channelName,
+            equation: computedChannelData.equation,
+            samples: computedChannelData.results.length,
+            fullData: channelData,
+          },
+        })
+      );
+    } catch (e) {
+      // Silent fail if event dispatch fails
+    }
+  } else {
+    // If not in popup (same window), dispatch on current window
+    try {
+      window.dispatchEvent(
+        new CustomEvent("computedChannelSaved", {
+          detail: {
+            channelId: channelName,
+            equation: computedChannelData.equation,
+            samples: computedChannelData.results.length,
+            fullData: channelData,
+          },
+        })
+      );
+    } catch (e) {
+      // Silent fail if event dispatch fails
+    }
+  }
+
+  return {
+    id: channelName,
+    name: channelName,
+    samples: computedChannelData.results.length,
+  };
+}
+
+/**
+ * Opens a MathLive editor popup when channel name is clicked
+ * @param {Object} cell - Tabulator cell object
+ * @param {Document} doc - Document object
+ * @param {Window} win - Window object
+ */
+function openMathLiveEditor(cell, doc, win) {
+  const currentValue = cell.getValue() || "";
+
+  const channels = [
+    { label: "IA", latex: "I_{A}" },
+    { label: "IB", latex: "I_{B}" },
+    { label: "IC", latex: "I_{C}" },
+    { label: "IN", latex: "I_{N}" },
+    { label: "VA", latex: "V_{A}" },
+    { label: "VB", latex: "V_{B}" },
+    { label: "VC", latex: "V_{C}" },
+    { label: "Freq", latex: "\\operatorname{f}" },
+  ];
+
+  const operators = [
+    { label: "+", latex: "+", className: "operator" },
+    { label: "-", latex: "-", className: "operator" },
+    { label: "×", latex: "\\cdot", className: "operator" },
+    { label: "÷", latex: "\\frac{#0}{#?}", className: "operator" },
+    { label: "^", latex: "^{#0}", className: "operator" },
+    { label: "(", latex: "(", className: "operator" },
+    { label: ")", latex: ")", className: "operator" },
+    { label: "==", latex: "=" },
+    { label: ">", latex: ">" },
+    { label: "&lt;", latex: "&lt;" },
+    { label: "RMS()", latex: "\\operatorname{RMS}\\left(#0\\right)" },
+    { label: "ABS()", latex: "\\left\\lvert #0 \\right\\rvert" },
+    { label: "AVG()", latex: "\\operatorname{AVG}\\left(#0\\right)" },
+  ];
+
+  const functions = [
+    {
+      label: "Mag(I)",
+      latex: "\\left\\lvert I \\right\\rvert",
+      className: "func",
+    },
+    { label: "Ang(I)", latex: "\\angle I", className: "func" },
+    {
+      label: "d/dt",
+      latex: "\\frac{d}{dt}\\left(#0\\right)",
+      className: "func",
+    },
+    {
+      label: "Trip()",
+      latex: "\\operatorname{TRIP}\\left(#0\\right)",
+      className: "func",
+    },
+    {
+      label: "Pickup()",
+      latex: "\\operatorname{PICKUP}\\left(#0\\right)",
+      className: "func",
+    },
+  ];
+
+  const overlay = doc.createElement("div");
+  overlay.style.cssText =
+    "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;";
+
+  const modal = doc.createElement("div");
+  modal.style.cssText =
+    "background:#fff;border-radius:8px;padding:24px;width:700px;max-width:95%;box-shadow:0 4px 16px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;position:relative;z-index:10000;";
+
+  const createButtonsHTML = (items, sectionTitle) => {
+    return `
+      &lt;div style="margin-bottom:16px;">
+        &lt;h4 style="margin:0 0 8px 0;font-size:14px;font-weight:600;color:#555;">${sectionTitle}&lt;/h4>
+        &lt;div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${items
+            .map(
+              (item) => `
+            &lt;button class="insert-btn" data-latex="${item.latex.replace(
+              /"/g,
+              "&amp;quot;"
+            )}" 
+              style="padding:6px 12px;border:1px solid #ddd;border-radius:4px;background:#f9f9f9;cursor:pointer;font-size:13px;transition:all 0.2s;"
+              onmouseover="this.style.background='#e3f2fd';this.style.borderColor='#2196f3';"
+              onmouseout="this.style.background='#f9f9f9';this.style.borderColor='#ddd';">
+              ${item.label}
+            &lt;/button>
+          `
+            )
+            .join("")}
+        &lt;/div>
+      &lt;/div>
+    `;
+  };
+
+  modal.innerHTML = `
+    &lt;h3 style="margin:0 0 16px 0;font-size:18px;font-weight:600;color:#333;">Edit Channel Expression&lt;/h3>
+    
+    ${createButtonsHTML(channels, "Channels")}
+    ${createButtonsHTML(operators, "Operators")}
+    ${createButtonsHTML(functions, "Functions")}
+    
+    &lt;div style="margin-bottom:16px;">
+      &lt;label style="display:block;margin-bottom:8px;font-weight:500;color:#555;">Math Expression:&lt;/label>
+      &lt;math-field id="math-editor" virtual-keyboard-mode="manual" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:16px;--keyboard-zindex:10001;">&lt;/math-field>
+    &lt;/div>
+    
+    &lt;div style="display:flex;gap:8px;justify-content:flex-end;">
+      &lt;button id="cancel-btn" style="padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;">Cancel&lt;/button>
+      &lt;button id="save-btn" style="padding:8px 16px;border:none;border-radius:4px;background:#22c55e;color:#fff;cursor:pointer;font-size:14px;">Save&lt;/button>
+    &lt;/div>
+    &lt;div id="status-message" style="margin-top:12px;padding:8px;border-radius:4px;display:none;font-size:13px;">&lt;/div>
+  `;
+
+  overlay.appendChild(modal);
+  doc.body.appendChild(overlay);
+
+  setTimeout(() => {
+    const mathField = doc.getElementById("math-editor");
+    const statusMsg = doc.getElementById("status-message");
+
+    if (mathField) {
+      mathField.value = currentValue;
+
+      modal.querySelectorAll(".insert-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const latex = btn.getAttribute("data-latex");
+          mathField.executeCommand(["insert", latex]);
+          mathField.focus();
+        });
+      });
+
+      mathField.focus();
+    }
+
+    // Helper to show status message
+    const showStatus = (message, isError = false) => {
+      statusMsg.textContent = message;
+      statusMsg.style.background = isError ? "#fee2e2" : "#dcfce7";
+      statusMsg.style.color = isError ? "#7f1d1d" : "#166534";
+      statusMsg.style.display = "block";
+      if (!isError) {
+        setTimeout(() => {
+          statusMsg.style.display = "none";
+        }, 3000);
+      }
+    };
+
+    // Save button: evaluate expression, create computed channel, and update cell
+    doc.getElementById("save-btn").addEventListener("click", () => {
+      if (!mathField) return;
+
+      const expression = mathField.value.trim();
+      if (!expression) {
+        showStatus("⚠️ Please enter an expression", true);
+        mathField.focus();
+        return;
+      }
+
+      try {
+        // Evaluate the expression and create computed channel
+        showStatus("⏳ Evaluating expression...");
+        const computedData = evaluateAndSaveComputedChannel(
+          expression,
+          doc,
+          win
+        );
+
+        if (!computedData) {
+          showStatus("❌ Failed to evaluate expression", true);
+          return;
+        }
+
+        // Save to globals and get the channel name
+        const savedInfo = saveComputedChannelToGlobals(computedData, null, win);
+        showStatus(
+          `✅ Created channel "${savedInfo.name}" with ${savedInfo.samples} samples`
+        );
+
+        // Pass the computed channel name (not the expression) to the cell setValue callback
+        // This will trigger the row creation with the correct channel name
+        cell.setValue(savedInfo.name);
+
+        // Close modal after a short delay
+        setTimeout(() => {
+          doc.body.removeChild(overlay);
+        }, 600);
+      } catch (error) {
+        console.error("[MathLiveEditor] Error creating channel:", error);
+        showStatus(`❌ Error: ${error.message}`, true);
+      }
+    });
+
+    doc.getElementById("cancel-btn").addEventListener("click", () => {
+      doc.body.removeChild(overlay);
+    });
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) {
+        doc.body.removeChild(overlay);
+      }
+    });
+
+    const escHandler = (e) => {
+      if (e.key === "Escape" &amp;&amp; doc.body.contains(overlay)) {
+        doc.body.removeChild(overlay);
+        doc.removeEventListener("keydown", escHandler);
+      }
+    };
+    doc.addEventListener("keydown", escHandler);
+  }, 100);
+}
+
+/**
+ * Converts LaTeX expressions to plain text math notation
+ * @param {string} latex - LaTeX string to convert
+ * @returns {string} Plain text representation
+ */
+function convertLatexToPlainText(latex) {
+  // Handle non-string and empty values
+  if (!latex || typeof latex !== "string") return "";
+
+  let result = latex;
+
+  result = result.replace(/([A-Za-z])_\{([A-Za-z0-9]+)\}/g, "$1$2");
+
+  result = result.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, "($1)/($2)");
+
+  result = result.replace(/\\cdot/g, " × ");
+
+  result = result.replace(/\\operatorname\{([^}]+)\}/g, "$1");
+
+  result = result.replace(/\\left\\lvert/g, "|");
+  result = result.replace(/\\right\\rvert/g, "|");
+  result = result.replace(/\\left\(/g, "(");
+  result = result.replace(/\\right\)/g, ")");
+
+  result = result.replace(/\\angle/g, "∠");
+
+  result = result.replace(/\^\{([^}]+)\}/g, "^$1");
+
+  result = result.replace(/\\/g, "");
+
+  return result;
+}
+
+/**
+ * Simple HTML fallback channel list when Tabulator is not available
+ */
+function createSimpleChannelList(cfg, onChannelUpdate) {
+  const container = document.createElement("div");
+  container.className = "channel-list-container";
+  container.style.cssText = "padding: 16px; font-family: sans-serif;";
+
+  // Helper to create a list for a channel type
+  function createList(type, channels) {
+    const section = document.createElement("section");
+    section.className = "channel-list-section";
+    section.style.cssText = "margin-bottom: 24px;";
+
+    const title = document.createElement("h3");
+    title.textContent =
+      type === "analog" ? "Analog Channels" : "Digital Channels";
+    title.style.cssText =
+      "margin: 0 0 12px 0; font-size: 1.1em; color: #00d9ff;";
+    section.appendChild(title);
+
+    const list = document.createElement("ul");
+    list.className = "channel-list";
+    list.style.cssText = "list-style: none; padding: 0; margin: 0;";
+
+    channels.forEach((ch, idx) => {
+      const li = document.createElement("li");
+      li.className = "channel-list-item";
+      li.style.cssText = `
+        padding: 10px 12px;
+        margin-bottom: 6px;
+        background: #1a1f2e;
+        border: 1px solid #2d3748;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: grab;
+        transition: background 0.2s;
+      `;
+      li.setAttribute("draggable", "true");
+
+      // Channel color swatch and color picker
+      const color =
+        ch.color || ch.stroke || ch.displayColor || ch.colour || "#888";
+      const colorBox = document.createElement("input");
+      colorBox.type = "color";
+      colorBox.value = color;
+      colorBox.style.cssText =
+        "width: 32px; height: 32px; border: 1px solid #444; border-radius: 3px; cursor: pointer;";
+      colorBox.addEventListener("input", (e) => {
+        ch.color = e.target.value;
+        if (typeof onChannelUpdate === "function") {
+          onChannelUpdate(type, idx, idx, e.target.value);
+        }
+      });
+      li.appendChild(colorBox);
+
+      // Channel label
+      const labelSpan = document.createElement("span");
+      labelSpan.textContent =
+        ch.id || ch.name || `${type === "analog" ? "A" : "D"}${idx + 1}`;
+      labelSpan.style.cssText = "flex: 1; color: #e5e7eb;";
+      li.appendChild(labelSpan);
+
+      li.dataset.idx = idx;
+      li.dataset.type = type;
+
+      // Drag events
+      li.addEventListener("dragstart", (e) => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", JSON.stringify({ type, idx }));
+        li.style.opacity = "0.5";
+      });
+      li.addEventListener("dragend", (e) => {
+        li.style.opacity = "1";
+      });
+      li.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        li.style.background = "#2a3f5f";
+      });
+      li.addEventListener("dragleave", (e) => {
+        li.style.background = "#1a1f2e";
+      });
+      li.addEventListener("drop", (e) => {
+        e.preventDefault();
+        li.style.background = "#1a1f2e";
+        try {
+          const { type: fromType, idx: fromIdx } = JSON.parse(
+            e.dataTransfer.getData("text/plain")
+          );
+          const toIdx = idx;
+          if (
+            fromType === type &amp;&amp;
+            fromIdx !== toIdx &amp;&amp;
+            typeof onChannelUpdate === "function"
+          ) {
+            onChannelUpdate(type, parseInt(fromIdx), toIdx);
+          }
+        } catch (err) {
+          console.error("Drop error:", err);
+        }
+      });
+
+      list.appendChild(li);
+    });
+    section.appendChild(list);
+    return section;
+  }
+
+  // Analog channels
+  if (cfg.analogChannels &amp;&amp; cfg.analogChannels.length > 0) {
+    container.appendChild(createList("analog", cfg.analogChannels));
+  }
+  // Digital channels
+  if (cfg.digitalChannels &amp;&amp; cfg.digitalChannels.length > 0) {
+    container.appendChild(createList("digital", cfg.digitalChannels));
+  }
+
+  return container;
+}
+
+/**
+ * Create a mapping from analog channel indices to their numeric group IDs
+ * Uses pattern-based matching (group 1, 2, 3, ...)
+ * @param {Array} analogChannels - Array of analog channel objects
+ * @returns {Object} Map of { analogIndex: groupId }
+ */
+function createAnalogChannelGroupMap(analogChannels) {
+  const groupMap = {};
+  const autoIndices = []; // Channels that need auto-grouping
+
+  // ✅ STEP 1: Collect explicit groups (user-assigned)
+  // Only accept groups that start with "G" followed by digits (valid format)
+  // Reject invalid formats like "Currents", "Voltages", "Other"
+  let hasValidExplicitGroups = false;
+  analogChannels.forEach((ch, idx) => {
+    if (
+      ch &amp;&amp;
+      ch.group &amp;&amp;
+      typeof ch.group === "string" &amp;&amp;
+      /^G\d+$/.test(ch.group)
+    ) {
+      // Valid explicit group format (G0, G1, G2, etc.)
+      groupMap[idx] = ch.group;
+      hasValidExplicitGroups = true;
+    } else {
+      // Invalid or missing group -> mark for auto-grouping
+      autoIndices.push(idx);
+    }
+  });
+
+  // ✅ STEP 2: Auto-group any channels without valid explicit groups
+  if (autoIndices.length > 0) {
+    console.log(
+      `[createAnalogChannelGroupMap] Found ${
+        analogChannels.length - autoIndices.length
+      } explicit groups and ${
+        autoIndices.length
+      } channels needing auto-grouping`
+    );
+
+    // Build subset of channels that need auto-grouping
+    const autoChannels = autoIndices.map((idx) => analogChannels[idx]);
+    const autoGroups = autoGroupChannels(autoChannels);
+
+    // Map auto-group indices back to global indices
+    autoGroups.forEach((group) => {
+      group.indices.forEach((localIdx) => {
+        const globalIdx = autoIndices[localIdx];
+        groupMap[globalIdx] = group.groupId; // Use groupId: "G0", "G1", "G2", etc.
+      });
+    });
+
+    console.log(
+      "[createAnalogChannelGroupMap] Auto-grouping assigned groups:",
+      autoGroups.map((g) => ({
+        groupId: g.groupId,
+        name: g.name,
+        count: g.indices.length,
+      }))
+    );
+  } else {
+    console.log(
+      "[createAnalogChannelGroupMap] All channels have explicit group assignments"
+    );
+  }
+
+  console.log("[createAnalogChannelGroupMap] Final group mapping:", groupMap);
+  return groupMap;
+}
+
+/**
+ * Extract all unique groups from tableData
+ * Also include default numeric groups
+ * @param {Array} tableData - Array of channel objects with group field
+ * @returns {Object} Object suitable for Tabulator list editor
+ */
+function getAllAvailableGroups(tableData) {
+  // Default groups in G format
+  const defaultGroups = [
+    "G0",
+    "G1",
+    "G2",
+    "G3",
+    "G4",
+    "G5",
+    "G6",
+    "G7",
+    "G8",
+    "G9",
+  ];
+
+  // Extract unique groups from tableData
+  const extractedGroups = new Set();
+  if (Array.isArray(tableData)) {
+    tableData.forEach((row) => {
+      if (row.group !== undefined &amp;&amp; row.group !== null) {
+        extractedGroups.add(row.group);
+      }
+    });
+  }
+
+  // Combine default + extracted groups
+  const allGroups = new Set([...defaultGroups, ...extractedGroups]);
+
+  // Convert to object format for Tabulator { label: value, ... }
+  const groupOptions = {};
+  allGroups.forEach((group) => {
+    groupOptions[group] = group;
+  });
+
+  console.log(
+    "[getAllAvailableGroups] Available group numbers:",
+    Object.keys(groupOptions)
+  );
+  return groupOptions;
+}
+
+export function createChannelList(
+  cfg,
+  onChannelUpdate,
+  TabulatorInstance,
+  ownerDocument,
+  attachToElement
+) {
+  // Use provided document (popup) or fallback to current document
+  const doc =
+    ownerDocument ||
+    (typeof document !== "undefined" ? document : window.document);
+
+  // Create container for the table in the correct document
+  const container = doc.createElement("div");
+  container.className = "channel-list-container bg-green-200 rounded-lg shadow";
+
+  // If attachToElement provided, append container into it so children are in the popup DOM
+  if (attachToElement &amp;&amp; attachToElement.appendChild) {
+    try {
+      attachToElement.appendChild(container);
+    } catch (e) {
+      console.warn("createChannelList: failed to append to attachToElement", e);
+    }
+  }
+
+  // Create mapping of analog channel indices to their numeric group IDs
+  const analogGroupMap = createAnalogChannelGroupMap(cfg.analogChannels || []);
+
+  // Merge analog + digital + computed channel data
+  const tableData = [
+    ...cfg.analogChannels.map((ch, i) => ({
+      id: i + 1,
+      channelID: ch.channelID,
+      originalIndex: i,
+      type: "Analog",
+      name: ch.id || `Analog ${i + 1}`,
+      unit: ch.unit || "",
+      group: analogGroupMap[i] || "G0",
+      color: ch.color || "#888",
+      scale: ch.scale || 1,
+      start: ch.start || 0,
+      duration: ch.duration || "",
+      invert: ch.invert || "",
+    })),
+    ...cfg.digitalChannels.map((ch, i) => ({
+      id: i + 1,
+      channelID: ch.channelID,
+      originalIndex: i,
+      type: "Digital",
+      name: ch.id || `Digital ${i + 1}`,
+      unit: ch.unit || "",
+      group:
+        ch.group !== undefined &amp;&amp;
+        typeof ch.group === "string" &amp;&amp;
+        ch.group.startsWith("G")
+          ? ch.group
+          : "G9",
+      color: ch.color || "#888",
+      scale: ch.scale || 1,
+      start: ch.start || 0,
+      duration: ch.duration || "",
+      invert: ch.invert || "",
+    })),
+    ...(cfg.computedChannels || []).map((ch, i) => ({
+      id: i + 1,
+      channelID: ch.channelID,
+      originalIndex: i,
+      type: "Computed",
+      name: ch.name || ch.id || `Computed ${i + 1}`,
+      unit: ch.unit || "",
+      group:
+        ch.group !== undefined &amp;&amp;
+        typeof ch.group === "string" &amp;&amp;
+        ch.group.startsWith("G")
+          ? ch.group
+          : "G9",
+      color: ch.color || "#FF6B6B",
+      scale: ch.scale || 1,
+      start: ch.start || 0,
+      duration: ch.duration || "",
+      invert: ch.invert || "",
+    })),
+  ];
+
+  // Debug: Log first few channels with their units
+  console.log(
+    "[ChannelList] Table data - Analog channels:",
+    cfg.analogChannels.slice(0, 2).map((ch) => ({ id: ch.id, unit: ch.unit }))
+  );
+  console.log(
+    "[ChannelList] Table data - Digital channels:",
+    cfg.digitalChannels.slice(0, 2).map((ch) => ({ id: ch.id, unit: ch.unit }))
+  );
+  console.log(
+    "[ChannelList] Prepared tableData units:",
+    tableData.slice(0, 3).map((row) => ({ name: row.name, unit: row.unit }))
+  );
+  console.log(
+    "[ChannelList] FULL tableData object:",
+    JSON.stringify(tableData, null, 2)
+  );
+
+  // Define table columns
+  const columns = [
+    { title: "ID", field: "id", width: 60, hozAlign: "center" },
+    {
+      title: "Channel Name (Unit)",
+      field: "name",
+      headerFilter: "input",
+      editor: "input",
+      resizable: true,
+      formatter: (cell) => {
+        const value = cell.getValue();
+        const displayValue = convertLatexToPlainText(value);
+        return displayValue || value;
+      },
+      cellClick: (e, cell) => {
+        // Open MathLive editor only for Computed channels
+        const rowData = cell.getRow().getData();
+        if (rowData.type === "Computed") {
+          openMathLiveEditor(cell, doc, doc.defaultView || window);
+        }
+      },
+    },
+    {
+      title: "Unit",
+      field: "unit",
+      editor: "input",
+      width: 100,
+      headerFilter: "input",
+    },
+    {
+      title: "Group",
+      field: "group",
+      editor: "list",
+      width: 150,
+      headerFilter: "input",
+      hozAlign: "center",
+      editorParams: {
+        autocomplete: true,
+        allowEmpty: false,
+        listOnEmpty: true,
+        values: getAllAvailableGroups(tableData), // ✅ Dynamic groups
+      },
+      formatter: (cell) => {
+        const value = cell.getValue();
+        return value || "No Group";
+      },
+    },
+    {
+      title: "Color",
+      field: "color",
+      formatter: (cell) => {
+        const value = cell.getValue();
+        // use the createChannelList doc (ownerDocument) to ensure nodes come from the popup document
+        const usedDoc =
+          typeof doc !== "undefined"
+            ? doc
+            : typeof document !== "undefined"
+            ? document
+            : window.document;
+        const input = usedDoc.createElement("input");
+        input.type = "color";
+        input.value = value;
+        input.style.cssText =
+          "width:40px;height:24px;border:none;cursor:pointer;padding:0;border-radius:0.25rem;";
+        input.classList.add(
+          "focus:outline-none",
+          "focus:ring-2",
+          "focus:ring-blue-400"
+        );
+        input.addEventListener("change", (e) => {
+          cell.setValue(e.target.value);
+        });
+        return input;
+      },
+    },
+    {
+      title: "Scale",
+      field: "scale",
+      editor: "number",
+      headerSort: true,
+    },
+    { title: "Start", field: "start", editor: "number" },
+    { title: "Duration", field: "duration", editor: "number" },
+    { title: "Invert", field: "invert", editor: true },
+    {
+      title: "Delete",
+      field: "delete",
+      formatter: () =>
+        `&lt;button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded transition duration-150">Delete&lt;/button>`,
+      hozAlign: "center",
+      cellClick: (e, cell) => cell.getRow().delete(),
+    },
+  ];
+
+  // Use Tabulator from popup window if provided, fallback to global
+  // Prefer Tabulator from the popup's window (ownerDocument.defaultView) if available
+  const popupWindow = doc &amp;&amp; doc.defaultView ? doc.defaultView : null;
+  let TabulatorClass =
+    (popupWindow &amp;&amp; popupWindow.Tabulator) ||
+    TabulatorInstance ||
+    (typeof Tabulator !== "undefined" ? Tabulator : null);
+
+  if (!TabulatorClass) {
+    // Fallback to simple HTML list when Tabulator is not available
+    console.warn("Tabulator not available. Using simple list fallback.");
+    return createSimpleChannelList(cfg, onChannelUpdate);
+  }
+
+  // Debugging: log which Tabulator we're using and document ownership
+  try {
+    console.debug(
+      "createChannelList: using Tabulator from:",
+      popupWindow
+        ? "popupWindow"
+        : TabulatorInstance
+        ? "passed instance"
+        : "global"
+    );
+    console.debug("createChannelList: TabulatorClass:", TabulatorClass);
+    console.debug(
+      "createChannelList: container.ownerDocument:",
+      container.ownerDocument
+    );
+  } catch (e) {
+    /* ignore */
+  }
+
+  // Initialize Tabulator table
+  // Create an explicit root element for Tabulator in the correct document and append it
+  const tableRoot = doc.createElement("div");
+  tableRoot.className = "tabulator-root w-full";
+  container.appendChild(tableRoot);
+
+  const table = new TabulatorClass(tableRoot, {
+    data: tableData,
+    layout: "fitColumns",
+    groupBy: "type",
+    groupStartOpen: true, // ✅ Expand all groups by default
+    columns,
+    resizableColumnFit: true,
+    movableColumns: true, // ✅ Column dragging enabled
+    movableRows: true,
+    pagination: "local",
+    paginationSize: 20,
+    paginationSizeSelector: [5, 10, 20, 50],
+    debugInvalidOptions: true,
+    // note: event handlers (cellEdited, tableBuilt) are attached below via table.on(...) to avoid
+    // 'Invalid table constructor option' warnings on mismatched Tabulator builds
+  });
+
+  // Debug: Log Tabulator data and columns after initialization
+  console.log(
+    "[ChannelList] Tabulator initialized with tableData:",
+    table.getData()
+  );
+  console.log("[ChannelList] Tabulator columns definition:", columns);
+  console.log(
+    "[ChannelList] Checking Unit column field:",
+    columns.find((c) => c.field === "unit")
+  );
+  const unitColumnData = table
+    .getData()
+    .map((row) => ({ name: row.name, unit: row.unit, type: row.type }));
+  console.log("[ChannelList] Unit values in displayed rows:", unitColumnData);
+
+  // Attach event handlers after initialization to avoid constructor option warnings
+  try {
+    if (table &amp;&amp; typeof table.on === "function") {
+      table.on("cellEdited", (cell) => {
+        const field = cell.getField ? cell.getField() : null;
+        const rowData = cell.getRow().getData();
+        const newValue = cell.getValue();
+
+        // ✅ If group field was edited, update dropdown options dynamically
+        if (field === "group" &amp;&amp; newValue) {
+          const currentData = table.getData();
+          const updatedOptions = getAllAvailableGroups(currentData);
+
+          // Update the group column's editorParams with new options
+          const groupColumn = table.getColumn("group");
+          if (groupColumn &amp;&amp; groupColumn.getDefinition) {
+            const colDef = groupColumn.getDefinition();
+            if (colDef.editorParams) {
+              colDef.editorParams.values = updatedOptions;
+              console.log(
+                "[ChannelList] ✅ Updated group dropdown options:",
+                Object.keys(updatedOptions)
+              );
+            }
+          }
+        }
+
+        // 1) Call local callback if provided (existing flow)
+        if (typeof onChannelUpdate === "function") {
+          try {
+            // Keep existing behavior: color gets a concise callback form so
+            // callers can handle immediate color updates (type, idx, _, value).
+            if (field === "color") {
+              const type =
+                rowData &amp;&amp; rowData.type
+                  ? rowData.type.toLowerCase()
+                  : undefined;
+              const idx =
+                rowData &amp;&amp; typeof rowData.originalIndex === "number"
+                  ? rowData.originalIndex
+                  : rowData &amp;&amp; typeof rowData.id === "number"
+                  ? rowData.id - 1
+                  : undefined;
+              onChannelUpdate(type, idx, undefined, newValue);
+            } else {
+              // For other fields (including scale/start/duration/invert)
+              // keep the generic update callback so existing callers work.
+              onChannelUpdate("update", rowData);
+            }
+          } catch (e) {
+            console.warn("cellEdited handler failed:", e);
+            try {
+              onChannelUpdate("update", rowData);
+            } catch (e2) {
+              /* ignore */
+            }
+          }
+        }
+
+        // 2) Post a structured message to the parent (child -> parent)
+        try {
+          if (
+            typeof window !== "undefined" &amp;&amp;
+            window.opener &amp;&amp;
+            !window.opener.closed
+          ) {
+            // Include both legacy object payload and Tabulator-style args/channelID
+            // so the parent can accept either form (legacy row-based or [_, channelID, value]).
+            const payload = {
+              field,
+              row: rowData,
+              newValue,
+              channelID:
+                rowData &amp;&amp; rowData.channelID ? rowData.channelID : null,
+              args: [
+                null,
+                rowData &amp;&amp; rowData.channelID ? rowData.channelID : null,
+                newValue,
+              ],
+            };
+            // Use specific callback types for important fields so the parent
+            // can react to them directly.
+            let type = "callback_update";
+            if (field === "color") type = "callback_color";
+            else if (field === "name") type = "callback_channelName";
+            else if (field === "scale") type = "callback_scale";
+            else if (field === "start") type = "callback_start";
+            else if (field === "duration") type = "callback_duration";
+            else if (field === "invert") type = "callback_invert";
+
+            window.opener.postMessage(
+              { source: "ChildWindow", type, payload },
+              "*"
+            );
+          }
+        } catch (e) {
+          // non-fatal (may run in parent context when createChannelList called from parent)
+        }
+      });
+
+      table.on("tableBuilt", () => {
+        // Expand all groups to ensure Computed channels are visible
+        try {
+          table.getGroups().forEach((group) => {
+            group.show();
+            console.log("[ChannelList] Expanded group:", group.getKey());
+          });
+        } catch (e) {
+          console.warn("[ChannelList] Error expanding groups:", e);
+        }
+
+        container.querySelectorAll(".tabulator-row").forEach((row, index) => {
+          row.classList.add("border-b", "hover:bg-gray-50");
+          row.classList.add(index % 2 === 0 ? "bg-white" : "bg-gray-50");
+        });
+
+        container.querySelectorAll(".tabulator-cell").forEach((cell) => {
+          cell.classList.add("px-4", "py-2", "sm:px-4", "sm:py-2");
+        });
+      });
+    }
+
+    // Listen for rowAdded and rowDeleted events so we can notify parent
+    try {
+      if (table &amp;&amp; typeof table.on === "function") {
+        table.on("rowAdded", (row) => {
+          const data = row.getData ? row.getData() : row;
+          // attach a temporary client id so the parent can ack with a stable channelID
+          try {
+            data.tempClientId = `tmp-${Date.now()}-${Math.random()
+              .toString(36)
+              .slice(2, 6)}`;
+          } catch (e) {
+            data.tempClientId = `tmp-${Date.now()}`;
+          }
+          // local callback
+          if (typeof onChannelUpdate === "function") {
+            try {
+              onChannelUpdate("add", data);
+            } catch (e) {
+              /* ignore */
+            }
+          }
+          // notify parent
+          try {
+            if (
+              typeof window !== "undefined" &amp;&amp;
+              window.opener &amp;&amp;
+              !window.opener.closed
+            ) {
+              window.opener.postMessage(
+                {
+                  source: "ChildWindow",
+                  type: "callback_addChannel",
+                  payload: data,
+                },
+                "*"
+              );
+            }
+          } catch (e) {
+            /* ignore */
+          }
+        });
+
+        table.on("rowDeleted", (row) => {
+          const data = row.getData ? row.getData() : row;
+          if (typeof onChannelUpdate === "function") {
+            try {
+              onChannelUpdate("delete", data);
+            } catch (e) {
+              /* ignore */
+            }
+          }
+          try {
+            if (
+              typeof window !== "undefined" &amp;&amp;
+              window.opener &amp;&amp;
+              !window.opener.closed
+            ) {
+              window.opener.postMessage(
+                {
+                  source: "ChildWindow",
+                  type: "callback_delete",
+                  payload: data,
+                },
+                "*"
+              );
+            }
+          } catch (e) {
+            /* ignore */
+          }
+        });
+      }
+    } catch (e) {
+      /* ignore */
+    }
+    // Listen for parent ack when a newly added row is accepted and assigned a stable channelID
+    try {
+      if (
+        typeof window !== "undefined" &amp;&amp;
+        typeof window.addEventListener === "function"
+      ) {
+        window.addEventListener("message", (ev) => {
+          try {
+            const d = ev &amp;&amp; ev.data;
+            if (!d || d.source !== "ParentWindow") return;
+            if (d.type === "ack_addChannel" &amp;&amp; d.payload) {
+              const { tempClientId, channelID, assignedIndex } = d.payload;
+              if (!tempClientId || !channelID) return;
+              // Try to find the row with matching tempClientId and update its metadata
+              try {
+                const rows = table.getRows ? table.getRows() : [];
+                for (let r of rows) {
+                  const rd = r.getData ? r.getData() : null;
+                  if (!rd) continue;
+                  if (rd.tempClientId &amp;&amp; rd.tempClientId === tempClientId) {
+                    // update the row data to include stable channelID and assigned index
+                    const updateObj = { channelID };
+                    if (typeof assignedIndex === "number")
+                      updateObj.originalIndex = assignedIndex;
+                    // remove tempClientId
+                    updateObj.tempClientId = null;
+                    try {
+                      if (typeof r.update === "function") r.update(updateObj);
+                    } catch (e) {
+                      // fallback: set data directly
+                      rd.channelID = channelID;
+                      if (typeof assignedIndex === "number")
+                        rd.originalIndex = assignedIndex;
+                    }
+                    break;
+                  }
+                }
+              } catch (e) {
+                /* ignore */
+              }
+            }
+          } catch (e) {
+            /* ignore */
+          }
+        });
+      }
+    } catch (e) {
+      /* ignore */
+    }
+  } catch (e) {
+    console.warn("Failed to attach Tabulator events:", e);
+  }
+
+  // --- Optional UI controls (undo/redo, add-row, group-select, download) ---
+  try {
+    const rootDoc =
+      typeof doc !== "undefined" &amp;&amp; doc
+        ? doc
+        : typeof document !== "undefined"
+        ? document
+        : null;
+    const rootWin =
+      typeof win !== "undefined" &amp;&amp; win
+        ? win
+        : typeof window !== "undefined"
+        ? window
+        : null;
+
+    const undoBtn =
+      rootDoc &amp;&amp; rootDoc.getElementById
+        ? rootDoc.getElementById("history-undo")
+        : null;
+    const redoBtn =
+      rootDoc &amp;&amp; rootDoc.getElementById
+        ? rootDoc.getElementById("history-redo")
+        : null;
+    const addRowBtn =
+      rootDoc &amp;&amp; rootDoc.getElementById
+        ? rootDoc.getElementById("add-row")
+        : null;
+    const groupSelect =
+      rootDoc &amp;&amp; rootDoc.getElementById
+        ? rootDoc.getElementById("group-select")
+        : null;
+    const downloadBtn =
+      rootDoc &amp;&amp; rootDoc.getElementById
+        ? rootDoc.getElementById("download-pdf")
+        : null;
+
+    function updateUndoRedoButtons() {
+      try {
+        if (undoBtn)
+          undoBtn.disabled = !(
+            table.getHistoryUndoSize &amp;&amp; table.getHistoryUndoSize() > 0
+          );
+        if (redoBtn)
+          redoBtn.disabled = !(
+            table.getHistoryRedoSize &amp;&amp; table.getHistoryRedoSize() > 0
+          );
+      } catch (e) {
+        /* ignore */
+      }
+    }
+
+    // Wire undo/redo buttons
+    if (undoBtn) {
+      undoBtn.addEventListener("click", () => {
+        try {
+          if (table &amp;&amp; typeof table.undo === "function") table.undo();
+        } catch (e) {
+          /* ignore */
+        } finally {
+          updateUndoRedoButtons();
+        }
+      });
+    }
+    if (redoBtn) {
+      redoBtn.addEventListener("click", () => {
+        try {
+          if (table &amp;&amp; typeof table.redo === "function") table.redo();
+        } catch (e) {
+          /* ignore */
+        } finally {
+          updateUndoRedoButtons();
+        }
+      });
+    }
+
+    // Wire add-row button (uses group-select to choose type)
+    if (addRowBtn) {
+      addRowBtn.addEventListener("click", () => {
+        const groupType = (groupSelect &amp;&amp; groupSelect.value) || "Analog";
+        try {
+          // Create a temporary cell object that will be used by the expression editor
+          // When user saves the expression, the setValue callback will create the actual row
+          const tempCell = {
+            getValue: () => "",
+            setValue: (channelName) => {
+              // After user saves expression, NOW create the actual row with the computed channel name
+              // channelName will be something like "computed_0", "computed_1", etc.
+
+              // Get sequential ID for computed channels
+              const computedRows = table
+                .getRows()
+                .filter((r) => r.getData().type === "Computed");
+              const nextComputedId = computedRows.length + 1;
+
+              const newRow = {
+                id: nextComputedId,
+                type: "Computed",
+                name: channelName,
+                unit: "",
+                group: "Computed",
+                color: "#888",
+                scale: 1,
+                start: 0,
+                duration: "",
+                invert: false,
+              };
+
+              // Create the row with the computed channel name
+              table.addRow(newRow, true);
+            },
+          };
+
+          // Open the expression editor with the temporary cell
+          openMathLiveEditor(tempCell, doc, doc.defaultView || window);
+        } catch (e) {
+          console.warn("add-row failed:", e);
+        }
+      });
+    }
+
+    // Wire download (PDF) if requested
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", async () => {
+        try {
+          const jsPDFLib =
+            (rootWin &amp;&amp; (rootWin.jspdf || rootWin.jsPDF)) ||
+            window.jspdf ||
+            window.jsPDF;
+          if (!jsPDFLib || !jsPDFLib.jsPDF) {
+            alert("jsPDF not loaded yet. Please wait a second and try again.");
+            return;
+          }
+          // ensure Tabulator can find jsPDF
+          if (rootWin) rootWin.jspdf = jsPDFLib;
+          table.download("pdf", "channel-list.pdf", {
+            orientation: "landscape",
+            title: "Channel List",
+            autoTable: {
+              theme: "grid",
+              styles: { fontSize: 8, cellPadding: 2 },
+              headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+              margin: { top: 25 },
+            },
+          });
+        } catch (err) {
+          console.error("Error generating PDF:", err);
+        }
+      });
+    }
+
+    // Initialize undo/redo disabled state
+    updateUndoRedoButtons();
+
+    // Listen for computed channel updates and refresh table
+    if (window &amp;&amp; window.addEventListener) {
+      window.addEventListener("computedChannelSaved", (event) => {
+        console.log(
+          "[ChannelList] Computed channel saved event received, refreshing table"
+        );
+        try {
+          if (
+            table &amp;&amp;
+            cfg.computedChannels &amp;&amp;
+            cfg.computedChannels.length > 0
+          ) {
+            // Create new row data for the computed channel
+            const computedCh =
+              cfg.computedChannels[cfg.computedChannels.length - 1];
+            const newRow = {
+              id:
+                cfg.analogChannels.length +
+                cfg.digitalChannels.length +
+                cfg.computedChannels.length,
+              channelID: computedCh.channelID,
+              originalIndex: cfg.computedChannels.length - 1,
+              type: "Computed",
+              name: computedCh.id || `Computed ${cfg.computedChannels.length}`,
+              unit: computedCh.unit || "",
+              group: "Computed Channels",
+              color: computedCh.color || "#FF6B6B",
+              scale: computedCh.scale || 1,
+              start: computedCh.start || 0,
+              duration: computedCh.duration || "",
+              invert: computedCh.invert || "",
+            };
+
+            // Add row to table
+            table.addRow(newRow, true);
+            console.log(
+              "[ChannelList] Computed channel added to table:",
+              newRow.name
+            );
+          }
+        } catch (err) {
+          console.warn(
+            "[ChannelList] Error adding computed channel to table:",
+            err
+          );
+        }
+      });
+    }
+  } catch (e) {
+    /* ignore */
+  }
+
+  return container;
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

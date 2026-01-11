@@ -1,0 +1,507 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> components/renderComputedChannels.js</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-analyzeGroupsAndPublish.html">analyzeGroupsAndPublish</a></li><li><a href="module-axisBuilder.html">axisBuilder</a></li><li><a href="module-axisCalculator.html">axisCalculator</a></li><li><a href="module-calculateAndPublishMaxYAxes.html">calculateAndPublishMaxYAxes</a></li><li><a href="module-chartAxisAlignment.html">chartAxisAlignment</a></li><li><a href="module-chartComponent.html">chartComponent</a></li><li><a href="module-chartDomUtils.html">chartDomUtils</a></li><li><a href="module-chartManager.html">chartManager</a></li><li><a href="module-comtradeUtils.html">comtradeUtils</a></li><li><a href="module-createDragBar.html">createDragBar</a></li><li><a href="module-createState.html">createState</a></li><li><a href="module-domUpdateQueue.html">domUpdateQueue</a></li><li><a href="module-domUpdateQueueInit.html">domUpdateQueueInit</a></li><li><a href="module-handleVerticalLineShortcuts.html">handleVerticalLineShortcuts</a></li><li><a href="module-initVerticalLineControl.html">initVerticalLineControl</a></li><li><a href="module-main.html">main</a></li><li><a href="module-maxYAxesStore.html">maxYAxesStore</a></li><li><a href="module-mergerWindowLauncher.html">mergerWindowLauncher</a></li><li><a href="module-performanceMonitor.html">performanceMonitor</a></li><li><a href="module-seriesMapper.html">seriesMapper</a></li><li><a href="module-setupChartDragAndDrop.html">setupChartDragAndDrop</a></li><li><a href="module-timeInterpolation.html">timeInterpolation</a></li><li><a href="module-verticalLineControl.html">verticalLineControl</a></li></ul><h3>Classes</h3><ul><li><a href="ComputedChannelMetadata.html">ComputedChannelMetadata</a></li><li><a href="PolarChart.html">PolarChart</a></li><li><a href="module-performanceMonitor-PhaseTracker.html">PhaseTracker</a></li></ul><h3>Global</h3><ul><li><a href="global.html#IMPLEMENTATION_COMPLETE">IMPLEMENTATION_COMPLETE</a></li><li><a href="global.html#QUICK_REFERENCE">QUICK_REFERENCE</a></li><li><a href="global.html#STORAGE_KEY">STORAGE_KEY</a></li><li><a href="global.html#THEMES">THEMES</a></li><li><a href="global.html#applyTheme">applyTheme</a></li><li><a href="global.html#autoGroupChannels">autoGroupChannels</a></li><li><a href="global.html#calculateStats">calculateStats</a></li><li><a href="global.html#chart2">chart2</a></li><li><a href="global.html#clearCaches">clearCaches</a></li><li><a href="global.html#clearChartsContainer">clearChartsContainer</a></li><li><a href="global.html#clearComputedChannelsFromStorage">clearComputedChannelsFromStorage</a></li><li><a href="global.html#clearExpressionCache">clearExpressionCache</a></li><li><a href="global.html#collectChartDeltas">collectChartDeltas</a></li><li><a href="global.html#convertLatexToMathJs">convertLatexToMathJs</a></li><li><a href="global.html#convertLatexToPlainText">convertLatexToPlainText</a></li><li><a href="global.html#createAnalogChannelGroupMap">createAnalogChannelGroupMap</a></li><li><a href="global.html#createBinaryBlob">createBinaryBlob</a></li><li><a href="global.html#createChannelItem">createChannelItem</a></li><li><a href="global.html#createChannelList">createChannelList</a></li><li><a href="global.html#createChartContainer">createChartContainer</a></li><li><a href="global.html#createChartOptions">createChartOptions</a></li><li><a href="global.html#createComputedChannelsLabels">createComputedChannelsLabels</a></li><li><a href="global.html#createComputedChannelsSidebar">createComputedChannelsSidebar</a></li><li><a href="global.html#createDebouncedRender">createDebouncedRender</a></li><li><a href="global.html#createDeltaWindow">createDeltaWindow</a></li><li><a href="global.html#createDigitalFillPlugin">createDigitalFillPlugin</a></li><li><a href="global.html#createScopeTemplate">createScopeTemplate</a></li><li><a href="global.html#createSimpleChannelList">createSimpleChannelList</a></li><li><a href="global.html#createSimpleContainer">createSimpleContainer</a></li><li><a href="global.html#createState">createState</a></li><li><a href="global.html#createTooltip">createTooltip</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#encodeFloat64">encodeFloat64</a></li><li><a href="global.html#encodeInt32">encodeInt32</a></li><li><a href="global.html#evaluateAndSaveComputedChannel">evaluateAndSaveComputedChannel</a></li><li><a href="global.html#evaluateExpression">evaluateExpression</a></li><li><a href="global.html#exportAllChannelsAsCSV">exportAllChannelsAsCSV</a></li><li><a href="global.html#exportAllComputedChannels">exportAllComputedChannels</a></li><li><a href="global.html#exportAsASCII">exportAsASCII</a></li><li><a href="global.html#exportComputedChannelAsASCII">exportComputedChannelAsASCII</a></li><li><a href="global.html#exportComputedChannelAsCFGDAT">exportComputedChannelAsCFGDAT</a></li><li><a href="global.html#exportComputedChannelsAsCSV">exportComputedChannelsAsCSV</a></li><li><a href="global.html#formatEquationForLatex">formatEquationForLatex</a></li><li><a href="global.html#generateCFGContent">generateCFGContent</a></li><li><a href="global.html#generateCFGContentBatch">generateCFGContentBatch</a></li><li><a href="global.html#generateCFGContentBinary32">generateCFGContentBinary32</a></li><li><a href="global.html#generateCFGContentBinary64">generateCFGContentBinary64</a></li><li><a href="global.html#generateCFGContentFloat32">generateCFGContentFloat32</a></li><li><a href="global.html#generateCFGContentFloat64">generateCFGContentFloat64</a></li><li><a href="global.html#generateDATContent">generateDATContent</a></li><li><a href="global.html#generateDATContentBatch">generateDATContentBatch</a></li><li><a href="global.html#generateDATContentBinary32">generateDATContentBinary32</a></li><li><a href="global.html#generateDATContentBinary64">generateDATContentBinary64</a></li><li><a href="global.html#generateDATContentFloat32">generateDATContentFloat32</a></li><li><a href="global.html#generateDATContentFloat64">generateDATContentFloat64</a></li><li><a href="global.html#getAllAvailableGroups">getAllAvailableGroups</a></li><li><a href="global.html#getCacheStats">getCacheStats</a></li><li><a href="global.html#getChannelByDisplayName">getChannelByDisplayName</a></li><li><a href="global.html#getChannelMetadata">getChannelMetadata</a></li><li><a href="global.html#getChannelsForFile">getChannelsForFile</a></li><li><a href="global.html#getCompiledExpression">getCompiledExpression</a></li><li><a href="global.html#getComputedChannelStorageMetadata">getComputedChannelStorageMetadata</a></li><li><a href="global.html#getCurrentTheme">getCurrentTheme</a></li><li><a href="global.html#getCurrentThemeColors">getCurrentThemeColors</a></li><li><a href="global.html#getFileIndexForTime">getFileIndexForTime</a></li><li><a href="global.html#getMemoryInfo">getMemoryInfo</a></li><li><a href="global.html#getOriginalChannelName">getOriginalChannelName</a></li><li><a href="global.html#getSampleIndexInFile">getSampleIndexInFile</a></li><li><a href="global.html#getThemeColor">getThemeColor</a></li><li><a href="global.html#groupCfgDatFiles">groupCfgDatFiles</a></li><li><a href="global.html#hasStoredComputedChannels">hasStoredComputedChannels</a></li><li><a href="global.html#hideTooltip">hideTooltip</a></li><li><a href="global.html#importComputedChannelFromJSON">importComputedChannelFromJSON</a></li><li><a href="global.html#initTheme">initTheme</a></li><li><a href="global.html#initUPlotChart">initUPlotChart</a></li><li><a href="global.html#initializeSidebarChannels">initializeSidebarChannels</a></li><li><a href="global.html#injectSidebarIntoUplot">injectSidebarIntoUplot</a></li><li><a href="global.html#loadComputedChannelsFromStorage">loadComputedChannelsFromStorage</a></li><li><a href="global.html#measurePerformance">measurePerformance</a></li><li><a href="global.html#mergeAnalogChannels">mergeAnalogChannels</a></li><li><a href="global.html#mergeComtradeFilesSetsSequential">mergeComtradeFilesSetsSequential</a></li><li><a href="global.html#mergeDigitalChannels">mergeDigitalChannels</a></li><li><a href="global.html#mergeTimeArraysSequential">mergeTimeArraysSequential</a></li><li><a href="global.html#openMathLiveEditor">openMathLiveEditor</a></li><li><a href="global.html#performExport">performExport</a></li><li><a href="global.html#processFilesInBatches">processFilesInBatches</a></li><li><a href="global.html#processInChunks">processInChunks</a></li><li><a href="global.html#renameChannelWithPrefix">renameChannelWithPrefix</a></li><li><a href="global.html#renderComputedChannels">renderComputedChannels</a></li><li><a href="global.html#renderComtradeCharts">renderComtradeCharts</a></li><li><a href="global.html#saveComputedChannelToGlobals">saveComputedChannelToGlobals</a></li><li><a href="global.html#saveComputedChannelsToStorage">saveComputedChannelsToStorage</a></li><li><a href="global.html#separateComputedFiles">separateComputedFiles</a></li><li><a href="global.html#setupMobileSidebar">setupMobileSidebar</a></li><li><a href="global.html#setupPolarChartWithVerticalLines">setupPolarChartWithVerticalLines</a></li><li><a href="global.html#showChannelListWindow">showChannelListWindow</a></li><li><a href="global.html#showError">showError</a></li><li><a href="global.html#showExportFormatDialog">showExportFormatDialog</a></li><li><a href="global.html#showFileInfo">showFileInfo</a></li><li><a href="global.html#sortFilePairs">sortFilePairs</a></li><li><a href="global.html#subscribeChartUpdates">subscribeChartUpdates</a></li><li><a href="global.html#toggleChartsVisibility">toggleChartsVisibility</a></li><li><a href="global.html#toggleTheme">toggleTheme</a></li><li><a href="global.html#updateComputedChannelsSidebar">updateComputedChannelsSidebar</a></li><li><a href="global.html#updateFileInfo">updateFileInfo</a></li><li><a href="global.html#updateStatsCards">updateStatsCards</a></li><li><a href="global.html#updateTooltip">updateTooltip</a></li><li><a href="global.html#validateSampleRates">validateSampleRates</a></li><li><a href="global.html#wrapChartInSection">wrapChartInSection</a></li><li><a href="global.html#yieldToEventLoop">yieldToEventLoop</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>components/renderComputedChannels.js</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// src/components/renderComputedChannels.js
+import {
+  createChartOptions,
+} from "./chartComponent.js";
+import { createDragBar } from "./createDragBar.js";
+import { getMaxYAxes } from "../utils/maxYAxesStore.js";
+import {
+  createTooltip,
+  updateTooltip,
+  hideTooltip,
+} from "../components/Tooltip.js";
+import {
+  createChartContainer,
+  initUPlotChart,
+} from "../utils/chartDomUtils.js";
+import verticalLinePlugin from "../plugins/verticalLinePlugin.js";
+// import { deltaBoxPlugin } from "../plugins/deltaBoxPlugin.js"; // DISABLED: Using DeltaWindow popup instead
+import { createComputedChannelsLabels } from "./ComputedChannelsLabel.js";
+
+/**
+ * Format equation string for LaTeX display
+ * @param {string} equation - Math.js format equation
+ * @returns {string} LaTeX formatted equation
+ */
+function formatEquationForLatex(equation) {
+  if (!equation) return "";
+
+  let latex = equation;
+
+  // Handle sqrt(expr) -> \sqrt{expr}
+  while (latex.includes("sqrt(")) {
+    let startIdx = latex.indexOf("sqrt(");
+    let openCount = 1;
+    let endIdx = startIdx + 5;
+
+    while (endIdx &lt; latex.length &amp;&amp; openCount > 0) {
+      if (latex[endIdx] === "(") openCount++;
+      else if (latex[endIdx] === ")") openCount--;
+      endIdx++;
+    }
+
+    const inner = latex.substring(startIdx + 5, endIdx - 1);
+    latex =
+      latex.substring(0, startIdx) +
+      "\\sqrt{" +
+      inner +
+      "}" +
+      latex.substring(endIdx);
+  }
+
+  // Replace other functions
+  latex = latex.replace(/\babs\(/g, "\\left|");
+  latex = latex.replace(/\bsin\(/g, "\\sin(");
+  latex = latex.replace(/\bcos\(/g, "\\cos(");
+  latex = latex.replace(/\btan\(/g, "\\tan(");
+  latex = latex.replace(/\blog\(/g, "\\log(");
+  latex = latex.replace(/\bln\(/g, "\\ln(");
+
+  // Convert channel references to subscripts
+  latex = latex.replace(/([ad])(\d+)/g, "$1_{$2}");
+
+  // Replace constants
+  latex = latex.replace(/\bpi\b/gi, "\\pi");
+
+  return latex;
+}
+
+/**
+ * Render computed channels as a new chart group.
+ * @param {Object} data - Parsed COMTRADE data with time array
+ * @param {HTMLElement} chartsContainer - The container for charts
+ * @param {Array} charts - Array to store chart instances
+ * @param {Array} verticalLinesX - Array of vertical line X positions
+ * @param {Object} channelState - Reactive state for channels
+ */
+export function renderComputedChannels(
+  data,
+  chartsContainer,
+  charts,
+  verticalLinesX,
+  channelState
+) {
+  const renderStartTime = performance.now();
+  console.log("[renderComputedChannels] 🟪 Starting computed channels rendering...");
+  
+  const computedChannels =
+    data?.computedData &amp;&amp; Array.isArray(data.computedData)
+      ? data.computedData
+      : [];
+
+  if (computedChannels.length === 0) {
+    console.log("[renderComputedChannels] ℹ️ No computed channels to render");
+    return;
+  }
+
+  console.log(
+    `[renderComputedChannels] 📊 Found ${computedChannels.length} computed channels:`,
+    computedChannels.map((ch) => ch.id)
+  );
+
+  const groupYLabels = computedChannels.map((ch) => ch.id || "Computed");
+  const colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8"];
+  const groupLineColors = computedChannels.map(
+    (_, idx) => colors[idx % colors.length]
+  );
+  const groupYUnits = computedChannels.map(() => "");
+
+  const dragBar = createDragBar(
+    { indices: [], name: "Computed Channels" },
+    {},
+    channelState
+  );
+
+  const { parentDiv, chartDiv } = createChartContainer(
+    dragBar,
+    "chart-container",
+    groupYLabels,
+    groupLineColors,
+    "Computed Channels"
+  );
+  parentDiv.setAttribute("data-chart-type", "computed");
+  chartsContainer.appendChild(parentDiv);
+  console.log(`[renderComputedChannels] 🏗️ Chart container created`);
+
+  // 📊 Replace the default chart-label with our computed channels labels showing equations
+  const defaultLabelDiv = parentDiv.querySelector(".chart-label");
+  if (defaultLabelDiv &amp;&amp; computedChannels.length > 0) {
+    // Clear default labels
+    defaultLabelDiv.innerHTML = "";
+
+    // Add type label
+    const typeSpan = document.createElement("span");
+    typeSpan.textContent = "Computed Channels";
+    typeSpan.style.cssText = `
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border-color);
+      width: 100%;
+    `;
+    defaultLabelDiv.appendChild(typeSpan);
+
+    // Add channel labels with equations
+    computedChannels.forEach((channel) => {
+      const channelContainer = document.createElement("div");
+      channelContainer.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        width: 100%;
+        padding: 6px 4px;
+        border: 1px solid #e0e0e0;
+        border-radius: 3px;
+        background: #f9f9f9;
+      `;
+
+      // Channel name with color dot
+      const nameContainer = document.createElement("div");
+      nameContainer.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        width: 100%;
+      `;
+
+      // Color dot
+      const colorDot = document.createElement("span");
+      colorDot.style.cssText = `
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: ${channel.color || "#999"};
+        border: 1px solid var(--border-color);
+      `;
+      nameContainer.appendChild(colorDot);
+
+      // Channel name
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = channel.name || channel.id;
+      nameSpan.style.cssText = `
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-align: center;
+        word-break: break-word;
+        line-height: 1.1;
+      `;
+      nameContainer.appendChild(nameSpan);
+      channelContainer.appendChild(nameContainer);
+
+      // LaTeX equation
+      if (channel.equation) {
+        const eqDiv = document.createElement("div");
+        eqDiv.style.cssText = `
+          width: 100%;
+          font-size: 10px;
+          text-align: center;
+          padding: 4px 2px;
+          background: white;
+          border-radius: 2px;
+          border: 1px solid #ddd;
+          overflow-x: auto;
+          max-width: 280px;
+        `;
+
+        const latexEquation = formatEquationForLatex(channel.equation);
+        eqDiv.innerHTML = `$$${latexEquation}$$`;
+        channelContainer.appendChild(eqDiv);
+      }
+
+      defaultLabelDiv.appendChild(channelContainer);
+    });
+
+    // Trigger MathJax rendering
+    setTimeout(() => {
+      if (window.MathJax?.typesetPromise) {
+        window.MathJax.typesetPromise([defaultLabelDiv]).catch(() => {});
+      }
+    }, 100);
+  }
+
+  // ✅ OPTIMIZATION: Data already scaled during save, no runtime scaling needed
+  const channelDataArrays = computedChannels.map((ch) => {
+    if (!ch.data || !Array.isArray(ch.data)) {
+      return [];
+    }
+    return ch.data;
+  });
+
+  let timeArray = data.time;
+  if (!Array.isArray(data.time)) {
+    if (data.time?.data &amp;&amp; Array.isArray(data.time.data)) {
+      timeArray = data.time.data;
+    } else if (data.timeArray &amp;&amp; Array.isArray(data.timeArray)) {
+      timeArray = data.timeArray;
+    } else {
+      console.error("[renderComputedChannels] Time array not found");
+      return;
+    }
+  }
+
+  const chartData = [timeArray, ...channelDataArrays];
+
+  // ✅ Get global axis alignment for consistent Y-axes across all charts
+  const maxYAxes = getMaxYAxes() || 1;
+
+  console.log(
+    `[renderComputedChannels] ✅ Chart config: maxYAxes=${maxYAxes}, channels=${computedChannels.length}`
+  );
+
+  const opts = createChartOptions({
+    title: "Computed Channels",
+    yLabels: groupYLabels,
+    lineColors: groupLineColors,
+    verticalLinesX,
+    xLabel: data.xLabel || "Time",
+    xUnit: data.xUnit || "s",
+    getCharts: () => charts,
+    yUnits: groupYUnits,
+    axesScales: [1, ...computedChannels.map(() => 1)],
+    singleYAxis: true,
+    maxYAxes: maxYAxes,
+  });
+
+  opts.plugins = opts.plugins || [];
+  opts.plugins = opts.plugins.filter(
+    (p) => !(p &amp;&amp; p.id === "verticalLinePlugin")
+  );
+  opts.plugins.push(verticalLinePlugin(verticalLinesX, () => charts));
+  // opts.plugins.push(deltaBoxPlugin()); // DISABLED: Using DeltaWindow popup instead
+
+  const chart = initUPlotChart(opts, chartData, chartDiv, charts);
+
+  chart._computed = true;
+  chart._computedIds = computedChannels.map((ch) => ch.id);
+  chart._type = "computed";
+
+  const tooltip = createTooltip();
+  chart.over.addEventListener("mousemove", (e) => {
+    const idx = chart.posToIdx(e.offsetX);
+    if (idx >= 0 &amp;&amp; idx &lt; chart.data[0].length) {
+      const time = chart.data[0][idx];
+      const values = chart.data
+        .slice(1)
+        .map((series, i) => {
+          const label =
+            chart.series?.[i + 1]?.label ||
+            groupYLabels[i] ||
+            `Computed${i + 1}`;
+          const stroke = chart.series?.[i + 1]?.stroke || groupLineColors[i];
+          const val = series[idx] != null ? series[idx].toFixed(2) : "N/A";
+          return `&lt;span style="color:${stroke}">${label}&lt;/span>: ${val}`;
+        })
+        .join("&lt;br>");
+      updateTooltip(
+        e.pageX,
+        e.pageY,
+        `&lt;b>t:&lt;/b> ${time.toFixed(2)}&lt;br>${values}`
+      );
+    }
+  });
+  chart.over.addEventListener("mouseleave", hideTooltip);
+
+  // Click handler to add/remove vertical lines
+  chart.over.addEventListener("click", (e) => {
+    if (!chart.scales || !chart.scales.x) return;
+
+    const xVal = chart.posToVal(e.offsetX, "x");
+    const currentLines = verticalLinesX.asArray();
+
+    // Check if clicking near an existing line (within 2% of x-range)
+    const xRange = chart.scales.x.max - chart.scales.x.min;
+    const tolerance = xRange * 0.02;
+    const existingIdx = currentLines.findIndex(
+      (line) => Math.abs(line - xVal) &lt; tolerance
+    );
+
+    if (existingIdx >= 0) {
+      // Remove line if clicking near existing line
+      verticalLinesX.value = currentLines.filter((_, i) => i !== existingIdx);
+    } else {
+      // Add new line
+      verticalLinesX.value = [...currentLines, xVal];
+      // Auto-trigger delta calculation and open delta window (only if 2+ lines)
+      setTimeout(async () => {
+        try {
+          // Update polar chart with new vertical line position
+          const { getPolarChart, getCfg, getData } = await import("../main.js");
+          const polarChart = getPolarChart();
+          const cfgData = getCfg();
+          const dataObj = getData();
+
+          if (polarChart &amp;&amp; cfgData &amp;&amp; dataObj) {
+            console.log(
+              "[renderComputedChannels] Updating polar chart for new vertical line at:",
+              xVal
+            );
+            // Find nearest time index for this vertical line position
+            const timeIndex = dataObj.time
+              ? dataObj.time.findIndex((t) => t >= xVal)
+              : 0;
+            console.log(
+              "[renderComputedChannels] Calculated timeIndex:",
+              timeIndex
+            );
+            polarChart.updatePhasorAtTimeIndex(
+              cfgData,
+              dataObj,
+              Math.max(0, timeIndex)
+            );
+          } else {
+            console.warn(
+              "[renderComputedChannels] Missing polarChart, cfg, or data:",
+              {
+                polarChart: !!polarChart,
+                cfgData: !!cfgData,
+                dataObj: !!dataObj,
+              }
+            );
+          }
+
+          const { deltaWindow } = await import("../main.js");
+          // Only show delta window if there are 2 or more vertical lines
+          if (deltaWindow &amp;&amp; verticalLinesX.value.length > 1) {
+            deltaWindow.show();
+          }
+        } catch (e) {
+          console.error(
+            "[renderComputedChannels] Cannot update polar chart or deltaWindow:",
+            e.message
+          );
+          console.error(e);
+        }
+        charts.forEach((c) => c.redraw());
+      }, 0);
+    }
+  });
+
+  const renderEndTime = performance.now();
+  const totalTime = renderEndTime - renderStartTime;
+  console.log(
+    `[renderComputedChannels] ✓ Render complete in ${totalTime.toFixed(1)}ms with ${computedChannels.length} channels`
+  );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

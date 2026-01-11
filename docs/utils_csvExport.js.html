@@ -1,0 +1,374 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> utils/csvExport.js</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-analyzeGroupsAndPublish.html">analyzeGroupsAndPublish</a></li><li><a href="module-axisBuilder.html">axisBuilder</a></li><li><a href="module-axisCalculator.html">axisCalculator</a></li><li><a href="module-calculateAndPublishMaxYAxes.html">calculateAndPublishMaxYAxes</a></li><li><a href="module-chartAxisAlignment.html">chartAxisAlignment</a></li><li><a href="module-chartComponent.html">chartComponent</a></li><li><a href="module-chartDomUtils.html">chartDomUtils</a></li><li><a href="module-chartManager.html">chartManager</a></li><li><a href="module-comtradeUtils.html">comtradeUtils</a></li><li><a href="module-createDragBar.html">createDragBar</a></li><li><a href="module-createState.html">createState</a></li><li><a href="module-domUpdateQueue.html">domUpdateQueue</a></li><li><a href="module-domUpdateQueueInit.html">domUpdateQueueInit</a></li><li><a href="module-handleVerticalLineShortcuts.html">handleVerticalLineShortcuts</a></li><li><a href="module-initVerticalLineControl.html">initVerticalLineControl</a></li><li><a href="module-main.html">main</a></li><li><a href="module-maxYAxesStore.html">maxYAxesStore</a></li><li><a href="module-mergerWindowLauncher.html">mergerWindowLauncher</a></li><li><a href="module-performanceMonitor.html">performanceMonitor</a></li><li><a href="module-seriesMapper.html">seriesMapper</a></li><li><a href="module-setupChartDragAndDrop.html">setupChartDragAndDrop</a></li><li><a href="module-timeInterpolation.html">timeInterpolation</a></li><li><a href="module-verticalLineControl.html">verticalLineControl</a></li></ul><h3>Classes</h3><ul><li><a href="ComputedChannelMetadata.html">ComputedChannelMetadata</a></li><li><a href="PolarChart.html">PolarChart</a></li><li><a href="module-performanceMonitor-PhaseTracker.html">PhaseTracker</a></li></ul><h3>Global</h3><ul><li><a href="global.html#IMPLEMENTATION_COMPLETE">IMPLEMENTATION_COMPLETE</a></li><li><a href="global.html#QUICK_REFERENCE">QUICK_REFERENCE</a></li><li><a href="global.html#STORAGE_KEY">STORAGE_KEY</a></li><li><a href="global.html#THEMES">THEMES</a></li><li><a href="global.html#applyTheme">applyTheme</a></li><li><a href="global.html#autoGroupChannels">autoGroupChannels</a></li><li><a href="global.html#calculateStats">calculateStats</a></li><li><a href="global.html#chart2">chart2</a></li><li><a href="global.html#clearCaches">clearCaches</a></li><li><a href="global.html#clearChartsContainer">clearChartsContainer</a></li><li><a href="global.html#clearComputedChannelsFromStorage">clearComputedChannelsFromStorage</a></li><li><a href="global.html#clearExpressionCache">clearExpressionCache</a></li><li><a href="global.html#collectChartDeltas">collectChartDeltas</a></li><li><a href="global.html#convertLatexToMathJs">convertLatexToMathJs</a></li><li><a href="global.html#convertLatexToPlainText">convertLatexToPlainText</a></li><li><a href="global.html#createAnalogChannelGroupMap">createAnalogChannelGroupMap</a></li><li><a href="global.html#createBinaryBlob">createBinaryBlob</a></li><li><a href="global.html#createChannelItem">createChannelItem</a></li><li><a href="global.html#createChannelList">createChannelList</a></li><li><a href="global.html#createChartContainer">createChartContainer</a></li><li><a href="global.html#createChartOptions">createChartOptions</a></li><li><a href="global.html#createComputedChannelsLabels">createComputedChannelsLabels</a></li><li><a href="global.html#createComputedChannelsSidebar">createComputedChannelsSidebar</a></li><li><a href="global.html#createDebouncedRender">createDebouncedRender</a></li><li><a href="global.html#createDeltaWindow">createDeltaWindow</a></li><li><a href="global.html#createDigitalFillPlugin">createDigitalFillPlugin</a></li><li><a href="global.html#createScopeTemplate">createScopeTemplate</a></li><li><a href="global.html#createSimpleChannelList">createSimpleChannelList</a></li><li><a href="global.html#createSimpleContainer">createSimpleContainer</a></li><li><a href="global.html#createState">createState</a></li><li><a href="global.html#createTooltip">createTooltip</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#encodeFloat64">encodeFloat64</a></li><li><a href="global.html#encodeInt32">encodeInt32</a></li><li><a href="global.html#evaluateAndSaveComputedChannel">evaluateAndSaveComputedChannel</a></li><li><a href="global.html#evaluateExpression">evaluateExpression</a></li><li><a href="global.html#exportAllChannelsAsCSV">exportAllChannelsAsCSV</a></li><li><a href="global.html#exportAllComputedChannels">exportAllComputedChannels</a></li><li><a href="global.html#exportAsASCII">exportAsASCII</a></li><li><a href="global.html#exportComputedChannelAsASCII">exportComputedChannelAsASCII</a></li><li><a href="global.html#exportComputedChannelAsCFGDAT">exportComputedChannelAsCFGDAT</a></li><li><a href="global.html#exportComputedChannelsAsCSV">exportComputedChannelsAsCSV</a></li><li><a href="global.html#formatEquationForLatex">formatEquationForLatex</a></li><li><a href="global.html#generateCFGContent">generateCFGContent</a></li><li><a href="global.html#generateCFGContentBatch">generateCFGContentBatch</a></li><li><a href="global.html#generateCFGContentBinary32">generateCFGContentBinary32</a></li><li><a href="global.html#generateCFGContentBinary64">generateCFGContentBinary64</a></li><li><a href="global.html#generateCFGContentFloat32">generateCFGContentFloat32</a></li><li><a href="global.html#generateCFGContentFloat64">generateCFGContentFloat64</a></li><li><a href="global.html#generateDATContent">generateDATContent</a></li><li><a href="global.html#generateDATContentBatch">generateDATContentBatch</a></li><li><a href="global.html#generateDATContentBinary32">generateDATContentBinary32</a></li><li><a href="global.html#generateDATContentBinary64">generateDATContentBinary64</a></li><li><a href="global.html#generateDATContentFloat32">generateDATContentFloat32</a></li><li><a href="global.html#generateDATContentFloat64">generateDATContentFloat64</a></li><li><a href="global.html#getAllAvailableGroups">getAllAvailableGroups</a></li><li><a href="global.html#getCacheStats">getCacheStats</a></li><li><a href="global.html#getChannelByDisplayName">getChannelByDisplayName</a></li><li><a href="global.html#getChannelMetadata">getChannelMetadata</a></li><li><a href="global.html#getChannelsForFile">getChannelsForFile</a></li><li><a href="global.html#getCompiledExpression">getCompiledExpression</a></li><li><a href="global.html#getComputedChannelStorageMetadata">getComputedChannelStorageMetadata</a></li><li><a href="global.html#getCurrentTheme">getCurrentTheme</a></li><li><a href="global.html#getCurrentThemeColors">getCurrentThemeColors</a></li><li><a href="global.html#getFileIndexForTime">getFileIndexForTime</a></li><li><a href="global.html#getMemoryInfo">getMemoryInfo</a></li><li><a href="global.html#getOriginalChannelName">getOriginalChannelName</a></li><li><a href="global.html#getSampleIndexInFile">getSampleIndexInFile</a></li><li><a href="global.html#getThemeColor">getThemeColor</a></li><li><a href="global.html#groupCfgDatFiles">groupCfgDatFiles</a></li><li><a href="global.html#hasStoredComputedChannels">hasStoredComputedChannels</a></li><li><a href="global.html#hideTooltip">hideTooltip</a></li><li><a href="global.html#importComputedChannelFromJSON">importComputedChannelFromJSON</a></li><li><a href="global.html#initTheme">initTheme</a></li><li><a href="global.html#initUPlotChart">initUPlotChart</a></li><li><a href="global.html#initializeSidebarChannels">initializeSidebarChannels</a></li><li><a href="global.html#injectSidebarIntoUplot">injectSidebarIntoUplot</a></li><li><a href="global.html#loadComputedChannelsFromStorage">loadComputedChannelsFromStorage</a></li><li><a href="global.html#measurePerformance">measurePerformance</a></li><li><a href="global.html#mergeAnalogChannels">mergeAnalogChannels</a></li><li><a href="global.html#mergeComtradeFilesSetsSequential">mergeComtradeFilesSetsSequential</a></li><li><a href="global.html#mergeDigitalChannels">mergeDigitalChannels</a></li><li><a href="global.html#mergeTimeArraysSequential">mergeTimeArraysSequential</a></li><li><a href="global.html#openMathLiveEditor">openMathLiveEditor</a></li><li><a href="global.html#performExport">performExport</a></li><li><a href="global.html#processFilesInBatches">processFilesInBatches</a></li><li><a href="global.html#processInChunks">processInChunks</a></li><li><a href="global.html#renameChannelWithPrefix">renameChannelWithPrefix</a></li><li><a href="global.html#renderComputedChannels">renderComputedChannels</a></li><li><a href="global.html#renderComtradeCharts">renderComtradeCharts</a></li><li><a href="global.html#saveComputedChannelToGlobals">saveComputedChannelToGlobals</a></li><li><a href="global.html#saveComputedChannelsToStorage">saveComputedChannelsToStorage</a></li><li><a href="global.html#separateComputedFiles">separateComputedFiles</a></li><li><a href="global.html#setupMobileSidebar">setupMobileSidebar</a></li><li><a href="global.html#setupPolarChartWithVerticalLines">setupPolarChartWithVerticalLines</a></li><li><a href="global.html#showChannelListWindow">showChannelListWindow</a></li><li><a href="global.html#showError">showError</a></li><li><a href="global.html#showExportFormatDialog">showExportFormatDialog</a></li><li><a href="global.html#showFileInfo">showFileInfo</a></li><li><a href="global.html#sortFilePairs">sortFilePairs</a></li><li><a href="global.html#subscribeChartUpdates">subscribeChartUpdates</a></li><li><a href="global.html#toggleChartsVisibility">toggleChartsVisibility</a></li><li><a href="global.html#toggleTheme">toggleTheme</a></li><li><a href="global.html#updateComputedChannelsSidebar">updateComputedChannelsSidebar</a></li><li><a href="global.html#updateFileInfo">updateFileInfo</a></li><li><a href="global.html#updateStatsCards">updateStatsCards</a></li><li><a href="global.html#updateTooltip">updateTooltip</a></li><li><a href="global.html#validateSampleRates">validateSampleRates</a></li><li><a href="global.html#wrapChartInSection">wrapChartInSection</a></li><li><a href="global.html#yieldToEventLoop">yieldToEventLoop</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>utils/csvExport.js</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * CSV Export Utility
+ * Exports all channel data (analog, digital, computed, device data) to CSV format
+ */
+
+/**
+ * Get channel metadata with fallback
+ * @param {Object} channel - Channel object
+ * @param {string} type - Channel type (analog, digital, computed)
+ * @returns {Object} Metadata with equation/scale, unit, etc.
+ */
+function getChannelMetadata(channel, type = "analog") {
+  // For computed channels - try to get from global metadata manager
+  if (type === "computed" &amp;&amp; window.computedChannelMetadata) {
+    const meta = window.computedChannelMetadata.get(channel.name || channel.id);
+    if (meta) {
+      return {
+        equation: meta.equation || "N/A",
+        unit: meta.unit || "N/A",
+        name: meta.name || channel.name || channel.id || "Unknown",
+      };
+    }
+  }
+
+  // For all channels - use available properties
+  const name = channel.name || channel.id || `Channel_${Math.random()}`;
+  let equation = "N/A";
+  let unit = "N/A";
+
+  if (type === "computed") {
+    equation = channel.equation || channel.mathJsExpression || "N/A";
+    unit = channel.unit || "N/A";
+  } else if (type === "analog") {
+    // For analog: show scale and offset as formula
+    const scale = channel.scale || "1";
+    const offset = channel.offset || "0";
+    equation =
+      offset !== "0" ? `(Raw * ${scale}) + ${offset}` : `Raw * ${scale}`;
+    unit = channel.unit || "N/A";
+  } else if (type === "digital") {
+    equation = channel.equation || "State";
+    unit = channel.unit || "Binary";
+  }
+
+  return { equation, unit, name };
+}
+
+/**
+ * Export ALL channels (analog, digital, computed) to CSV with complete metadata
+ * Format: Time, Channel_1_Equation, Channel_1_Data, Channel_1_Unit, Channel_2_Equation, ...
+ * @param {Object} data - Data object with analog, digital, computedData arrays
+ * @param {string} filename - Optional filename (default: "all-channels.csv")
+ */
+export function exportAllChannelsAsCSV(data, filename = "all-channels.csv") {
+  try {
+    if (!data.time || data.time.length === 0) {
+      alert("❌ No time data available");
+      return;
+    }
+
+    // Build CSV with inline metadata format
+    const rows = [];
+    const headers = ["Time"];
+    const channelInfo = []; // Store: {data, meta, type}
+
+    // Add analog channels
+    if (data.analogData &amp;&amp; Array.isArray(data.analogData)) {
+      for (let i = 0; i &lt; data.analogData.length; i++) {
+        const channel = data.analogData[i];
+        const meta = getChannelMetadata(channel, "analog");
+
+        headers.push(`${meta.name}_Equation`);
+        headers.push(`${meta.name}_Data`);
+        headers.push(`${meta.name}_Unit`);
+
+        channelInfo.push({
+          data: channel, // The data array for analog
+          meta: meta,
+          type: "analog",
+          index: i,
+        });
+      }
+    }
+
+    // Add digital channels
+    if (data.digitalData &amp;&amp; Array.isArray(data.digitalData)) {
+      for (let i = 0; i &lt; data.digitalData.length; i++) {
+        const channel = data.digitalData[i];
+        const meta = getChannelMetadata(channel, "digital");
+
+        headers.push(`${meta.name}_Equation`);
+        headers.push(`${meta.name}_Data`);
+        headers.push(`${meta.name}_Unit`);
+
+        channelInfo.push({
+          data: channel, // The data array for digital
+          meta: meta,
+          type: "digital",
+          index: i,
+        });
+      }
+    }
+
+    // Add computed channels
+    if (data.computedData &amp;&amp; Array.isArray(data.computedData)) {
+      for (const channel of data.computedData) {
+        const meta = getChannelMetadata(channel, "computed");
+
+        headers.push(`${meta.name}_Equation`);
+        headers.push(`${meta.name}_Data`);
+        headers.push(`${meta.name}_Unit`);
+
+        channelInfo.push({
+          data: channel,
+          meta: meta,
+          type: "computed",
+        });
+      }
+    }
+
+    rows.push(headers.join(","));
+
+    // Add data rows
+    for (let i = 0; i &lt; data.time.length; i++) {
+      const row = [data.time[i]];
+
+      for (const info of channelInfo) {
+        const { data: channelData, meta, type } = info;
+
+        // Add equation
+        row.push(`"${meta.equation}"`);
+
+        // Add data value - handle different data structures
+        let value = "";
+        if (type === "computed") {
+          value =
+            channelData.data &amp;&amp; channelData.data[i] !== undefined
+              ? channelData.data[i]
+              : "";
+        } else if (type === "analog" || type === "digital") {
+          // For analog/digital, channelData is the array directly
+          value = channelData[i] !== undefined ? channelData[i] : "";
+        }
+        row.push(value);
+
+        // Add unit
+        row.push(`"${meta.unit}"`);
+      }
+
+      rows.push(row.join(","));
+    }
+
+    const csvContent = rows.join("\n");
+
+    // Create blob and trigger download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    const totalChannels =
+      (data.analogData?.length || 0) +
+      (data.digitalData?.length || 0) +
+      (data.computedData?.length || 0);
+    console.log(
+      `✅ CSV exported: ${filename} (${totalChannels} channels, ${data.time.length} samples)`
+    );
+  } catch (error) {
+    console.error("[CSV Export] Error:", error);
+    alert(`❌ CSV export failed: ${error.message}`);
+  }
+}
+
+/**
+ * Export computed channels ONLY to CSV with complete metadata inline
+ * Format: Time, Channel_1_Equation, Channel_1_Data, Channel_1_Unit, Channel_2_Equation, Channel_2_Data, Channel_2_Unit, ...
+ * @param {Object} data - Data object with computedData array
+ * @param {string} filename - Optional filename (default: "computed-channels.csv")
+ */
+export function exportComputedChannelsAsCSV(
+  data,
+  filename = "computed-channels.csv"
+) {
+  try {
+    if (!data || !data.computedData || data.computedData.length === 0) {
+      alert("❌ No computed channels to export");
+      return;
+    }
+
+    if (!data.time || data.time.length === 0) {
+      alert("❌ No time data available");
+      return;
+    }
+
+    // Build CSV with inline metadata format
+    const rows = [];
+
+    // Build CSV header: Time, Channel_1_Equation, Channel_1_Data, Channel_1_Unit, Channel_2_Equation, ...
+    const headers = ["Time"];
+    const channelMetas = [];
+
+    for (const channel of data.computedData) {
+      const meta = getChannelMetadata(channel, "computed");
+      channelMetas.push(meta);
+
+      const channelName = meta.name;
+      headers.push(`${channelName}_Equation`);
+      headers.push(`${channelName}_Data`);
+      headers.push(`${channelName}_Unit`);
+    }
+    rows.push(headers.join(","));
+
+    // Add data rows
+    for (let i = 0; i &lt; data.time.length; i++) {
+      const row = [data.time[i]];
+      for (let j = 0; j &lt; data.computedData.length; j++) {
+        const channel = data.computedData[j];
+        const meta = channelMetas[j];
+
+        // Add equation (same for all rows of this channel)
+        const equation = meta.equation;
+        row.push(`"${equation}"`); // Quote to handle commas in equations
+
+        // Add data value
+        const value =
+          channel.data &amp;&amp; channel.data[i] !== undefined ? channel.data[i] : "";
+        row.push(value);
+
+        // Add unit (same for all rows of this channel)
+        const unit = meta.unit;
+        row.push(`"${unit}"`); // Quote to handle special characters
+      }
+      rows.push(row.join(","));
+    }
+
+    const csvContent = rows.join("\n");
+
+    // Create blob and trigger download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    console.log(
+      `✅ CSV exported: ${filename} (${data.computedData.length} channels, ${data.time.length} samples)`
+    );
+  } catch (error) {
+    console.error("[CSV Export] Error:", error);
+    alert(`❌ CSV export failed: ${error.message}`);
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

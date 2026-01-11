@@ -1,0 +1,378 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> components/renderDigitalCharts.js</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-chartComponent.html">chartComponent</a></li><li><a href="module-chartDomUtils.html">chartDomUtils</a></li><li><a href="module-chartManager.html">chartManager</a></li><li><a href="module-comtradeUtils.html">comtradeUtils</a></li><li><a href="module-createDragBar.html">createDragBar</a></li><li><a href="module-handleVerticalLineShortcuts.html">handleVerticalLineShortcuts</a></li><li><a href="module-main.html">main</a></li><li><a href="module-renderAnalogCharts.html">renderAnalogCharts</a></li><li><a href="module-renderComtradeCharts.html">renderComtradeCharts</a></li><li><a href="module-renderDigitalCharts.html">renderDigitalCharts</a></li><li><a href="module-setupChartDragAndDrop.html">setupChartDragAndDrop</a></li><li><a href="module-showChannelListWindow.html">showChannelListWindow</a></li><li><a href="module-timeInterpolation.html">timeInterpolation</a></li></ul><h3>Global</h3><ul><li><a href="global.html#autoGroupChannels">autoGroupChannels</a></li><li><a href="global.html#createChannelList">createChannelList</a></li><li><a href="global.html#createChartContainer">createChartContainer</a></li><li><a href="global.html#createChartOptions">createChartOptions</a></li><li><a href="global.html#createDigitalFillPlugin">createDigitalFillPlugin</a></li><li><a href="global.html#createState">createState</a></li><li><a href="global.html#createTooltip">createTooltip</a></li><li><a href="global.html#hideTooltip">hideTooltip</a></li><li><a href="global.html#initUPlotChart">initUPlotChart</a></li><li><a href="global.html#showError">showError</a></li><li><a href="global.html#subscribeChartUpdates">subscribeChartUpdates</a></li><li><a href="global.html#updateTooltip">updateTooltip</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>components/renderDigitalCharts.js</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module renderDigitalCharts
+ * @description
+ * Renders digital channels (binary state: ON/OFF) as stacked rectangles on interactive
+ * charts. Each digital channel occupies a vertical band showing its state transitions
+ * over time. Digital channels are displayed in a separate chart below analog channels.
+ *
+ * Key Features:
+ * - Stacks digital channels vertically with fixed spacing (DigChannelOffset = 3)
+ * - Displays only channels with state changes (optimizes rendering)
+ * - Custom fill plugin renders colored rectangles for ON states
+ * - Supports vertical line markers and measurement overlays
+ * - Intelligent Y-axis showing "0" and "1" state values
+ * - Synchronized resizing with ResizeObserver
+ * - Maintains channel index mapping for delta calculations
+ *
+ * Dependencies:
+ * - chartComponent.js: createChartOptions factory
+ * - createDragBar.js: Channel reordering drag bar
+ * - digitalFillPlugin.js: Custom plugin for digital rendering
+ * - digitalChannelUtils.js: findChangedDigitalChannelIndices
+ * - verticalLinePlugin.js: Vertical line overlay support
+ *
+ * @example
+ * // In renderComtradeCharts.js
+ * const chartsContainer = document.getElementById('charts-container');
+ * const charts = [];
+ * const verticalLinesX = [];
+ * const channelState = { digital: { yLabels: [...], lineColors: [...], ... } };
+ *
+ * renderDigitalCharts(cfg, data, chartsContainer, charts, verticalLinesX, channelState);
+ * // Creates new uPlot chart(s) and appends to chartsContainer
+ */
+
+import { createChartOptions } from "./chartComponent.js";
+import { createDragBar } from "./createDragBar.js";
+import { createDigitalFillPlugin } from "../plugins/digitalFillPlugin.js";
+import { findChangedDigitalChannelIndices } from "../utils/digitalChannelUtils.js";
+import { createCustomElement } from "../utils/helpers.js";
+import verticalLinePlugin from "../plugins/verticalLinePlugin.js";
+
+/**
+ * Render digital channels on uPlot charts with stacked rectangle visualization.
+ *
+ * Orchestrates the complete digital chart rendering workflow:
+ * 1. Filters to show only channels with state changes
+ * 2. Creates parent container with drag bar for reordering
+ * 3. Builds chart data array with 0/1 states
+ * 4. Configures custom Y-axis with "0"/"1" labels
+ * 5. Applies digital fill plugin for colored rectangles
+ * 6. Creates uPlot instance with vertical line support
+ * 7. Sets up ResizeObserver for responsive resizing
+ * 8. Stores metadata for channel index mapping
+ *
+ * @function renderDigitalCharts
+ * @param {Object} cfg - COMTRADE file configuration object
+ * @param {Array} cfg.digitalChannels - Array of digital channel metadata
+ * @param {Array} cfg.digitalChannels[].id - Channel identifier (e.g., "DIG001")
+ * @param {Object} data - Time series data object
+ * @param {Array&lt;number>} data.time - X-axis time values (common to all channels)
+ * @param {Array&lt;Array&lt;boolean>>} data.digitalData - Array of boolean arrays [channel_0_data, channel_1_data, ...]
+ * @param {HTMLElement} chartsContainer - DOM element to append chart container to
+ * @param {Array&lt;uPlot>} charts - Shared array of chart instances (modified in place)
+ * @param {Array&lt;number>} verticalLinesX - Array of vertical line X positions (shared state)
+ * @param {Object} channelState - Channel state and configuration object
+ * @param {Object} channelState.digital - Digital channel state
+ * @param {Array&lt;string>} channelState.digital.yLabels - Y-axis labels for each channel
+ * @param {Array&lt;string>} channelState.digital.lineColors - Colors for each channel
+ * @param {Array&lt;string>} channelState.digital.yUnits - Y units (typically empty for digital)
+ * @param {Object} channelState.digital.axesScales - Axes scale configurations
+ * @param {string} channelState.digital.xLabel - X-axis label
+ * @param {string} channelState.digital.xUnit - X-axis unit label
+ * @returns {void}
+ *
+ * Side Effects:
+ * - Appends chart DOM elements to chartsContainer
+ * - Adds created uPlot instance to charts array
+ * - Sets chart._channelIndices for mapping series indices to original channel indices
+ * - Sets chart._type = "digital" for type identification
+ *
+ * @example
+ * // Basic usage
+ * renderDigitalCharts(
+ *   cfg,                      // { digitalChannels: [...], ... }
+ *   data,                      // { time: [...], digitalData: [[true, false, ...], ...], ... }
+ *   document.getElementById('charts'),
+ *   charts,                    // [] or existing array
+ *   verticalLinesX,            // [] or [100, 200]
+ *   channelState               // { digital: { yLabels, lineColors, ... } }
+ * );
+ *
+ * @example
+ * // Digital channels object structure
+ * const cfg = {
+ *   digitalChannels: [
+ *     { id: "DIG001", ccname: "Circuit Breaker A", offset: 0 },
+ *     { id: "DIG002", ccname: "Circuit Breaker B", offset: 1 }
+ *   ],
+ *   // ... other properties
+ * };
+ *
+ * @example
+ * // Digital data structure
+ * const data = {
+ *   time: [0, 0.001, 0.002, 0.003],           // 1000 samples/second
+ *   digitalData: [
+ *     [false, false, true, true],              // DIG001 state over time
+ *     [false, true, true, false]               // DIG002 state over time
+ *   ],
+ *   // ... other properties
+ * };
+ */
+export function renderDigitalCharts(
+  cfg,
+  data,
+  chartsContainer,
+  charts,
+  verticalLinesX,
+  channelState
+) {
+  const DigChannelOffset = 3;
+  const parentDiv = createCustomElement("div", "chart-parent-container");
+  const changedIndices = findChangedDigitalChannelIndices(data.digitalData);
+  const digitalIndicesToShow = changedIndices;
+  // Keep originalIndex on displayed channel objects so mapping is stable
+  const digitalChannelsToShow = digitalIndicesToShow.map((i) => ({
+    ...cfg.digitalChannels[i],
+    originalIndex: i,
+  }));
+  const digitalDataToShow = digitalIndicesToShow.map(
+    (i) => data.digitalData[i]
+  );
+  const yLabels = channelState.digital.yLabels;
+  const lineColors = channelState.digital.lineColors;
+  const yUnits = channelState.digital.yUnits;
+  const axesScales = channelState.digital.axesScales;
+  const xLabel = channelState.digital.xLabel;
+  const xUnit = channelState.digital.xUnit;
+  // Colors corresponding to the displayed channels (map from full channelState)
+  const displayedColors = digitalIndicesToShow.map((i) => lineColors[i]);
+  parentDiv.appendChild(
+    createDragBar(
+      {
+        indices: digitalChannelsToShow.map((_, i) => i),
+        colors: displayedColors,
+      },
+      { analogChannels: digitalChannelsToShow },
+      channelState
+    )
+  );
+  const chartDiv = createCustomElement("div", "chart-container");
+  parentDiv.appendChild(chartDiv);
+  chartsContainer.appendChild(parentDiv);
+  //const verticalLinesXState = verticalLinesX;
+  const digitalDataZeroOne = digitalDataToShow.map((arr) =>
+    arr.map((v) => (v ? 1 : 0))
+  );
+  const chartData = [data.time, ...digitalDataZeroOne];
+  const digitalFillSignals = digitalChannelsToShow.map((ch, i) => ({
+    signalIndex: i + 1,
+    offset: (digitalChannelsToShow.length - 1 - i) * DigChannelOffset,
+    color: displayedColors[i],
+    targetVal: 1,
+    originalIndex: ch.originalIndex,
+  }));
+  const yMin = -0.5;
+  const yMax = (digitalChannelsToShow.length - 1) * DigChannelOffset + 2;
+  const scales = {
+    x: { time: false, auto: true },
+    y: { min: yMin, max: yMax, auto: false },
+  };
+  const opts = createChartOptions({
+    title: "Digital Channels",
+    yLabels,
+    lineColors,
+    verticalLinesX: verticalLinesX,
+    xLabel,
+    xUnit,
+    getCharts: () => charts,
+    yUnits,
+    axesScales,
+    scales,
+    singleYAxis: true,
+    autoScaleUnit: { x: true, y: false },
+  });
+  opts.axes = [
+    opts.axes[0],
+    {
+      ...opts.axes[1],
+      grid: { show: true },
+      values: (u, vals) =>
+        vals.map((v) => {
+          for (let i = 0; i &lt; digitalChannelsToShow.length; ++i) {
+            if (Math.abs(v - i * DigChannelOffset) &lt; 0.5) return "0";
+            if (Math.abs(v - (i * DigChannelOffset + 1)) &lt; 0.5) return "1";
+          }
+          return "";
+        }),
+      splits: digitalChannelsToShow.flatMap((_, i) => [
+        i * DigChannelOffset,
+        i * DigChannelOffset + 1,
+      ]),
+      range: [yMin, yMax],
+    },
+  ];
+  opts.series = [
+    {},
+    ...digitalChannelsToShow.map((ch, i) => {
+      // Prefer the authoritative label from channelState if available.
+      const original = ch.originalIndex;
+      let label = ch.id;
+      try {
+        if (
+          Array.isArray(channelState.digital?.yLabels) &amp;&amp;
+          channelState.digital.yLabels[original]
+        ) {
+          if (channelState.digital.yLabels[original] !== ch.id) {
+            // small debug hint when label sources disagree
+            console.debug(
+              "renderDigitalCharts: label mismatch for originalIndex",
+              original,
+              "cfg.id=",
+              ch.id,
+              "state.label=",
+              channelState.digital.yLabels[original]
+            );
+          }
+          label = channelState.digital.yLabels[original];
+        }
+      } catch (e) {}
+      return {
+        label,
+        stroke: "transparent",
+        show: true,
+      };
+    }),
+  ];
+  opts.plugins = opts.plugins || [];
+  opts.plugins = opts.plugins.filter(
+    (p) => !(p &amp;&amp; p.id === "verticalLinePlugin")
+  );
+  opts.plugins.push(createDigitalFillPlugin(digitalFillSignals, [yMin, yMax]));
+  opts.plugins.push(verticalLinePlugin(verticalLinesX, () => charts));
+  const chart = new uPlot(opts, chartData, chartDiv);
+  chart._seriesColors = opts.series.slice(1).map((s) => s.stroke);
+  charts.push(chart);
+  try {
+    // store mapping from chart series -> global channel indices
+    chart._channelIndices = digitalChannelsToShow.map((ch) => ch.originalIndex);
+    chart._type = "digital";
+  } catch (e) {}
+  const ro = new ResizeObserver((entries) => {
+    for (let entry of entries) {
+      chart.setSize({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      });
+    }
+  });
+  ro.observe(chartDiv);
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

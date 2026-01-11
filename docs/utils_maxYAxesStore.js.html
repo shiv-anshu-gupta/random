@@ -1,0 +1,252 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> utils/maxYAxesStore.js</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-analyzeGroupsAndPublish.html">analyzeGroupsAndPublish</a></li><li><a href="module-axisBuilder.html">axisBuilder</a></li><li><a href="module-axisCalculator.html">axisCalculator</a></li><li><a href="module-calculateAndPublishMaxYAxes.html">calculateAndPublishMaxYAxes</a></li><li><a href="module-chartAxisAlignment.html">chartAxisAlignment</a></li><li><a href="module-chartComponent.html">chartComponent</a></li><li><a href="module-chartDomUtils.html">chartDomUtils</a></li><li><a href="module-chartManager.html">chartManager</a></li><li><a href="module-comtradeUtils.html">comtradeUtils</a></li><li><a href="module-createDragBar.html">createDragBar</a></li><li><a href="module-createState.html">createState</a></li><li><a href="module-domUpdateQueue.html">domUpdateQueue</a></li><li><a href="module-domUpdateQueueInit.html">domUpdateQueueInit</a></li><li><a href="module-handleVerticalLineShortcuts.html">handleVerticalLineShortcuts</a></li><li><a href="module-initVerticalLineControl.html">initVerticalLineControl</a></li><li><a href="module-main.html">main</a></li><li><a href="module-maxYAxesStore.html">maxYAxesStore</a></li><li><a href="module-mergerWindowLauncher.html">mergerWindowLauncher</a></li><li><a href="module-performanceMonitor.html">performanceMonitor</a></li><li><a href="module-seriesMapper.html">seriesMapper</a></li><li><a href="module-setupChartDragAndDrop.html">setupChartDragAndDrop</a></li><li><a href="module-timeInterpolation.html">timeInterpolation</a></li><li><a href="module-verticalLineControl.html">verticalLineControl</a></li></ul><h3>Classes</h3><ul><li><a href="ComputedChannelMetadata.html">ComputedChannelMetadata</a></li><li><a href="PolarChart.html">PolarChart</a></li><li><a href="module-performanceMonitor-PhaseTracker.html">PhaseTracker</a></li></ul><h3>Global</h3><ul><li><a href="global.html#IMPLEMENTATION_COMPLETE">IMPLEMENTATION_COMPLETE</a></li><li><a href="global.html#QUICK_REFERENCE">QUICK_REFERENCE</a></li><li><a href="global.html#STORAGE_KEY">STORAGE_KEY</a></li><li><a href="global.html#THEMES">THEMES</a></li><li><a href="global.html#applyTheme">applyTheme</a></li><li><a href="global.html#autoGroupChannels">autoGroupChannels</a></li><li><a href="global.html#calculateStats">calculateStats</a></li><li><a href="global.html#chart2">chart2</a></li><li><a href="global.html#clearCaches">clearCaches</a></li><li><a href="global.html#clearChartsContainer">clearChartsContainer</a></li><li><a href="global.html#clearComputedChannelsFromStorage">clearComputedChannelsFromStorage</a></li><li><a href="global.html#clearExpressionCache">clearExpressionCache</a></li><li><a href="global.html#collectChartDeltas">collectChartDeltas</a></li><li><a href="global.html#convertLatexToMathJs">convertLatexToMathJs</a></li><li><a href="global.html#convertLatexToPlainText">convertLatexToPlainText</a></li><li><a href="global.html#createAnalogChannelGroupMap">createAnalogChannelGroupMap</a></li><li><a href="global.html#createBinaryBlob">createBinaryBlob</a></li><li><a href="global.html#createChannelItem">createChannelItem</a></li><li><a href="global.html#createChannelList">createChannelList</a></li><li><a href="global.html#createChartContainer">createChartContainer</a></li><li><a href="global.html#createChartOptions">createChartOptions</a></li><li><a href="global.html#createComputedChannelsLabels">createComputedChannelsLabels</a></li><li><a href="global.html#createComputedChannelsSidebar">createComputedChannelsSidebar</a></li><li><a href="global.html#createDebouncedRender">createDebouncedRender</a></li><li><a href="global.html#createDeltaWindow">createDeltaWindow</a></li><li><a href="global.html#createDigitalFillPlugin">createDigitalFillPlugin</a></li><li><a href="global.html#createScopeTemplate">createScopeTemplate</a></li><li><a href="global.html#createSimpleChannelList">createSimpleChannelList</a></li><li><a href="global.html#createSimpleContainer">createSimpleContainer</a></li><li><a href="global.html#createState">createState</a></li><li><a href="global.html#createTooltip">createTooltip</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#encodeFloat64">encodeFloat64</a></li><li><a href="global.html#encodeInt32">encodeInt32</a></li><li><a href="global.html#evaluateAndSaveComputedChannel">evaluateAndSaveComputedChannel</a></li><li><a href="global.html#evaluateExpression">evaluateExpression</a></li><li><a href="global.html#exportAllChannelsAsCSV">exportAllChannelsAsCSV</a></li><li><a href="global.html#exportAllComputedChannels">exportAllComputedChannels</a></li><li><a href="global.html#exportAsASCII">exportAsASCII</a></li><li><a href="global.html#exportComputedChannelAsASCII">exportComputedChannelAsASCII</a></li><li><a href="global.html#exportComputedChannelAsCFGDAT">exportComputedChannelAsCFGDAT</a></li><li><a href="global.html#exportComputedChannelsAsCSV">exportComputedChannelsAsCSV</a></li><li><a href="global.html#formatEquationForLatex">formatEquationForLatex</a></li><li><a href="global.html#generateCFGContent">generateCFGContent</a></li><li><a href="global.html#generateCFGContentBatch">generateCFGContentBatch</a></li><li><a href="global.html#generateCFGContentBinary32">generateCFGContentBinary32</a></li><li><a href="global.html#generateCFGContentBinary64">generateCFGContentBinary64</a></li><li><a href="global.html#generateCFGContentFloat32">generateCFGContentFloat32</a></li><li><a href="global.html#generateCFGContentFloat64">generateCFGContentFloat64</a></li><li><a href="global.html#generateDATContent">generateDATContent</a></li><li><a href="global.html#generateDATContentBatch">generateDATContentBatch</a></li><li><a href="global.html#generateDATContentBinary32">generateDATContentBinary32</a></li><li><a href="global.html#generateDATContentBinary64">generateDATContentBinary64</a></li><li><a href="global.html#generateDATContentFloat32">generateDATContentFloat32</a></li><li><a href="global.html#generateDATContentFloat64">generateDATContentFloat64</a></li><li><a href="global.html#getAllAvailableGroups">getAllAvailableGroups</a></li><li><a href="global.html#getCacheStats">getCacheStats</a></li><li><a href="global.html#getChannelByDisplayName">getChannelByDisplayName</a></li><li><a href="global.html#getChannelMetadata">getChannelMetadata</a></li><li><a href="global.html#getChannelsForFile">getChannelsForFile</a></li><li><a href="global.html#getCompiledExpression">getCompiledExpression</a></li><li><a href="global.html#getComputedChannelStorageMetadata">getComputedChannelStorageMetadata</a></li><li><a href="global.html#getCurrentTheme">getCurrentTheme</a></li><li><a href="global.html#getCurrentThemeColors">getCurrentThemeColors</a></li><li><a href="global.html#getFileIndexForTime">getFileIndexForTime</a></li><li><a href="global.html#getMemoryInfo">getMemoryInfo</a></li><li><a href="global.html#getOriginalChannelName">getOriginalChannelName</a></li><li><a href="global.html#getSampleIndexInFile">getSampleIndexInFile</a></li><li><a href="global.html#getThemeColor">getThemeColor</a></li><li><a href="global.html#groupCfgDatFiles">groupCfgDatFiles</a></li><li><a href="global.html#hasStoredComputedChannels">hasStoredComputedChannels</a></li><li><a href="global.html#hideTooltip">hideTooltip</a></li><li><a href="global.html#importComputedChannelFromJSON">importComputedChannelFromJSON</a></li><li><a href="global.html#initTheme">initTheme</a></li><li><a href="global.html#initUPlotChart">initUPlotChart</a></li><li><a href="global.html#initializeSidebarChannels">initializeSidebarChannels</a></li><li><a href="global.html#injectSidebarIntoUplot">injectSidebarIntoUplot</a></li><li><a href="global.html#loadComputedChannelsFromStorage">loadComputedChannelsFromStorage</a></li><li><a href="global.html#measurePerformance">measurePerformance</a></li><li><a href="global.html#mergeAnalogChannels">mergeAnalogChannels</a></li><li><a href="global.html#mergeComtradeFilesSetsSequential">mergeComtradeFilesSetsSequential</a></li><li><a href="global.html#mergeDigitalChannels">mergeDigitalChannels</a></li><li><a href="global.html#mergeTimeArraysSequential">mergeTimeArraysSequential</a></li><li><a href="global.html#openMathLiveEditor">openMathLiveEditor</a></li><li><a href="global.html#performExport">performExport</a></li><li><a href="global.html#processFilesInBatches">processFilesInBatches</a></li><li><a href="global.html#processInChunks">processInChunks</a></li><li><a href="global.html#renameChannelWithPrefix">renameChannelWithPrefix</a></li><li><a href="global.html#renderComputedChannels">renderComputedChannels</a></li><li><a href="global.html#renderComtradeCharts">renderComtradeCharts</a></li><li><a href="global.html#saveComputedChannelToGlobals">saveComputedChannelToGlobals</a></li><li><a href="global.html#saveComputedChannelsToStorage">saveComputedChannelsToStorage</a></li><li><a href="global.html#separateComputedFiles">separateComputedFiles</a></li><li><a href="global.html#setupMobileSidebar">setupMobileSidebar</a></li><li><a href="global.html#setupPolarChartWithVerticalLines">setupPolarChartWithVerticalLines</a></li><li><a href="global.html#showChannelListWindow">showChannelListWindow</a></li><li><a href="global.html#showError">showError</a></li><li><a href="global.html#showExportFormatDialog">showExportFormatDialog</a></li><li><a href="global.html#showFileInfo">showFileInfo</a></li><li><a href="global.html#sortFilePairs">sortFilePairs</a></li><li><a href="global.html#subscribeChartUpdates">subscribeChartUpdates</a></li><li><a href="global.html#toggleChartsVisibility">toggleChartsVisibility</a></li><li><a href="global.html#toggleTheme">toggleTheme</a></li><li><a href="global.html#updateComputedChannelsSidebar">updateComputedChannelsSidebar</a></li><li><a href="global.html#updateFileInfo">updateFileInfo</a></li><li><a href="global.html#updateStatsCards">updateStatsCards</a></li><li><a href="global.html#updateTooltip">updateTooltip</a></li><li><a href="global.html#validateSampleRates">validateSampleRates</a></li><li><a href="global.html#wrapChartInSection">wrapChartInSection</a></li><li><a href="global.html#yieldToEventLoop">yieldToEventLoop</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>utils/maxYAxesStore.js</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file maxYAxesStore.js - Global Y-Axes Count State Management
+ * @module maxYAxesStore
+ * @category Architecture / Functional Approach
+ * @since 2.0.0
+ * 
+ * @description
+ * Centralized reactive state store for managing the number of Y-axes across all chart types.
+ * Implements a "single source of truth" pattern similar to React Context API.
+ *
+ * **Role in Multi-Y-Axes Architecture:**
+ * ```
+ * Group Change Event
+ *     ↓
+ * analyzeGroupsAndPublish() calculates maxYAxes
+ *     ↓
+ * setMaxYAxes() publishes to this store
+ *     ↓
+ * renderAnalogCharts, renderDigitalCharts, renderComputedChannels
+ * all read from getMaxYAxes() and update axes count
+ * ```
+ *
+ * **Why Not Subscriptions?**
+ * Uses createState (reactive object) instead of .subscribe() callbacks to avoid:
+ * - Memory leaks from forgotten unsubscribes
+ * - Callback chains that are hard to debug
+ * - Global event listeners that accumulate
+ *
+ * Instead, each component simply calls getMaxYAxes() when building charts.
+ *
+ * @example
+ * // In a chart rendering function
+ * import { getMaxYAxes } from '../utils/maxYAxesStore.js';
+ * 
+ * const maxYAxes = getMaxYAxes(); // Get current value (1, 2, 3, etc.)
+ * const opts = createChartOptions({
+ *   maxYAxes: maxYAxes,
+ *   // ... other options
+ * });
+ *
+ * @example
+ * // In a group change handler
+ * import { setMaxYAxes } from '../utils/maxYAxesStore.js';
+ * 
+ * // After analyzing groups and calculating required axes
+ * setMaxYAxes(2); // Publish new value
+ * // Charts automatically use this when they next render/update
+ */
+
+import { createState } from "../components/createState.js";
+
+// Private: Global state object
+const maxYAxesState = createState({
+  maxYAxes: 1, // Default: all charts show 1 y-axis by default
+});
+
+/**
+ * Get current maxYAxes value from global store
+ *
+ * @function getMaxYAxes
+ * @category State Accessors
+ * @returns {number} Current maxYAxes count (1, 2, 3, etc.)
+ *
+ * @example
+ * const axes = getMaxYAxes();
+ * console.log(axes); // 1, 2, or higher
+ */
+export function getMaxYAxes() {
+  return maxYAxesState.maxYAxes;
+}
+
+/**
+ * Set maxYAxes value in global store (publish new state)
+ *
+ * @function setMaxYAxes
+ * @category State Mutators
+ * @param {number} value - New maxYAxes count (must be >= 1)
+ * @returns {void}
+ * @throws {void} Does not throw, but logs warning if value is invalid
+ *
+ * @example
+ * setMaxYAxes(2); // All charts will now use 2 Y-axes
+ * console.log(getMaxYAxes()); // Outputs: 2
+ */
+export function setMaxYAxes(value) {
+  if (typeof value === "number" &amp;&amp; value >= 1) {
+    maxYAxesState.maxYAxes = value;
+    console.log(`[maxYAxesStore] 📊 Published maxYAxes: ${value}`);
+  } else {
+    console.warn(`[maxYAxesStore] ⚠️ Invalid maxYAxes value:`, value);
+  }
+}
+
+/**
+ * Get the internal reactive state object for advanced subscriptions
+ *
+ * @function getMaxYAxesState
+ * @category Advanced / Internal
+ * @returns {Object} The createState object with reactive properties
+ *
+ * @description
+ * WARNING: Only use this if you need reactive subscriptions.
+ * Remember to unsubscribe to avoid memory leaks!
+ *
+ * The returned object's properties update reactively whenever setMaxYAxes() is called.
+ * You can subscribe to changes like:
+ * ```javascript
+ * const unsub = getMaxYAxesState().subscribe(() => {
+ *   console.log('maxYAxes changed to:', getMaxYAxes());
+ * });
+ * // When done, call unsub() to clean up
+ * ```
+ *
+ * @example
+ * const state = getMaxYAxesState();
+ * // Now state.maxYAxes === getMaxYAxes()
+ */
+export function getMaxYAxesState() {
+  return maxYAxesState;
+}
+
+/**
+ * Reset maxYAxes to default value (1)
+ *
+ * @function resetMaxYAxes
+ * @category State Mutators
+ * @returns {void}
+ *
+ * @example
+ * resetMaxYAxes(); // Back to 1 Y-axis for all charts
+ */
+export function resetMaxYAxes() {
+  maxYAxesState.maxYAxes = 1;
+  console.log(`[maxYAxesStore] 🔄 Reset maxYAxes to default: 1`);
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

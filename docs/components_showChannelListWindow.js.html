@@ -1,0 +1,519 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> components/showChannelListWindow.js</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-analyzeGroupsAndPublish.html">analyzeGroupsAndPublish</a></li><li><a href="module-axisBuilder.html">axisBuilder</a></li><li><a href="module-axisCalculator.html">axisCalculator</a></li><li><a href="module-calculateAndPublishMaxYAxes.html">calculateAndPublishMaxYAxes</a></li><li><a href="module-chartAxisAlignment.html">chartAxisAlignment</a></li><li><a href="module-chartComponent.html">chartComponent</a></li><li><a href="module-chartDomUtils.html">chartDomUtils</a></li><li><a href="module-chartManager.html">chartManager</a></li><li><a href="module-comtradeUtils.html">comtradeUtils</a></li><li><a href="module-createDragBar.html">createDragBar</a></li><li><a href="module-createState.html">createState</a></li><li><a href="module-domUpdateQueue.html">domUpdateQueue</a></li><li><a href="module-domUpdateQueueInit.html">domUpdateQueueInit</a></li><li><a href="module-handleVerticalLineShortcuts.html">handleVerticalLineShortcuts</a></li><li><a href="module-initVerticalLineControl.html">initVerticalLineControl</a></li><li><a href="module-main.html">main</a></li><li><a href="module-maxYAxesStore.html">maxYAxesStore</a></li><li><a href="module-mergerWindowLauncher.html">mergerWindowLauncher</a></li><li><a href="module-performanceMonitor.html">performanceMonitor</a></li><li><a href="module-seriesMapper.html">seriesMapper</a></li><li><a href="module-setupChartDragAndDrop.html">setupChartDragAndDrop</a></li><li><a href="module-timeInterpolation.html">timeInterpolation</a></li><li><a href="module-verticalLineControl.html">verticalLineControl</a></li></ul><h3>Classes</h3><ul><li><a href="ComputedChannelMetadata.html">ComputedChannelMetadata</a></li><li><a href="PolarChart.html">PolarChart</a></li><li><a href="module-performanceMonitor-PhaseTracker.html">PhaseTracker</a></li></ul><h3>Global</h3><ul><li><a href="global.html#IMPLEMENTATION_COMPLETE">IMPLEMENTATION_COMPLETE</a></li><li><a href="global.html#QUICK_REFERENCE">QUICK_REFERENCE</a></li><li><a href="global.html#STORAGE_KEY">STORAGE_KEY</a></li><li><a href="global.html#THEMES">THEMES</a></li><li><a href="global.html#applyTheme">applyTheme</a></li><li><a href="global.html#autoGroupChannels">autoGroupChannels</a></li><li><a href="global.html#calculateStats">calculateStats</a></li><li><a href="global.html#chart2">chart2</a></li><li><a href="global.html#clearCaches">clearCaches</a></li><li><a href="global.html#clearChartsContainer">clearChartsContainer</a></li><li><a href="global.html#clearComputedChannelsFromStorage">clearComputedChannelsFromStorage</a></li><li><a href="global.html#clearExpressionCache">clearExpressionCache</a></li><li><a href="global.html#collectChartDeltas">collectChartDeltas</a></li><li><a href="global.html#convertLatexToMathJs">convertLatexToMathJs</a></li><li><a href="global.html#convertLatexToPlainText">convertLatexToPlainText</a></li><li><a href="global.html#createAnalogChannelGroupMap">createAnalogChannelGroupMap</a></li><li><a href="global.html#createBinaryBlob">createBinaryBlob</a></li><li><a href="global.html#createChannelItem">createChannelItem</a></li><li><a href="global.html#createChannelList">createChannelList</a></li><li><a href="global.html#createChartContainer">createChartContainer</a></li><li><a href="global.html#createChartOptions">createChartOptions</a></li><li><a href="global.html#createComputedChannelsLabels">createComputedChannelsLabels</a></li><li><a href="global.html#createComputedChannelsSidebar">createComputedChannelsSidebar</a></li><li><a href="global.html#createDebouncedRender">createDebouncedRender</a></li><li><a href="global.html#createDeltaWindow">createDeltaWindow</a></li><li><a href="global.html#createDigitalFillPlugin">createDigitalFillPlugin</a></li><li><a href="global.html#createScopeTemplate">createScopeTemplate</a></li><li><a href="global.html#createSimpleChannelList">createSimpleChannelList</a></li><li><a href="global.html#createSimpleContainer">createSimpleContainer</a></li><li><a href="global.html#createState">createState</a></li><li><a href="global.html#createTooltip">createTooltip</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#encodeFloat64">encodeFloat64</a></li><li><a href="global.html#encodeInt32">encodeInt32</a></li><li><a href="global.html#evaluateAndSaveComputedChannel">evaluateAndSaveComputedChannel</a></li><li><a href="global.html#evaluateExpression">evaluateExpression</a></li><li><a href="global.html#exportAllChannelsAsCSV">exportAllChannelsAsCSV</a></li><li><a href="global.html#exportAllComputedChannels">exportAllComputedChannels</a></li><li><a href="global.html#exportAsASCII">exportAsASCII</a></li><li><a href="global.html#exportComputedChannelAsASCII">exportComputedChannelAsASCII</a></li><li><a href="global.html#exportComputedChannelAsCFGDAT">exportComputedChannelAsCFGDAT</a></li><li><a href="global.html#exportComputedChannelsAsCSV">exportComputedChannelsAsCSV</a></li><li><a href="global.html#formatEquationForLatex">formatEquationForLatex</a></li><li><a href="global.html#generateCFGContent">generateCFGContent</a></li><li><a href="global.html#generateCFGContentBatch">generateCFGContentBatch</a></li><li><a href="global.html#generateCFGContentBinary32">generateCFGContentBinary32</a></li><li><a href="global.html#generateCFGContentBinary64">generateCFGContentBinary64</a></li><li><a href="global.html#generateCFGContentFloat32">generateCFGContentFloat32</a></li><li><a href="global.html#generateCFGContentFloat64">generateCFGContentFloat64</a></li><li><a href="global.html#generateDATContent">generateDATContent</a></li><li><a href="global.html#generateDATContentBatch">generateDATContentBatch</a></li><li><a href="global.html#generateDATContentBinary32">generateDATContentBinary32</a></li><li><a href="global.html#generateDATContentBinary64">generateDATContentBinary64</a></li><li><a href="global.html#generateDATContentFloat32">generateDATContentFloat32</a></li><li><a href="global.html#generateDATContentFloat64">generateDATContentFloat64</a></li><li><a href="global.html#getAllAvailableGroups">getAllAvailableGroups</a></li><li><a href="global.html#getCacheStats">getCacheStats</a></li><li><a href="global.html#getChannelByDisplayName">getChannelByDisplayName</a></li><li><a href="global.html#getChannelMetadata">getChannelMetadata</a></li><li><a href="global.html#getChannelsForFile">getChannelsForFile</a></li><li><a href="global.html#getCompiledExpression">getCompiledExpression</a></li><li><a href="global.html#getComputedChannelStorageMetadata">getComputedChannelStorageMetadata</a></li><li><a href="global.html#getCurrentTheme">getCurrentTheme</a></li><li><a href="global.html#getCurrentThemeColors">getCurrentThemeColors</a></li><li><a href="global.html#getFileIndexForTime">getFileIndexForTime</a></li><li><a href="global.html#getMemoryInfo">getMemoryInfo</a></li><li><a href="global.html#getOriginalChannelName">getOriginalChannelName</a></li><li><a href="global.html#getSampleIndexInFile">getSampleIndexInFile</a></li><li><a href="global.html#getThemeColor">getThemeColor</a></li><li><a href="global.html#groupCfgDatFiles">groupCfgDatFiles</a></li><li><a href="global.html#hasStoredComputedChannels">hasStoredComputedChannels</a></li><li><a href="global.html#hideTooltip">hideTooltip</a></li><li><a href="global.html#importComputedChannelFromJSON">importComputedChannelFromJSON</a></li><li><a href="global.html#initTheme">initTheme</a></li><li><a href="global.html#initUPlotChart">initUPlotChart</a></li><li><a href="global.html#initializeSidebarChannels">initializeSidebarChannels</a></li><li><a href="global.html#injectSidebarIntoUplot">injectSidebarIntoUplot</a></li><li><a href="global.html#loadComputedChannelsFromStorage">loadComputedChannelsFromStorage</a></li><li><a href="global.html#measurePerformance">measurePerformance</a></li><li><a href="global.html#mergeAnalogChannels">mergeAnalogChannels</a></li><li><a href="global.html#mergeComtradeFilesSetsSequential">mergeComtradeFilesSetsSequential</a></li><li><a href="global.html#mergeDigitalChannels">mergeDigitalChannels</a></li><li><a href="global.html#mergeTimeArraysSequential">mergeTimeArraysSequential</a></li><li><a href="global.html#openMathLiveEditor">openMathLiveEditor</a></li><li><a href="global.html#performExport">performExport</a></li><li><a href="global.html#processFilesInBatches">processFilesInBatches</a></li><li><a href="global.html#processInChunks">processInChunks</a></li><li><a href="global.html#renameChannelWithPrefix">renameChannelWithPrefix</a></li><li><a href="global.html#renderComputedChannels">renderComputedChannels</a></li><li><a href="global.html#renderComtradeCharts">renderComtradeCharts</a></li><li><a href="global.html#saveComputedChannelToGlobals">saveComputedChannelToGlobals</a></li><li><a href="global.html#saveComputedChannelsToStorage">saveComputedChannelsToStorage</a></li><li><a href="global.html#separateComputedFiles">separateComputedFiles</a></li><li><a href="global.html#setupMobileSidebar">setupMobileSidebar</a></li><li><a href="global.html#setupPolarChartWithVerticalLines">setupPolarChartWithVerticalLines</a></li><li><a href="global.html#showChannelListWindow">showChannelListWindow</a></li><li><a href="global.html#showError">showError</a></li><li><a href="global.html#showExportFormatDialog">showExportFormatDialog</a></li><li><a href="global.html#showFileInfo">showFileInfo</a></li><li><a href="global.html#sortFilePairs">sortFilePairs</a></li><li><a href="global.html#subscribeChartUpdates">subscribeChartUpdates</a></li><li><a href="global.html#toggleChartsVisibility">toggleChartsVisibility</a></li><li><a href="global.html#toggleTheme">toggleTheme</a></li><li><a href="global.html#updateComputedChannelsSidebar">updateComputedChannelsSidebar</a></li><li><a href="global.html#updateFileInfo">updateFileInfo</a></li><li><a href="global.html#updateStatsCards">updateStatsCards</a></li><li><a href="global.html#updateTooltip">updateTooltip</a></li><li><a href="global.html#validateSampleRates">validateSampleRates</a></li><li><a href="global.html#wrapChartInSection">wrapChartInSection</a></li><li><a href="global.html#yieldToEventLoop">yieldToEventLoop</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>components/showChannelListWindow.js</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// // src/components/showChannelListWindow.js
+// // Opens a child window and renders the channel list with drag-and-drop support
+// import { createChannelList } from './ChannelList.js';
+
+// /**
+//  * Opens a child window and displays the channel list.
+//  * @param {Object} channelState - State object with analog and digital channel info.
+//  * @param {Function} onChannelDrop - Callback(channelType, fromIdx, toIdx) when a channel is reordered.
+//  * @param {Function} onChannelColorChange - Callback(channelType, idx, color) when a channel color is changed.
+//  */
+// export function showChannelListWindow(channelState, onChannelDrop, onChannelColorChange) {
+//   const win = window.open('', 'ChannelListWindow', 'width=400,height=600');
+//   if (!win) return;
+//   win.document.title = 'Channel List';
+//   // Basic styles for the list
+//   win.document.head.innerHTML = `
+//     &lt;title>Channel List&lt;/title>
+//     &lt;style>
+//       body { font-family: Arial, sans-serif; margin: 0; padding: 12px; background: #f9f9f9; }
+//       .channel-list-container { padding: 8px; }
+//       .channel-list-section { margin-bottom: 18px; }
+//       .channel-list { list-style: none; padding: 0; margin: 0; }
+//       .channel-list-item { padding: 6px 12px; margin-bottom: 4px; background: #fff; border: 1px solid #ccc; border-radius: 4px; cursor: grab; transition: background 0.2s; }
+//       .channel-list-item.dragging { opacity: 0.5; }
+//       .channel-list-item.drag-over { background: #e6f0fa; }
+//       h3 { margin: 8px 0 8px 0; font-size: 1.1em; }
+//     &lt;/style>
+//   `;
+//   win.document.body.innerHTML = '';
+//   // Render the channel list
+//   const renderList = () => {
+//     win.document.body.innerHTML = '';
+//     // Unwrap channelState if it's a proxy/state object
+//     const analogChannels = channelState.analog?.yLabels?.map((id, idx) => ({
+//       id,
+//       color: channelState.analog.lineColors[idx],
+//       type: 'analog',
+//       idx
+//     })) || [];
+//     const digitalChannels = channelState.digital?.yLabels?.map((id, idx) => ({
+//       id,
+//       color: channelState.digital.lineColors[idx],
+//       type: 'digital',
+//       idx
+//     })) || [];
+//     // Compose a cfg-like object for createChannelList
+//     const channelListCfg = {
+//       analogChannels,
+//       digitalChannels
+//     };
+//     const listEl = createChannelList(channelListCfg, (type, fromIdx, toIdx, color) => {
+//       if (color !== undefined &amp;&amp; typeof onChannelColorChange === 'function') {
+//         onChannelColorChange(type, fromIdx, color);
+//       } else {
+//         onChannelDrop(type, fromIdx, toIdx);
+//       }
+//       renderList();
+//     });
+//     win.document.body.appendChild(listEl);
+//   };
+//   renderList();
+// }
+
+import { createChannelList } from "./ChannelList.js";
+import { autoGroupChannels } from "../utils/autoGroupChannels.js";
+
+/**
+ * Open a Channel List popup and initialize the child UI.
+ *
+ * This function prepares the child window (loads Tailwind + Tabulator) and
+ * injects the ChannelList UI into the popup. It serializes the current
+ * `channelState` (analog/digital arrays) and passes them to the child. The
+ * child runs `createChannelList` inside its own context and uses
+ * `window.opener.postMessage(...)` to notify the parent of user-driven
+ * changes (color/name/add/delete). The parent listens for these messages and
+ * updates `channelState` (createState), which in turn notifies chart
+ * subscribers.
+ *
+ * Note: the child may also call the `onChannelColorChange` or `onChannelDrop`
+ * callbacks directly if they are supplied, keeping compatibility with the
+ * existing callback-based integration.
+ *
+ * @param {Object} channelState - reactive state (createState) containing channel metadata
+ * @param {Function} [onChannelDrop] - optional callback(type, fromIdx, toIdx)
+ * @param {Function} [onChannelColorChange] - optional callback(type, idx, color)
+ * @returns {Window|undefined} the popup window object if opened
+ */
+export function showChannelListWindow(
+  channelState,
+  onChannelDrop,
+  onChannelColorChange,
+  charts, // optional: pass charts array so we can inspect digital chart plugin for display colors
+  cfg, // COMTRADE config
+  data // COMTRADE data
+) {
+  const win = window.open("", "ChannelListWindow", "width=600,height=700");
+  if (!win) {
+    console.error("Failed to open popup window - popups may be blocked");
+    return false;
+  }
+
+  win.document.title = "Channel List";
+
+  // Bind full cfg/data to the popup for module scripts to consume
+  try {
+    win.globalCfg = cfg;
+    win.globalData = data;
+  } catch (e) {
+    /* ignore */
+  }
+
+  // Add Math.js - needed for expression evaluation in ChannelList
+  const mathScript = win.document.createElement("script");
+  mathScript.src =
+    "https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js";
+  win.document.head.appendChild(mathScript);
+
+  // Tailwind CSS
+  const tailwindScript = win.document.createElement("script");
+  tailwindScript.src = "https://cdn.tailwindcss.com";
+  win.document.head.appendChild(tailwindScript);
+
+  // ✅ Add MathLive CSS for LaTeX editor
+  const mlCoreCSS = win.document.createElement("link");
+  mlCoreCSS.rel = "stylesheet";
+  mlCoreCSS.href = "https://unpkg.com/mathlive/dist/mathlive.core.css";
+  win.document.head.appendChild(mlCoreCSS);
+
+  const mlCSS = win.document.createElement("link");
+  mlCSS.rel = "stylesheet";
+  mlCSS.href = "https://unpkg.com/mathlive/dist/mathlive.css";
+  win.document.head.appendChild(mlCSS);
+
+  // ✅ Add custom CSS for MathLive keyboard z-index
+  const mlKeyboardStyle = win.document.createElement("style");
+  mlKeyboardStyle.textContent = `
+    .ML__keyboard {
+      z-index: 10002 !important;
+    }
+  `;
+  win.document.head.appendChild(mlKeyboardStyle);
+
+  // ✅ Add MathLive JavaScript
+  const mlScript = win.document.createElement("script");
+  mlScript.defer = true;
+  mlScript.src = "https://unpkg.com/mathlive";
+  win.document.head.appendChild(mlScript);
+
+  // Add Tabulator CSS
+  const tabulatorCSS = win.document.createElement("link");
+  tabulatorCSS.rel = "stylesheet";
+  tabulatorCSS.href =
+    "https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css";
+  win.document.head.appendChild(tabulatorCSS);
+
+  // Add Tabulator JS
+  const tabulatorScript = win.document.createElement("script");
+  tabulatorScript.src =
+    "https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js";
+  // tabulatorScript.onload = () => {
+  //   setTimeout(setupChannelList, 20); // small delay to ensure Tailwind is ready
+  // };
+  // win.document.head.appendChild(tabulatorScript);
+  tailwindScript.onload = () => {
+    tabulatorScript.onload = () => {
+      // Debug Tabulator versions to detect mismatches
+      try {
+        console.debug(
+          "popup Tabulator version:",
+          win.Tabulator &amp;&amp;
+            win.Tabulator.prototype &amp;&amp;
+            win.Tabulator.prototype.constructor &amp;&amp;
+            win.Tabulator.prototype.constructor.VERSION
+            ? win.Tabulator.prototype.constructor.VERSION
+            : win.Tabulator?.version || null
+        );
+      } catch (e) {
+        console.debug("popup Tabulator version: (unavailable)");
+      }
+      try {
+        console.debug(
+          "main Tabulator version:",
+          window.Tabulator?.version || null
+        );
+      } catch (e) {
+        console.debug("main Tabulator version: (unavailable)");
+      }
+      // Ensure math.js is available before initializing table
+      if (typeof win.math === "undefined") {
+        mathScript.addEventListener("load", () => setupChannelList());
+      } else {
+        setupChannelList();
+      }
+    };
+    win.document.head.appendChild(tabulatorScript);
+  };
+
+  // Root container with Tailwind styling
+  // win.document.body.innerHTML = `
+  //   &lt;div id="channel-root" class="p-4 bg-red-50 min-h-screen overflow-x-auto">&lt;/div>
+  // `;
+
+  win.document.body.innerHTML = `
+  &lt;div id="channel-table" class="w-auto flex flex-col gap-4 rounded-md h-auto p-2 md:p-4">
+    &lt;div id="button-bar" class="flex flex-wrap gap-2 m-2 md:m-3">
+      &lt;select id="group-select" class="border rounded px-2 py-1 text-sm">
+        &lt;option value="Analog">Analog&lt;/option>
+        &lt;option value="Digital">Digital&lt;/option>
+      &lt;/select>
+      &lt;button id="add-row" class="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1 rounded">
+        Add Blank Row
+      &lt;/button>
+      &lt;button id="history-undo" class="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1 rounded">Undo Edit&lt;/button>
+      &lt;button id="history-redo" class="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1 rounded">Redo Edit&lt;/button>
+      &lt;button id="download-pdf" class="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1 rounded">Download PDF&lt;/button>
+    &lt;/div>
+    &lt;div id="channel-root" class="w-auto overflow-y-auto border border-gray-300 rounded-lg shadow-md bg-white">&lt;/div>
+  &lt;/div>
+  `;
+
+  // Optional: additional custom styles
+  const style = win.document.createElement("style");
+  style.textContent = `
+    body { font-family: sans-serif; }
+  `;
+  win.document.head.appendChild(style);
+
+  function setupChannelList() {
+    // Build analog channel objects and compute group names using autoGroupChannels
+    const analogChannels =
+      channelState.analog?.yLabels?.map((id, idx) => ({
+        id,
+        name: id,
+        channelID: channelState.analog.channelIDs?.[idx],
+        color: channelState.analog.lineColors[idx],
+        type: "Analog",
+        idx,
+      })) || [];
+
+    console.log(
+      "[showChannelListWindow] Analog channels from channelState:",
+      analogChannels
+    );
+    console.log(
+      "[showChannelListWindow] channelState.analog.yUnits:",
+      channelState.analog?.yUnits
+    );
+
+    // Compute grouping for analog channels based on ids/units
+    let analogGroupMap = {};
+    try {
+      const groups = autoGroupChannels(
+        analogChannels.map((ch, i) => ({
+          id: ch.id,
+          unit: channelState.analog.yUnits?.[i],
+        }))
+      );
+      groups.forEach((g) => {
+        g.indices.forEach((gi) => {
+          analogGroupMap[gi] = g.name;
+        });
+      });
+    } catch (e) {
+      // fallback: leave analogGroupMap empty
+    }
+
+    // Prefer using the chart's displayed color for digital channels when available
+    const digitalChannels =
+      channelState.digital?.yLabels?.map((id, idx) => {
+        let color = channelState.digital.lineColors[idx];
+        try {
+          if (charts &amp;&amp; charts[1]) {
+            const plugin =
+              charts[1].plugins &amp;&amp;
+              charts[1].plugins.find((p) => p &amp;&amp; p.id === "digitalFill");
+            if (plugin &amp;&amp; typeof plugin.getSignalColors === "function") {
+              const mapping = plugin.getSignalColors();
+              // Each channel's original index in the state matches its idx in the channelList
+              // Use this to find the displayed color for this channel if it's visible
+              const found = mapping.find((m) => m.originalIndex === idx);
+              if (found &amp;&amp; found.color) {
+                // If this channel is currently displayed, use its display color
+                color = found.color;
+              }
+            }
+          }
+        } catch (e) {
+          /* ignore and fallback to channelState color */
+        }
+
+        return {
+          id,
+          name: id,
+          channelID: channelState.digital.channelIDs?.[idx],
+          color: color,
+          type: "Digital",
+          idx,
+          originalIndex: idx,
+          group: "Digital",
+        };
+      }) || [];
+
+    // Attach group names to analog channels (default to 'Group 1' when unknown)
+    const analogChannelsWithGroup = analogChannels.map((ch, i) => ({
+      ...ch,
+      unit: channelState.analog?.yUnits?.[i] || "", // ← Add unit from channelState
+      // prefer persisted group from channelState if present, else autoGroup map, else default
+      group:
+        (channelState.analog &amp;&amp;
+          channelState.analog.groups &amp;&amp;
+          channelState.analog.groups[i]) ||
+        analogGroupMap[i] ||
+        "Group 1",
+    }));
+
+    console.log(
+      "[showChannelListWindow] analogChannelsWithGroup (with units):",
+      analogChannelsWithGroup
+    );
+
+    // Build computed channels from cfg if available
+    const computedChannels =
+      cfg &amp;&amp; cfg.computedChannels
+        ? cfg.computedChannels.map((ch, idx) => ({
+            id: ch.id,
+            name: ch.name,
+            type: "Computed",
+            unit: ch.unit || "",
+            group: ch.group || "Computed",
+            color: ch.color || "#888",
+            idx,
+          }))
+        : [];
+
+    console.log(
+      "[showChannelListWindow] cfg.computedChannels:",
+      cfg?.computedChannels
+    );
+    console.log(
+      "[showChannelListWindow] computedChannels (with units):",
+      computedChannels
+    );
+
+    const channelListCfg = {
+      analogChannels: analogChannelsWithGroup,
+      digitalChannels,
+      computedChannels,
+    };
+
+    console.log(
+      "[showChannelListWindow] Final channelListCfg being sent to popup:",
+      channelListCfg
+    );
+
+    // Call createChannelList and append
+    // const listEl = createChannelList.call(
+    //   win,
+    //   channelListCfg,
+    //   (type, fromIdx, toIdx, color) => {
+    //     if (color !== undefined &amp;&amp; typeof onChannelColorChange === "function") {
+    //       onChannelColorChange(type, fromIdx, color);
+    //     } else if (typeof onChannelDrop === "function") {
+    //       onChannelDrop(type, fromIdx, toIdx);
+    //     }
+    //   }
+    // );
+
+    // win.document.getElementById("channel-root").appendChild(listEl);
+
+    const root = win.document.getElementById("channel-root");
+
+    // Inject a small module script into the popup so the ChannelList code runs
+    // inside the child window context. That allows the child to postMessage
+    // directly to the parent (window.opener) when changes occur.
+    const moduleScript = win.document.createElement("script");
+    moduleScript.type = "module";
+
+    const serializedCfg = JSON.stringify(channelListCfg || {});
+    const base =
+      window.location &amp;&amp; window.location.origin ? window.location.origin : "";
+    const modulePath = base + "/src/components/ChannelList.js";
+
+    moduleScript.textContent = `
+      import { createChannelList } from ${JSON.stringify(modulePath)};
+      (function(){
+        try {
+          const cfg = ${serializedCfg};
+          const root = document.getElementById('channel-root');
+          // createChannelList signature: (cfg, onChannelUpdate, TabulatorInstance, ownerDocument, attachToElement)
+          // We intentionally do not pass onChannelUpdate here: the child will postMessage to opener for callbacks.
+          createChannelList(cfg, undefined, undefined, document, root);
+        } catch (err) {
+          console.error('Child module failed to initialize ChannelList:', err);
+        }
+      })();
+    `;
+
+    win.document.body.appendChild(moduleScript);
+  }
+
+  return true;
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>
