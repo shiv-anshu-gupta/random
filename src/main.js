@@ -694,21 +694,21 @@ function updateComputedChartColorById(channelId, newColor) {
       `[updateComputedChartColorById] 🎨 Updating computed channel "${channelId}" color → ${newColor}`
     );
 
-    // Check if chartsComputed exists - there's only ONE chart containing ALL computed channels as series
-    const chartsArr = window.chartsComputed || chartsComputed;
+    // Computed charts are stored in the main charts array, not in a separate chartsComputed array
+    const chartsArr = charts || [];
     if (!Array.isArray(chartsArr) || chartsArr.length === 0) {
       console.warn(
-        `[updateComputedChartColorById] ⚠️ chartsComputed not ready (length: ${
+        `[updateComputedChartColorById] ⚠️ charts array not ready (length: ${
           chartsArr?.length || 0
         })`
       );
       return false;
     }
 
-    // Find the computed channels chart (should be the last one or marked with _computed=true)
+    // Find the computed channels chart (marked with _type="computed")
     let computedChart = null;
     for (const chart of chartsArr) {
-      if (chart && chart._computed === true) {
+      if (chart && (chart._computed === true || chart._type === "computed")) {
         computedChart = chart;
         break;
       }

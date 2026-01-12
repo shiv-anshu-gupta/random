@@ -128,19 +128,6 @@ export function showChannelListWindow(
 
   win.document.title = "Channel List";
 
-  // ✅ Apply current theme to popup immediately
-  const currentTheme = localStorage.getItem("comtrade-theme") || "dark";
-  win.document.documentElement.setAttribute("data-theme", currentTheme);
-
-  // ✅ Listen for theme changes from parent window
-  win.addEventListener("message", (ev) => {
-    if (ev.data && ev.data.theme) {
-      win.document.documentElement.setAttribute("data-theme", ev.data.theme);
-      localStorage.setItem("comtrade-theme", ev.data.theme);
-      console.log("[ChannelList] Theme updated:", ev.data.theme);
-    }
-  });
-
   // Bind full cfg/data to the popup for module scripts to consume
   try {
     win.globalCfg = cfg;
@@ -289,29 +276,147 @@ export function showChannelListWindow(
   </div>
   `;
 
-  // Add custom CSS with theme variables
+  // 🎨 Add custom CSS with COMPLETE theme variables (Light + Dark) + Tabulator styling
   const themeStyle = win.document.createElement("style");
   themeStyle.textContent = `
+    /* ========== LIGHT THEME (Default) ========== */
     :root {
-      --bg-primary: #f5f5f5;
+      --bg-primary: #f8fafc;
       --bg-secondary: #ffffff;
-      --bg-tertiary: #f0f0f0;
-      --bg-sidebar: #ffffff;
-      --text-primary: #1a1a1a;
-      --text-secondary: #666666;
-      --text-muted: #999999;
-      --border-color: #e0e0e0;
+      --bg-tertiary: #f1f5f9;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --border-color: #e2e8f0;
       --chart-bg: #ffffff;
-      --chart-text: #1a1a1a;
-      --chart-grid: #e0e0e0;
-      --chart-axis: #666666;
+      --chart-text: #1e293b;
+      --chart-grid: #cbd5e1;
+      --chart-axis: #64748b;
+      --chart-background: #ffffff;
     }
 
-    /* Theme-aware button styles */
+    /* ========== DARK THEME ========== */
+    [data-theme="dark"] {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #2d2d2d;
+      --bg-tertiary: #3a3a3a;
+      --text-primary: #ffffff;
+      --text-secondary: #cccccc;
+      --text-muted: #888888;
+      --border-color: #404040;
+      --chart-bg: #252525;
+      --chart-text: #ffffff;
+      --chart-grid: #404040;
+      --chart-axis: #cccccc;
+      --chart-background: #252525;
+    }
+
+    /* ========== BASE ELEMENTS ========== */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ========== CONTAINER STYLING ========== */
+    #channel-table {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    #button-bar {
+      background-color: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    #channel-root {
+      background-color: var(--chart-background) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    /* ========== TABULATOR STYLING FOR DARK THEME ========== */
+    .tabulator {
+      background-color: var(--chart-background) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    .tabulator-table {
+      background-color: var(--chart-background) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    .tabulator-header {
+      background-color: var(--bg-secondary) !important;
+      color: var(--text-primary) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    .tabulator-header .tabulator-col {
+      background-color: var(--bg-secondary) !important;
+      color: var(--text-primary) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    .tabulator-header .tabulator-col:hover {
+      background-color: var(--bg-tertiary) !important;
+    }
+
+    .tabulator-row {
+      background-color: var(--chart-background) !important;
+      color: var(--text-primary) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    .tabulator-row:hover {
+      background-color: var(--bg-tertiary) !important;
+    }
+
+    .tabulator-cell {
+      background-color: var(--chart-background) !important;
+      color: var(--text-primary) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    .tabulator-group {
+      background-color: var(--bg-secondary) !important;
+      color: var(--text-primary) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    .tabulator-group-visible .tabulator-group-toggle {
+      color: var(--text-primary) !important;
+    }
+
+    .tabulator-placeholder {
+      color: var(--text-muted) !important;
+    }
+
+    .tabulator-paginator {
+      background-color: var(--bg-secondary) !important;
+      color: var(--text-primary) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    .tabulator-paginator .tabulator-page.active {
+      background-color: var(--text-primary) !important;
+      color: var(--chart-background) !important;
+    }
+
+    /* ========== BUTTONS & CONTROLS ========== */
     .theme-btn-primary {
       background-color: var(--bg-secondary);
       color: var(--text-primary);
       border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
     .theme-btn-primary:hover {
       background-color: var(--bg-tertiary);
@@ -321,6 +426,10 @@ export function showChannelListWindow(
       background-color: #d4edda;
       color: #155724;
       border: 1px solid #155724;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
     .theme-btn-success:hover {
       background-color: #155724;
@@ -331,46 +440,116 @@ export function showChannelListWindow(
       background-color: #f8d7da;
       color: #721c24;
       border: 1px solid #721c24;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
     }
     .theme-btn-danger:hover {
       background-color: #721c24;
       color: #f8d7da;
     }
 
-    /* Theme-aware background and text */
+    /* ========== FORM ELEMENTS ========== */
+    select, input {
+      background-color: var(--bg-secondary) !important;
+      color: var(--text-primary) !important;
+      border-color: var(--border-color) !important;
+      padding: 6px 8px;
+      border-radius: 4px;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--text-primary) !important;
+    }
+
+    option {
+      background-color: var(--bg-secondary) !important;
+      color: var(--text-primary) !important;
+    }
+
+    /* ========== THEME-AWARE CLASSES ========== */
     .theme-bg {
-      background-color: var(--chart-bg);
-      color: var(--chart-text);
+      background-color: var(--chart-bg) !important;
+      color: var(--chart-text) !important;
     }
     .theme-border {
-      border-color: var(--border-color);
+      border-color: var(--border-color) !important;
+    }
+
+    /* ========== SCROLLBAR STYLING ========== */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background-color: var(--bg-primary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: var(--border-color);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: var(--text-muted);
     }
   `;
   win.document.head.appendChild(themeStyle);
 
-  // Add theme synchronization listener
+  // 🎯 Apply current theme to popup AFTER CSS is loaded
+  // This ensures CSS variables are defined BEFORE we try to use them
+  const savedTheme = localStorage.getItem("comtrade-theme") || "dark";
+  console.log("[showChannelListWindow] Setting initial theme to:", savedTheme);
+  win.document.documentElement.setAttribute("data-theme", savedTheme);
+
+  // ✅ UNIFIED Theme Message Handler (replaces the broken dual listeners)
   win.addEventListener("message", (event) => {
-    // Only accept messages from parent window
-    if (event.source !== window.opener) return;
+    // Safety check: only accept from parent window
+    if (event.source !== window.opener && event.source !== window) {
+      return;
+    }
 
-    const { source, type, payload } = event.data || {};
+    const data = event.data || {};
+    console.log("[showChannelListWindow] Received message:", {
+      hasTheme: !!data.theme,
+      hasType: !!data.type,
+      source: data.source,
+    });
 
-    if (source === "MainApp" && type === "theme_change") {
-      const { theme, colors } = payload;
-      console.log(
-        `[ChannelListWindow] Received theme change from parent: ${theme}`
-      );
+    // Handle simple theme message format: { theme: "dark" }
+    // (sent by some parts of themeBroadcast)
+    if (data.theme && !data.type) {
+      console.log("[showChannelListWindow] ✅ Applying theme (simple format):", data.theme);
+      win.document.documentElement.setAttribute("data-theme", data.theme);
+      win.localStorage.setItem("comtrade-theme", data.theme);
+      return;
+    }
 
-      // Apply theme colors to CSS variables
-      const root = win.document.documentElement.style;
-      Object.entries(colors).forEach(([key, value]) => {
-        root.setProperty(key, value);
-      });
+    // Handle structured message format: { source: "MainApp", type: "theme_change", payload: {...} }
+    // (sent by applyTheme in themeBroadcast.js)
+    if (data.source === "MainApp" && data.type === "theme_change") {
+      const { theme, colors } = data.payload || {};
+      console.log("[showChannelListWindow] ✅ Applying theme (structured format):", theme);
 
-      // Save to localStorage for persistence
-      win.localStorage.setItem("comtrade-theme", theme);
+      // Set data-theme attribute for CSS selector matching
+      if (theme) {
+        win.document.documentElement.setAttribute("data-theme", theme);
+        win.localStorage.setItem("comtrade-theme", theme);
+      }
 
-      console.log(`[ChannelListWindow] Applied theme: ${theme}`);
+      // Apply CSS variables directly (for immediate visual update)
+      if (colors && typeof colors === "object") {
+        const root = win.document.documentElement.style;
+        Object.entries(colors).forEach(([key, value]) => {
+          root.setProperty(key, value);
+          console.log(`  [showChannelListWindow] Set CSS variable: ${key} = ${value}`);
+        });
+      }
+
+      console.log("[showChannelListWindow] Theme updated successfully!");
+      return;
     }
   });
 

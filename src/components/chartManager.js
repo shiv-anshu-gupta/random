@@ -727,7 +727,7 @@ export function subscribeChartUpdates(
         // ✅ Handle both cases:
         // 1. Single color change: path = ['analog', 'lineColors', 0], newValue = '#fff'
         // 2. Whole array replace: path = ['analog', 'lineColors'], newValue = [...colors]
-        if (!type || (type !== "analog" && type !== "digital")) {
+        if (!type || (type !== "analog" && type !== "digital" && type !== "computed")) {
           console.warn(`[COLOR SUBSCRIBER] ❌ Invalid type: "${type}"`);
           return; // Invalid type, silently ignore
         }
@@ -875,6 +875,55 @@ export function subscribeChartUpdates(
                     isFunction: typeof digitalPlugin?.updateColors,
                   }
                 );
+              }
+            }
+          }
+
+          // ✅ FIX: Handle computed charts (single chart with all computed series)
+          if (type === "computed") {
+            console.log(`[COLOR SUBSCRIBER] 🎨 Updating computed chart colors...`);
+            
+            for (let ci = 0; ci < charts.length; ci++) {
+              const chart = charts[ci];
+              
+              if (!chart || chart._type !== "computed") {
+                continue;
+              }
+
+              console.log(`[COLOR SUBSCRIBER] 🎯 Found computed chart ${ci}, updating series colors`);
+              
+              // For computed charts, we have _computedIds array with channel IDs
+              // and we need to match them to update the correct series
+              const computedIds = chart._computedIds || [];
+              
+              for (let seriesIdx = 1; seriesIdx < chart.series.length; seriesIdx++) {
+                const colorIdx = seriesIdx - 1; // series[1] maps to colors[0]
+                const channelId = computedIds[colorIdx]; // Get the channel ID (e.g., "V0")
+                const color = change.newValue[colorIdx];
+                
+                if (color && channelId) {
+                  try {
+                    const strokeFn = () => color;
+                    chart.series[seriesIdx].stroke = strokeFn;
+                    chart.series[seriesIdx]._paths = null; // Clear path cache
+                    
+                    if (chart.series[seriesIdx].points) {
+                      chart.series[seriesIdx].points.stroke = strokeFn;
+                    }
+                    
+                    console.log(`[COLOR SUBSCRIBER] ✅ Computed "${channelId}" series[${seriesIdx}] color → ${color}`);
+                  } catch (e) {
+                    console.error(`[COLOR SUBSCRIBER] ❌ Failed to update computed "${channelId}" series[${seriesIdx}]:`, e);
+                  }
+                }
+              }
+              
+              // Redraw the computed chart
+              try {
+                chart.redraw(false);
+                console.log(`[COLOR SUBSCRIBER] ✅ Computed chart redrawn`);
+              } catch (e) {
+                console.error(`[COLOR SUBSCRIBER] ❌ Failed to redraw computed chart:`, e);
               }
             }
           }

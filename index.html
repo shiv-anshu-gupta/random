@@ -277,7 +277,7 @@
 
               <!-- Title and Search Row -->
               <div
-                class="px-6 py-4 border-b flex items-center justify-between gap-4 shrink-0"
+                class="px-6 py-4 border-b flex items-center justify-between gap-4 shrink-0 delta-drawer-header"
                 style="
                   background-color: var(--bg-secondary);
                   color: var(--text-primary);
@@ -314,18 +314,6 @@
                     </svg>
                   </button>
                 </div>
-              </div>
-              <div
-                id="delta-drawer-content"
-                class="flex-1 overflow-x-auto overflow-y-auto p-6"
-                style="
-                  background-color: var(--bg-secondary);
-                  color: var(--text-primary);
-                "
-              >
-                <p class="text-center" style="color: var(--text-muted)">
-                  No crosshair data available
-                </p>
               </div>
             </div>
         </div>
@@ -381,23 +369,22 @@
                 </button>
               </div>
 
-              <section class="flex-1 overflow-auto px-6 py-5">
-                <div
-                  class="flex items-center"
-                  style="margin-bottom: 12px"
+              <!-- Title -->
+              <div class="py-5 px-6" style="margin-bottom: 12px">
+                <h3
+                  style="
+                    margin: 0;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    color: var(--text-primary);
+                  "
                 >
-                  <h3
-                    style="
-                      margin: 0;
-                      font-size: 0.95rem;
-                      font-weight: 600;
-                      color: var(--text-primary);
-                    "
-                  >
-                    Phasor Diagram
-                  </h3>
-                </div>
+                  Phasor Diagram
+                </h3>
+              </div>
 
+              <!-- Polar chart -->
+              <div class="flex-1 overflow-auto flex justify-center items-start">
                 <div id="polarChartContainer" class="polar-chart-container">
                   <div
                     style="
@@ -409,7 +396,7 @@
                     Load COMTRADE data to render the phasor diagram
                   </div>
                 </div>
-              </section>
+              </div>
             </div>
           </div>
         </div>

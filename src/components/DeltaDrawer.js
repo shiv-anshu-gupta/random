@@ -191,13 +191,23 @@ export function createDeltaDrawer() {
 
       lastUpdateHash = currentHash;
 
-      const content = document.getElementById("delta-drawer-content");
-      if (!content) {
+      const drawerPanel = document.getElementById("delta-drawer-panel");
+      if (!drawerPanel) {
         console.warn(
-          "[DeltaDrawer] Content element not found - drawer may not be rendered yet"
+          "[DeltaDrawer] Drawer panel element not found - drawer may not be rendered yet"
         );
         return;
       }
+      
+      // Find or create header for title and search
+      let headerDiv = drawerPanel.querySelector(".delta-drawer-header");
+      if (!headerDiv) {
+        console.warn("[DeltaDrawer] Header not found in panel");
+        return;
+      }
+      
+      // Target the content area after header
+      const content = drawerPanel;
 
       // Destroy old renderer
       if (tableRenderer) {
@@ -212,7 +222,14 @@ export function createDeltaDrawer() {
             ? "Add vertical lines using <strong>Alt + 1</strong> on the chart to see values"
             : "";
 
-        content.innerHTML = `
+        let tableContainer = drawerPanel.querySelector(".delta-table-container");
+        if (!tableContainer) {
+          tableContainer = document.createElement("div");
+          tableContainer.className = "delta-table-container";
+          drawerPanel.appendChild(tableContainer);
+        }
+        
+        tableContainer.innerHTML = `
           <div class="delta-empty-state">
             <div style="font-size: 14px; line-height: 1.5; margin-bottom: 12px;">
               ${message}
@@ -229,19 +246,22 @@ export function createDeltaDrawer() {
         return;
       }
 
-      // Completely clear content
-      content.innerHTML = "";
+      // Remove old table container if exists
+      let tableContainer = drawerPanel.querySelector(".delta-table-container");
+      if (tableContainer) {
+        tableContainer.remove();
+      }
       console.log(
         "[DeltaDrawer] ✨ Content cleared, creating single table container"
       );
 
       // Create table container
-      const tableContainer = document.createElement("div");
+      tableContainer = document.createElement("div");
       tableContainer.className = "delta-table-container";
       tableContainer.id = "delta-table-main";
-      content.appendChild(tableContainer);
+      drawerPanel.appendChild(tableContainer);
       console.log(
-        "[DeltaDrawer] ✅ Table container appended to content (ONCE)"
+        "[DeltaDrawer] ✅ Table container appended to drawer panel (ONCE)"
       );
 
       // ✅ EXTRACT: Time values BEFORE creating renderer

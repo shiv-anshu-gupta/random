@@ -209,10 +209,11 @@ function createChannelItem(channel) {
   if (channel.equation) {
     const equationContainer = document.createElement("div");
     equationContainer.style.cssText = `
-      background: #f5f5f5;
+      background: var(--bg-tertiary, #f5f5f5);
+      color: var(--chart-text, #333);
       padding: 12px;
       border-radius: 3px;
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color, #e0e0e0);
       overflow-x: auto;
       font-size: 14px;
       line-height: 1.6;
@@ -221,6 +222,7 @@ function createChannelItem(channel) {
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     `;
 
     // Extract just the formula part (after the '=' sign) using regex for cleaner display

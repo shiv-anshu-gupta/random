@@ -102,6 +102,45 @@ export function renderComputedChannels(
     `[renderComputedChannels] 📊 Creating single group chart for ${computedChannels.length} computed channels...`
   );
 
+  // ✅ FIX: Check if a computed chart already exists and remove the old one
+  // This prevents multiple computed charts from being created when new channels are added at runtime
+  let existingComputedChartIndex = -1;
+  for (let i = 0; i < charts.length; i++) {
+    if (charts[i] && (charts[i]._type === "computed" || charts[i]._computed === true)) {
+      existingComputedChartIndex = i;
+      console.log(`[renderComputedChannels] 🔄 Found existing computed chart at index ${i}, will replace it`);
+      break;
+    }
+  }
+
+  // Remove the old computed chart container from DOM if it exists
+  if (existingComputedChartIndex >= 0) {
+    const oldChart = charts[existingComputedChartIndex];
+    if (oldChart && typeof oldChart.destroy === "function") {
+      try {
+        oldChart.destroy();
+        console.log(`[renderComputedChannels] ✅ Destroyed old computed chart`);
+      } catch (e) {
+        console.warn(`[renderComputedChannels] ⚠️ Error destroying old chart:`, e);
+      }
+    }
+
+    // Remove from charts array
+    charts.splice(existingComputedChartIndex, 1);
+    console.log(`[renderComputedChannels] ✅ Removed old computed chart from charts array`);
+
+    // Remove the old DOM container
+    const oldContainers = chartsContainer.querySelectorAll('[data-chartType="computed"]');
+    oldContainers.forEach((container) => {
+      try {
+        container.remove();
+        console.log(`[renderComputedChannels] ✅ Removed old computed chart container from DOM`);
+      } catch (e) {
+        console.warn(`[renderComputedChannels] ⚠️ Error removing DOM container:`, e);
+      }
+    });
+  }
+
   // Get time array
   let timeArray = data.time;
   if (!Array.isArray(data.time) || data.time.length === 0) {
@@ -260,6 +299,15 @@ export function renderComputedChannels(
   chart._axesScales = [1, ...computedChannels.map(() => 1)];
   chart._yUnits = groupYUnits || [];
   chart._seriesColors = groupLineColors || [];
+  
+  // ✅ FIX: Add _channelIndices for computed chart color updates
+  // Map computed channel IDs (e.g., "V0", "V1") to their array indices
+  // This maps: "V0" -> 0, "V1" -> 1, etc.
+  // The color subscriber uses this to find which series to update
+  chart._channelIndices = computedChannels.map((ch, idx) => ({
+    id: ch.id,
+    index: idx
+  }));
 
   console.log(
     `[renderComputedChannels] ✅ Chart created with ${computedChannels.length} series`
@@ -391,9 +439,11 @@ export function renderComputedChannels(
         gap: 4px;
         width: 100%;
         padding: 6px 4px;
-        border: 1px solid #e0e0e0;
+        border: 1px solid var(--border-color, #e0e0e0);
         border-radius: 3px;
-        background: #f9f9f9;
+        background: var(--bg-tertiary, #f9f9f9);
+        color: var(--chart-text, #333);
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
       `;
 
       // Color dot + name
@@ -436,22 +486,20 @@ export function renderComputedChannels(
           ? formulaMatch[1].trim()
           : channel.equation;
 
-        const eqDiv = document.createElement("div");
-        eqDiv.style.cssText = `
-          width: 100%;
+        const latexEquation = formatEquationForLatex(formulaOnly);
+        
+        // Create a temporary container for MathJax rendering
+        const tempDiv = document.createElement("div");
+        tempDiv.style.cssText = `
           font-size: 10px;
           text-align: center;
           padding: 4px 2px;
-          background: white;
-          border-radius: 2px;
-          border: 1px solid #ddd;
+          width: 100%;
           overflow-x: auto;
           max-width: 280px;
         `;
-
-        const latexEquation = formatEquationForLatex(formulaOnly);
-        eqDiv.innerHTML = `$$${latexEquation}$$`;
-        channelContainer.appendChild(eqDiv);
+        tempDiv.innerHTML = `<span style="font-weight: 600; margin-right: 4px; white-space: nowrap;">Eq: $$${latexEquation}$$</span>`;
+        channelContainer.appendChild(tempDiv);
       }
 
       labelDiv.appendChild(channelContainer);

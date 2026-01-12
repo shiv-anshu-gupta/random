@@ -143,17 +143,50 @@ body {
   background: var(--bg-tertiary);
   border-radius: 8px;
   overflow: hidden;
-  min-height: 280px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   font-size: 0.9rem;
   color: var(--text-secondary);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  line-height: 0;
 }
 
+.polar-chart-container canvas,
 .polar-chart-container svg {
-  width: 100%;
-  height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+/* === Analysis Sidebar Polar Chart Specific Styles === */
+#analysis-sidebar-panel section {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow-y: overlay !important;
+}
+
+#analysis-sidebar-panel .polar-chart-container {
+  width: fit-content;
+  height: auto;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#analysis-sidebar-panel .polar-chart-container canvas {
+  width: 300px !important;
+  height: 300px !important;
+  display: block;
+  margin: 0;
+  padding: 0;
 }
 
 /* === Main Content Margin Transitions (for sidebar resizing) === */
@@ -193,8 +226,12 @@ body,
 }
 
 #charts .polar-chart-container {
-  min-height: 300px;
-  height: 100%;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 0;
 }
 
 /* === Polar Chart Below Charts (Block Mode) === */
@@ -215,8 +252,12 @@ body,
 }
 
 #charts.charts-block-layout .polar-chart-container {
-  min-height: 350px;
-  height: auto;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 0;
 }
 
 .channel-item {

@@ -8,9 +8,7 @@
   border: 1px solid var(--border-color);
   border-radius: 8px;
   overflow-x: auto;
-  overflow-y: auto;
   background-color: var(--bg-secondary);
-  max-height: 600px;
 }
 
 .delta-table {

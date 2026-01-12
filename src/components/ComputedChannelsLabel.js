@@ -37,20 +37,22 @@ export function createComputedChannelsLabels(data) {
   computedChannels.forEach((channel) => {
     const label = document.createElement("div");
     label.style.cssText = `
-      background: white;
+      background: var(--chart-bg, white);
+      color: var(--chart-text, #333);
       border-left: 4px solid ${channel.color || "#999"};
       border-radius: 3px;
       padding: 6px 8px;
       font-size: 11px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
       pointer-events: auto;
+      transition: background-color 0.3s ease, color 0.3s ease;
     `;
 
     // Channel name
     const nameDiv = document.createElement("div");
     nameDiv.style.cssText = `
       font-weight: 600;
-      color: #333;
+      color: var(--chart-text, #333);
       margin-bottom: 4px;
       display: flex;
       align-items: center;
@@ -77,14 +79,16 @@ export function createComputedChannelsLabels(data) {
     if (channel.equation) {
       const eqDiv = document.createElement("div");
       eqDiv.style.cssText = `
-        background: #f9f9f9;
+        background: var(--bg-tertiary, #f9f9f9);
+        color: var(--chart-text, #333);
         border-radius: 2px;
         padding: 4px 6px;
-        border: 1px solid #e0e0e0;
+        border: 1px solid var(--border-color, #e0e0e0);
         font-size: 10px;
         overflow-x: auto;
         max-width: 280px;
         text-align: center;
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
       `;
 
       // Extract just the formula part (after the '=' sign) using regex for cleaner display

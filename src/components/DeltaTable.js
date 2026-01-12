@@ -19,14 +19,14 @@ export function buildTableHeader(
   const columns = [];
 
   // Column 1: Channel name (first column styling)
-  columns.push(`<th scope="col" class="py-6 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">Channel</th>`);
+  columns.push(`<th scope="col" class="py-6 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200" style="color: var(--text-primary, #111827);">Channel</th>`);
 
   // Value columns (one per vertical line)
   for (let i = 0; i < verticalLinesCount; i++) {
     const color = getColorHex(crosshairColors[i % crosshairColors.length]);
 
     columns.push(`
-      <th scope="col" class="px-3 py-8 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+      <th scope="col" class="px-3 py-8 text-center text-sm font-semibold text-gray-900 dark:text-gray-200">
         <span style="color: ${color}">${
       crosshairColors[i % crosshairColors.length].charAt(0).toUpperCase() +
       crosshairColors[i % crosshairColors.length].slice(1)
@@ -44,7 +44,7 @@ export function buildTableHeader(
 
     // Delta value column
     columns.push(`
-      <th scope="col" class="px-3 py-8 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+      <th scope="col" class="px-3 py-8 text-center text-sm font-semibold text-gray-900 dark:text-gray-200" style="color: var(--text-primary, #111827);">
         <span style="background-color: ${color1}; width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px;"></span>
         <span style="display: inline-block; margin: 0 2px;">→</span>
         <span style="background-color: ${color2}; width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 4px; margin-right: 4px;"></span>
@@ -54,7 +54,7 @@ export function buildTableHeader(
 
     // Percentage column
     columns.push(`
-      <th scope="col" class="px-3 py-8 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+      <th scope="col" class="px-3 py-8 text-center text-sm font-semibold text-gray-900 dark:text-gray-200" style="color: var(--text-primary, #111827);">
         <span style="background-color: ${color1}; width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px;"></span>
         <span style="display: inline-block; margin: 0 2px;">→</span>
         <span style="background-color: ${color2}; width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 4px; margin-right: 4px;"></span>
@@ -63,7 +63,7 @@ export function buildTableHeader(
     `);
   }
 
-  return `<thead class="bg-gray-50 dark:bg-gray-800/75"><tr>${columns.join("")}</tr></thead>`;
+  return `<thead style="background-color: var(--bg-tertiary, #f9fafb); color: var(--text-primary, #111827);"><tr>${columns.join("")}</tr></thead>`;
 }
 
 /**
@@ -74,7 +74,7 @@ export function buildTableHeader(
  */
 export function buildTableBody(tableData, verticalLinesCount) {
   if (!tableData || tableData.length === 0) {
-    return `<tbody><tr><td colspan="100" class="whitespace-nowrap py-10 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">No data available</td></tr></tbody>`;
+    return `<tbody><tr><td colspan="100" style="padding: 40px 16px; text-align: center; color: var(--text-muted, #9ca3af);">No data available</td></tr></tbody>`;
   }
 
   console.log("[DeltaTable] First row structure:", tableData[0]);
@@ -98,11 +98,11 @@ export function buildTableBody(tableData, verticalLinesCount) {
     // Channel name cell (first column)
     if (isTimeRow) {
       cells.push(
-        `<td class="whitespace-nowrap py-10 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">Time (T)</td>`
+        `<td style="padding: 10px 12px; text-align: center; white-space: nowrap; color: var(--text-primary, #111827); font-weight: 500; border-right: 1px solid var(--border-color, #e5e7eb);">Time (T)</td>`
       );
     } else {
       cells.push(`
-        <td class="whitespace-nowrap py-10 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
+        <td style="padding: 10px 12px; text-align: center; white-space: nowrap; color: var(--text-primary, #111827); font-weight: 500; border-right: 1px solid var(--border-color, #e5e7eb);">
           <span style="background-color: ${row.color}; width: 12px; height: 12px; border-radius: 2px; display: inline-block; margin-right: 8px; vertical-align: middle;"></span>
           ${row.channel}
         </td>
@@ -112,7 +112,7 @@ export function buildTableBody(tableData, verticalLinesCount) {
     // Value cells
     for (let i = 0; i < verticalLinesCount; i++) {
       const value = row[`v${i}`] || "N/A";
-      cells.push(`<td class="whitespace-nowrap px-3 py-10 text-sm text-gray-500 dark:text-gray-400">${value}</td>`);
+      cells.push(`<td style="padding: 10px 12px; text-align: center; white-space: nowrap; color: var(--text-primary, #111827); border-right: 1px solid var(--border-color, #e5e7eb);">${value}</td>`);
     }
 
     // Delta and percentage cells
@@ -128,28 +128,28 @@ export function buildTableBody(tableData, verticalLinesCount) {
       }
 
       // Delta cell
-      cells.push(`<td class="whitespace-nowrap px-3 py-10 text-sm text-gray-500 dark:text-gray-400">${deltaValue}</td>`);
+      cells.push(`<td style="padding: 10px 12px; text-align: center; white-space: nowrap; color: var(--text-primary, #111827); border-right: 1px solid var(--border-color, #e5e7eb);">${deltaValue}</td>`);
 
       // Percentage cell
       if (isTimeRow) {
         cells.push(
-          `<td class="whitespace-nowrap px-3 py-10 text-sm text-gray-500 dark:text-gray-400">—</td>`
+          `<td style="padding: 10px 12px; text-align: center; white-space: nowrap; color: var(--text-muted, #9ca3af); border-right: 1px solid var(--border-color, #e5e7eb);">—</td>`
         );
       } else {
-        const percentClass =
-          percentage < 0 ? "text-red-600 dark:text-red-400" : percentage > 0 ? "text-green-600 dark:text-green-400" : "text-gray-500 dark:text-gray-400";
+        const percentColor =
+          percentage < 0 ? "#dc2626" : percentage > 0 ? "#16a34a" : "var(--text-muted, #9ca3af)";
         cells.push(`
-          <td class="whitespace-nowrap px-3 py-10 text-sm font-medium ${percentClass}">
+          <td style="padding: 10px 12px; text-align: center; white-space: nowrap; color: ${percentColor}; font-weight: 600; border-right: 1px solid var(--border-color, #e5e7eb);">
             ${percentage.toFixed(1)}%
           </td>
         `);
       }
     }
 
-    return `<tr class="divide-x divide-gray-200 dark:divide-white/10">${cells.join("")}</tr>`;
+    return `<tr style="border-bottom: 1px solid var(--border-color, #e5e7eb);">${cells.join("")}</tr>`;
   });
 
-  return `<tbody class="divide-y divide-gray-200 bg-white dark:divide-white/10 dark:bg-gray-800/50">${rows.join("")}</tbody>`;
+  return `<tbody style="background-color: var(--bg-secondary, #ffffff); color: var(--text-primary, #111827);">${rows.join("")}</tbody>`;
 }
 
 /**
