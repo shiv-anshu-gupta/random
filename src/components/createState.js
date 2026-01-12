@@ -730,7 +730,7 @@ export function createState(initialState, { batch = true } = {}) {
    * state.bindToDOM('prop2', el2, { selectiveUpdate: { queue: updateQueue } });
    */
   proxy.bindToDOM = function (propertyPath, selectorOrElement, options = {}) {
-    const {
+    let {
       twoWay = false,
       eventType,
       prop,

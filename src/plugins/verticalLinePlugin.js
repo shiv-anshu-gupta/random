@@ -16,7 +16,7 @@ export default function verticalLinePlugin(
   let overlayRef = null;
   let unsubscribe = null;
   const lineColors = options.lineColors || crosshairColors;
-  const lineWidth = options.lineWidth || 2;
+  const lineWidth = options.lineWidth || 4;
   const pointRadius = options.pointRadius || 5;
   const labelFormatter =
     options.labelFormatter ||

@@ -129,7 +129,7 @@ export class PolarChart {
 
     console.log("[PolarChart] Phasor channels to plot:", phasorChannels);
 
-    const phasorData = [];
+    let phasorData = [];
 
     // Color mapping for channels
     const colorMap = {

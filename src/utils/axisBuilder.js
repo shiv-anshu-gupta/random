@@ -438,10 +438,17 @@ export function buildCompleteAxesArray({
     scale: "x",
     side: 2,
     label: `${xLabel}(${xUnit || "sec"})`,
-    stroke: () => getThemeColors().gridStroke, // Lighter for X-axis
+    labelGap: 8,
+    labelSize: 14,
+    stroke: () => getThemeColors().axisStroke, // Match theme axis color
+    gap: 5,
     grid: {
       show: true,
       stroke: () => getThemeColors().gridStroke,
+    },
+    ticks: {
+      show: true,
+      size: 10,
     },
     values: (u, splits) =>
       splits.map((v) => {
