@@ -443,6 +443,34 @@ export function createEquationEvaluatorInChannelList(
       index: data.computedData.length - 1,
     });
 
+    // 🎯 CRITICAL: Broadcast new computed channel to Channel List popup if open
+    if (window.__channelListWindow && !window.__channelListWindow.closed) {
+      try {
+        const computedChannelsList = (window.globalCfg && window.globalCfg.computedChannels) || cfg.computedChannels || [];
+        console.log("[EquationEvaluatorInChannelList] 📢 Broadcasting computed channels to popup after creation:", {
+          count: computedChannelsList.length,
+          newChannelId: channelName,
+          ids: computedChannelsList.map((ch) => ch.id),
+        });
+
+        window.__channelListWindow.postMessage(
+          {
+            source: "MainApp",
+            type: "computed_channels_updated",
+            payload: {
+              computedChannels: computedChannelsList,
+            },
+          },
+          "*"
+        );
+      } catch (err) {
+        console.warn(
+          "[EquationEvaluatorInChannelList] Failed to broadcast computed channels to popup:",
+          err
+        );
+      }
+    }
+
     // 📊 Store metadata in centralized metadata manager
     computedChannelMetadata.set(channelName, {
       name: channelName,

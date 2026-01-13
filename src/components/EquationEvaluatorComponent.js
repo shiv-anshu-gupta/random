@@ -315,6 +315,34 @@ function saveComputedChannel(computation, resultsDiv) {
     index: globalData.computedData.length - 1,
   });
 
+  // 🎯 CRITICAL: Broadcast new computed channel to Channel List popup if open
+  if (window.__channelListWindow && !window.__channelListWindow.closed) {
+    try {
+      const computedChannelsList = globalCfg.computedChannels || [];
+      console.log("[EquationEvaluatorComponent] 📢 Broadcasting computed channels to popup after creation:", {
+        count: computedChannelsList.length,
+        newChannelId: channelName,
+        ids: computedChannelsList.map((ch) => ch.id),
+      });
+
+      window.__channelListWindow.postMessage(
+        {
+          source: "MainApp",
+          type: "computed_channels_updated",
+          payload: {
+            computedChannels: computedChannelsList,
+          },
+        },
+        "*"
+      );
+    } catch (err) {
+      console.warn(
+        "[EquationEvaluatorComponent] Failed to broadcast computed channels to popup:",
+        err
+      );
+    }
+  }
+
   // Show success message
   const successMsg = document.createElement("div");
   successMsg.style.cssText =

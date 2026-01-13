@@ -2934,6 +2934,33 @@ try {
           if (typeof renderComputedChannels === "function") {
             renderComputedChannels(charts, channelState, channels);
           }
+
+          // 🎯 Broadcast computed channels update to Channel List popup if open
+          if (window.__channelListWindow && !window.__channelListWindow.closed) {
+            try {
+              const computedChannelsList = Object.values(channels || {});
+              console.log("[main.js] 📢 Broadcasting computed channels to popup:", {
+                count: computedChannelsList.length,
+                ids: computedChannelsList.map((ch) => ch.id),
+              });
+
+              window.__channelListWindow.postMessage(
+                {
+                  source: "MainApp",
+                  type: "computed_channels_updated",
+                  payload: {
+                    computedChannels: computedChannelsList,
+                  },
+                },
+                "*"
+              );
+            } catch (err) {
+              console.warn(
+                "[main.js] Failed to broadcast computed channels to popup:",
+                err
+              );
+            }
+          }
         }
       } catch (e) {
         console.error("[main.js] Error handling computed channels update:", e);
@@ -3824,6 +3851,30 @@ function setupComputedChannelsListener() {
             window.globalCfg.computedChannels,
             window.globalData?.computedData || []
           );
+
+          // 🎯 CRITICAL: Broadcast to popup window immediately after saving
+          if (window.__channelListWindow && !window.__channelListWindow.closed) {
+            try {
+              const computedChannelsList = window.globalCfg.computedChannels || [];
+              console.log("[main.js] 📢 Broadcasting computed channels to popup after save:", {
+                count: computedChannelsList.length,
+                ids: computedChannelsList.map((ch) => ch.id || ch.name),
+              });
+
+              window.__channelListWindow.postMessage(
+                {
+                  source: "MainApp",
+                  type: "computed_channels_updated",
+                  payload: {
+                    computedChannels: computedChannelsList,
+                  },
+                },
+                "*"
+              );
+            } catch (err) {
+              console.warn("[main.js] Failed to broadcast computed channels to popup:", err);
+            }
+          }
         }
       }
       const eventProcessTime = performance.now() - eventProcessStart;
@@ -4507,6 +4558,29 @@ window.addEventListener("message", (ev) => {
               computedChannelsData
             );
             console.log(`[COMPUTED COLOR HANDLER] ✅ Saved to localStorage`);
+
+            // 🎯 Broadcast to popup window after saving
+            if (window.__channelListWindow && !window.__channelListWindow.closed) {
+              try {
+                console.log("[COMPUTED COLOR HANDLER] 📢 Broadcasting computed channels to popup:", {
+                  count: computedChannelsData.length,
+                  ids: computedChannelsData.map((ch) => ch.id || ch.name),
+                });
+
+                window.__channelListWindow.postMessage(
+                  {
+                    source: "MainApp",
+                    type: "computed_channels_updated",
+                    payload: {
+                      computedChannels: computedChannelsData,
+                    },
+                  },
+                  "*"
+                );
+              } catch (err) {
+                console.warn("[COMPUTED COLOR HANDLER] Failed to broadcast to popup:", err);
+              }
+            }
           }
         } catch (e) {
           console.error(

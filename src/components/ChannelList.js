@@ -2221,6 +2221,15 @@ export function createChannelList(
     // 'Invalid table constructor option' warnings on mismatched Tabulator builds
   });
 
+  // 🎯 Store Tabulator instance in the popup window for runtime updates
+  // popupWindow is already defined earlier in this function (line 2177)
+  if (popupWindow && typeof popupWindow === "object") {
+    popupWindow.__tabulatorInstance = table;
+    console.log("[ChannelList] ✅ Stored Tabulator instance in popup window");
+  } else {
+    console.warn("[ChannelList] ⚠️ Could not store Tabulator instance - popup window not available");
+  }
+
   // Debug: Log Tabulator data and columns after initialization
   console.log(
     "[ChannelList] Tabulator initialized with tableData:",

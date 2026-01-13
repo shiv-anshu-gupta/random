@@ -841,13 +841,14 @@ export function showChannelListWindow(
     }
   }
 
-  // ✅ Listen for theme changes from parent
+  // ✅ Listen for theme changes and computed channel updates from parent
   win.addEventListener("message", (event) => {
     // Only accept from parent
-    if (event.source !== window) return;
+    if (event.source !== window.opener && event.source !== window) return;
 
     const { source, type, payload } = event.data || {};
 
+    // Handle theme changes
     if (source === "MainApp" && type === "theme_change") {
       const { theme, colors } = payload;
       console.log(`[ChannelList] Received theme change: ${theme}`);
@@ -860,6 +861,127 @@ export function showChannelListWindow(
         Object.entries(colors).forEach(([key, value]) => {
           win.document.documentElement.style.setProperty(key, value);
         });
+      }
+    }
+
+    // 🎯 Handle computed channel creation/updates at runtime
+    if (source === "MainApp" && type === "computed_channels_updated") {
+      const { computedChannels } = payload || {};
+      console.log("[showChannelListWindow] 📢 Received computed channels update:", {
+        count: computedChannels?.length || 0,
+        channels: computedChannels?.map((c) => c.id),
+      });
+
+      if (computedChannels && Array.isArray(computedChannels)) {
+        // Update the global cfg with new computed channels
+        if (win.globalCfg) {
+          win.globalCfg.computedChannels = computedChannels;
+          console.log(
+            "[showChannelListWindow] ✅ Updated globalCfg.computedChannels"
+          );
+        }
+
+        // Get reference to the Tabulator table instance stored in the window
+        if (win.__tabulatorInstance) {
+          const table = win.__tabulatorInstance;
+          const currentData = table.getData();
+
+          console.log("[showChannelListWindow] 🔍 Current table data before update:", {
+            total: currentData.length,
+            analog: currentData.filter((r) => r.type === "Analog").length,
+            digital: currentData.filter((r) => r.type === "Digital").length,
+            computed: currentData.filter((r) => r.type === "Computed").length,
+          });
+
+          // Keep ALL analog and digital channels as-is
+          const analogAndDigitalRows = currentData.filter(
+            (row) => row.type === "Analog" || row.type === "Digital"
+          );
+
+          // ✅ CRITICAL: Keep EXISTING computed channels that are NOT in the new list
+          // This preserves previously stored channels that came from localStorage
+          const existingComputedRows = currentData.filter(
+            (row) => row.type === "Computed"
+          );
+
+          console.log("[showChannelListWindow] Keeping analog & digital rows:", {
+            count: analogAndDigitalRows.length,
+          });
+
+          console.log("[showChannelListWindow] 📦 Existing computed channels before merge:", {
+            count: existingComputedRows.length,
+            ids: existingComputedRows.map((r) => r.channelID),
+          });
+
+          // Build NEW computed channels from broadcast (runtime created channels)
+          const newComputedRows = computedChannels.map((ch, idx) => {
+            // Match the structure from ChannelList.js line 1894-1900
+            return {
+              id: ch.id || `computed_${idx}`,
+              channelID: ch.id,  // Important: channelID must match the ch.id
+              originalIndex: idx,
+              type: "Computed",
+              displayGroup: "Analog & Computed",  // ✅ CRITICAL: Must match initial load (Analog & Computed, NOT just Computed)
+              name: ch.name || ch.id || `Computed ${idx + 1}`,
+              unit: ch.unit || "",
+              group: ch.group || "Computed",
+              color: ch.color || "#4ECDC4",
+              scale: ch.scale || 1,
+              start: ch.start || 0,
+              duration: ch.duration || "",
+              invert: ch.invert || "",
+            };
+          });
+
+          // ✅ MERGE: Combine existing computed channels with new ones
+          // For each existing channel, check if it's already in the new list
+          // If it's in the new list, use the updated version; otherwise keep the existing one
+          const mergedComputedRows = [
+            // Keep existing computed channels that are NOT being updated
+            ...existingComputedRows.filter(
+              (existing) =>
+                !computedChannels.some((ch) => ch.id === existing.channelID)
+            ),
+            // Add all new/updated computed channels
+            ...newComputedRows,
+          ];
+
+          console.log("[showChannelListWindow] 📦 Computed channels after merge:", {
+            count: mergedComputedRows.length,
+            fromExisting: existingComputedRows.filter(
+              (existing) =>
+                !computedChannels.some((ch) => ch.id === existing.channelID)
+            ).length,
+            fromNew: newComputedRows.length,
+            ids: mergedComputedRows.map((r) => r.channelID),
+          });
+
+          // Final data: analog + digital + merged computed
+          const updatedData = [...analogAndDigitalRows, ...mergedComputedRows];
+
+          console.log("[showChannelListWindow] 📊 Final merged table data:", {
+            totalRows: updatedData.length,
+            analog: updatedData.filter((r) => r.type === "Analog").length,
+            digital: updatedData.filter((r) => r.type === "Digital").length,
+            computed: updatedData.filter((r) => r.type === "Computed").length,
+            groupBreakdown: {
+              "Analog & Computed": updatedData.filter((r) => r.displayGroup === "Analog & Computed").length,
+              "Digital": updatedData.filter((r) => r.displayGroup === "Digital").length,
+            },
+          });
+
+          // Update Tabulator with new data
+          try {
+            table.setData(updatedData);
+            console.log("[showChannelListWindow] ✅ Table updated successfully!");
+          } catch (err) {
+            console.error("[showChannelListWindow] ❌ Failed to update table:", err);
+          }
+        } else {
+          console.warn(
+            "[showChannelListWindow] ⚠️ Tabulator instance not found in window"
+          );
+        }
       }
     }
   });
