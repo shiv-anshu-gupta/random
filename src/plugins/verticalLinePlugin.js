@@ -1,10 +1,32 @@
 /**
  * uPlot Plugin: Vertical Line & Crosshair Points
  * FIXED: Prevents selection box during drag using event capture phase
+ * FIXED: Uses getBoundingClientRect + clientX for accurate coordinate math
  */
 import { crosshairColors } from "../utils/constants.js";
 import { getNearestIndex } from "../utils/helpers.js";
 import { debounce } from "../utils/computedChannelOptimization.js";
+
+/**
+ * Convert a mouse event to the correct X value relative to the uPlot overlay.
+ * Uses getBoundingClientRect() + clientX instead of e.offsetX to handle scrolling,
+ * CSS transforms, and container positioning correctly.
+ * @param {uPlot} u - The uPlot instance
+ * @param {MouseEvent} e - The mouse event
+ * @returns {number} The X value in data coordinates
+ */
+function getEventXValue(u, e) {
+  const over = u.over;
+  if (!over) return u.posToVal(e.offsetX, "x"); // fallback for safety
+  
+  // Get precise coordinates relative to the overlay using getBoundingClientRect
+  // This accounts for scrolling, CSS transforms, and container positioning
+  const rect = over.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  
+  // Convert pixel position to data value
+  return u.posToVal(x, "x");
+}
 
 export default function verticalLinePlugin(
   verticalLinesXState,
@@ -101,7 +123,7 @@ export default function verticalLinePlugin(
             if (!u || !u.scales || !u.data) return;
 
             const lines = verticalLinesXState.asArray();
-            const xVal = u.posToVal(e.offsetX, "x");
+            const xVal = getEventXValue(u, e);
             const hoverRadius = (u.scales.x.max - u.scales.x.min) * 0.04;
 
             for (let idx = 0; idx < lines.length; idx++) {
@@ -124,7 +146,7 @@ export default function verticalLinePlugin(
           const handleMouseMove = (e) => {
             if (!u || !u.scales) return;
 
-            const xVal = u.posToVal(e.offsetX, "x");
+            const xVal = getEventXValue(u, e);
             // For cursor display: use 0.045 (slightly larger) to make it easier to grab
             const hoverRadiusDisplay = (u.scales.x.max - u.scales.x.min) * 0.045;
             const isHovering = isHoveringLine(u, xVal, hoverRadiusDisplay);
@@ -137,7 +159,13 @@ export default function verticalLinePlugin(
               e.stopImmediatePropagation();
               e.preventDefault();
 
-              verticalLinesXState[draggedLineIndex] = xVal;
+              // ✅ Update state reactively via array assignment to trigger subscriptions
+              // This ensures the state change propagates to all subscribers and redraws
+              const current = verticalLinesXState.asArray();
+              const next = [...current];
+              next[draggedLineIndex] = xVal;
+              // Direct assignment on reactive state triggers the proxy's set trap
+              verticalLinesXState.value = next;
 
               // ✅ IMMEDIATELY redraw the current chart being dragged for smooth movement
               u.redraw();
@@ -221,6 +249,20 @@ export default function verticalLinePlugin(
             },
             true
           );
+
+          // ✅ Add window-level mouseup in capture phase to ensure drag state is reset
+          // even when the mouse is released outside the overlay
+          const handleWindowMouseUp = (e) => {
+            if (isDragging) {
+              isDragging = false;
+              draggedLineIndex = null;
+              overlay.style.cursor = "default";
+            }
+          };
+          window.addEventListener("mouseup", handleWindowMouseUp, true);
+          
+          // Store reference for cleanup in destroy hook
+          overlayRef._handleWindowMouseUp = handleWindowMouseUp;
         },
       ],
       draw: [
@@ -306,6 +348,10 @@ export default function verticalLinePlugin(
         (u) => {
           if (unsubscribe) unsubscribe();
           if (overlayRef) {
+            // Clean up window-level mouseup listener
+            if (overlayRef._handleWindowMouseUp) {
+              window.removeEventListener("mouseup", overlayRef._handleWindowMouseUp, true);
+            }
             overlayRef.replaceWith(overlayRef.cloneNode(true));
           }
         },
