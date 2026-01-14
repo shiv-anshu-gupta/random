@@ -201,16 +201,53 @@ export function parseCFG(cfgText, timeUnit = "microseconds") {
     });
   }
 
-  // 4️⃣ Parse Sampling Rates
+  // 4️⃣ Parse Line Frequency and Sampling Rates
   const samplingRates = [];
-  const nrates = Number(cells[3 + channelCount][0]);
-  if (nrates === 0) {
-    const [samp, endsamp] = cells[4 + channelCount].map(Number);
-    samplingRates.push({ rate: samp, endSample: endsamp });
+  const frequencyIndex = 2 + channelCount;
+  let frequencyRow = cells[frequencyIndex] || [];
+  let nratesIndex = frequencyIndex + 1;
+  let nratesRow = cells[nratesIndex] || [];
+  const nextRow = cells[nratesIndex + 1] || [];
+  const looksLikeStartTime = nextRow.some((cell) => /[/:]/.test(cell));
+
+  if (nratesRow.length >= 2 && frequencyRow.length <= 1 && looksLikeStartTime) {
+    nratesIndex = frequencyIndex;
+    nratesRow = frequencyRow;
+    frequencyRow = [];
+  }
+
+  const parsedLineFrequency = Number(frequencyRow[0]);
+  const lineFrequency = Number.isFinite(parsedLineFrequency) && parsedLineFrequency > 0
+    ? parsedLineFrequency
+    : null;
+
+  const parsedNrates = Number(nratesRow[0]);
+  const nrates = Number.isFinite(parsedNrates) ? parsedNrates : 0;
+  const firstRateIndex = nratesIndex + 1;
+
+  if (nrates <= 0) {
+    const fallbackRow = cells[firstRateIndex] || [];
+    const rate = Number(fallbackRow[0]);
+    const endSample = Number(fallbackRow[1]);
+    if (Number.isFinite(rate) || Number.isFinite(endSample)) {
+      samplingRates.push({
+        rate: Number.isFinite(rate) ? rate : 0,
+        endSample: Number.isFinite(endSample) ? endSample : 0,
+      });
+    }
   } else {
-    for (let i = 0; i < nrates; i++) {
-      const [samp, endsamp] = cells[4 + channelCount + i].map(Number);
-      samplingRates.push({ rate: samp, endSample: endsamp });
+    for (let i = 0; i < nrates; i += 1) {
+      const row = cells[firstRateIndex + i];
+      if (!row) break;
+      const rate = Number(row[0]);
+      const endSample = Number(row[1]);
+      if (!Number.isFinite(rate) && !Number.isFinite(endSample)) {
+        continue;
+      }
+      samplingRates.push({
+        rate: Number.isFinite(rate) ? rate : 0,
+        endSample: Number.isFinite(endSample) ? endSample : 0,
+      });
     }
   }
 
@@ -292,6 +329,7 @@ export function parseCFG(cfgText, timeUnit = "microseconds") {
     analogChannels,
     digitalChannels,
     samplingRates,
+    lineFrequency,
     ft,
     baseMicroseconds: startTimeObj.totalMicroseconds,
     startDay: startTimeObj.day,

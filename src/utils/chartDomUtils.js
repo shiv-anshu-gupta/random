@@ -142,10 +142,18 @@ export function createSimpleContainer(containerClass = "analysis-container") {
  * @returns {uPlot}
  */
 export function initUPlotChart(opts, chartData, chartDiv, charts) {
-  // ✅ FIX #1: Calculate width dynamically from container if not provided
-  // Get parent's client width (this is the actual available space)
-  const containerWidth =
-    chartDiv.parentElement?.clientWidth || chartDiv.clientWidth || 800;
+  const computeContentWidth = (el) => {
+    if (!el) return 800;
+    const rect = el.getBoundingClientRect();
+    const style = window.getComputedStyle(el);
+    const paddingX =
+      parseFloat(style.paddingLeft || "0") + parseFloat(style.paddingRight || "0");
+    const width = rect.width ? rect.width - paddingX : el.clientWidth - paddingX;
+    return Math.max(Math.floor(width), 0);
+  };
+
+  // ✅ FIX #1: Calculate width from the chart container itself (excludes label + drag bar)
+  const containerWidth = computeContentWidth(chartDiv) || 800;
 
   // Only set width if not already provided or is placeholder
   if (!opts.width || opts.width === 400) {
@@ -174,16 +182,32 @@ export function initUPlotChart(opts, chartData, chartDiv, charts) {
     resizeTimeout = setTimeout(() => {
       for (let entry of entries) {
         // Use contentBoxSize if available (more accurate), fallback to contentRect
-        let newWidth, newHeight;
+        const target = entry.target;
+        let newWidth;
+        let newHeight;
 
         if (entry.contentBoxSize) {
-          // contentBoxSize is more accurate for our use case (excludes padding)
           newWidth = Math.floor(entry.contentBoxSize[0].inlineSize);
           newHeight = Math.floor(entry.contentBoxSize[0].blockSize);
         } else {
-          // Fallback to contentRect (includes padding in some browsers)
           newWidth = Math.floor(entry.contentRect.width);
           newHeight = Math.floor(entry.contentRect.height);
+        }
+
+        if (target) {
+          const widthFromTarget = computeContentWidth(target);
+          if (widthFromTarget > 0) {
+            newWidth = widthFromTarget;
+          }
+
+          const rect = target.getBoundingClientRect();
+          const style = window.getComputedStyle(target);
+          const paddingY =
+            parseFloat(style.paddingTop || "0") + parseFloat(style.paddingBottom || "0");
+          const heightFromTarget = Math.max(Math.floor(rect.height - paddingY), 0);
+          if (heightFromTarget > 0) {
+            newHeight = heightFromTarget;
+          }
         }
 
         // Only resize if dimensions actually changed (prevents resize loops)
@@ -207,7 +231,7 @@ export function initUPlotChart(opts, chartData, chartDiv, charts) {
 
   // ✅ FIX #3: Observe parent container to catch width changes from sidebar toggle
   // This ensures chart resizes when parent container width changes (sidebar open/close)
-  ro.observe(chartDiv.parentElement);
+  ro.observe(chartDiv);
 
   return chart;
 }

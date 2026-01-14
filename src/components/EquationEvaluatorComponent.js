@@ -31,31 +31,30 @@ export function createEquationEvaluatorComponent(cfg, data, channelState) {
 
   const section = document.createElement("section");
   section.id = "equation-evaluator-section";
-  section.style.cssText = `
-    padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 8px;
-    margin: 20px 0;
-    color: white;
-  `;
+  section.classList.add("equation-evaluator-component");
 
   section.innerHTML = `
-    <h2 style="margin-top: 0; margin-bottom: 15px; font-size: 24px;">🧮 Equation Evaluator</h2>
+    <h2>Equation Evaluator</h2>
     
-    <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: flex-end;">
-      <div style="flex: 1; min-width: 250px;">
-        <label style="display: block; font-weight: bold; margin-bottom: 8px; color: white;">Equation:</label>
-        <input type="text" id="equation-input" placeholder="e.g., sqrt(a0^2 + a1^2)" style="width: 100%; padding: 10px; border: none; border-radius: 4px; box-sizing: border-box; font-family: monospace;">
+    <div class="equation-evaluator-controls">
+      <div class="equation-evaluator-input-wrapper">
+        <label for="equation-input">Equation:</label>
+        <input
+          type="text"
+          id="equation-input"
+          class="equation-evaluator-input"
+          placeholder="e.g., sqrt(a0^2 + a1^2)"
+        >
       </div>
-      <button id="execute-btn" style="padding: 10px 20px; background: white; color: #667eea; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">
+      <button id="execute-btn" class="equation-evaluator-button">
         ▶️ Execute
       </button>
-      <button id="show-channels-btn" style="padding: 10px 20px; background: white; color: #667eea; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">
+      <button id="show-channels-btn" class="equation-evaluator-button secondary">
         📋 Channels
       </button>
     </div>
 
-    <div id="results" style="background: white; border-radius: 6px; color: #333; padding: 15px; margin-top: 15px;"></div>
+    <div id="results" class="equation-evaluator-results"></div>
   `;
 
   const equationInput = section.querySelector("#equation-input");
@@ -67,7 +66,7 @@ export function createEquationEvaluatorComponent(cfg, data, channelState) {
     const equation = equationInput.value.trim();
     if (!equation) {
       resultsDiv.innerHTML =
-        '<div style="color: #e74c3c; text-align: center;">Please enter an equation</div>';
+        '<div class="equation-evaluator-error">Please enter an equation</div>';
       return;
     }
     executeEquation(equation, resultsDiv);
@@ -81,7 +80,7 @@ export function createEquationEvaluatorComponent(cfg, data, channelState) {
   };
 
   resultsDiv.innerHTML =
-    '<div style="text-align: center; color: #999;">Enter an equation and click Execute</div>';
+    '<div class="equation-evaluator-empty">Enter an equation and click Execute</div>';
 
   return section;
 }
@@ -160,83 +159,86 @@ function executeEquation(equation, resultsDiv) {
     };
 
     let html = `
-      <div style="background: #f0f0f0; padding: 15px; border-radius: 6px;">
-        <p style="margin: 0 0 10px 0; color: #333;"><strong>Equation:</strong> <code style="background: white; padding: 5px; border-radius: 3px; font-family: monospace;">${equation}</code></p>
-        
-        <div style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 4px; border-left: 4px solid #667eea;">
-          <p style="margin: 0; font-size: 12px; color: #999;"><strong>📊 Raw Values (COMTRADE)</strong></p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 10px;">
-            <div style="background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center;">
-              <div style="font-size: 12px; color: #999;">Samples</div>
-              <div style="font-size: 16px; font-weight: bold; color: #667eea;">${
+      <div class="equation-evaluator-summary">
+        <p class="equation-evaluator-summary-text">
+          <strong>Equation:</strong>
+          <code>${equation}</code>
+        </p>
+
+        <div class="equation-evaluator-stats-group variant-info">
+          <p class="equation-evaluator-stats-title"><strong>📊 Raw Values (COMTRADE)</strong></p>
+          <div class="equation-evaluator-stats-grid">
+            <div class="equation-evaluator-stat-card">
+              <div class="equation-evaluator-stat-label">Samples</div>
+              <div class="equation-evaluator-stat-value accent-cyan">${
                 stats.count
               }</div>
             </div>
-            <div style="background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center;">
-              <div style="font-size: 12px; color: #999;">Valid</div>
-              <div style="font-size: 16px; font-weight: bold; color: #667eea;">${
+            <div class="equation-evaluator-stat-card">
+              <div class="equation-evaluator-stat-label">Valid</div>
+              <div class="equation-evaluator-stat-value accent-green">${
                 stats.validCount
               }</div>
             </div>
-            <div style="background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center;">
-              <div style="font-size: 12px; color: #999;">Min</div>
-              <div style="font-size: 14px; font-weight: bold; color: #2196F3;">${stats.min.toFixed(
+            <div class="equation-evaluator-stat-card">
+              <div class="equation-evaluator-stat-label">Min</div>
+              <div class="equation-evaluator-stat-value accent-blue">${stats.min.toFixed(
                 0
               )}</div>
             </div>
-            <div style="background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center;">
-              <div style="font-size: 12px; color: #999;">Max</div>
-              <div style="font-size: 14px; font-weight: bold; color: #FF9800;">${stats.max.toFixed(
+            <div class="equation-evaluator-stat-card">
+              <div class="equation-evaluator-stat-label">Max</div>
+              <div class="equation-evaluator-stat-value accent-orange">${stats.max.toFixed(
                 0
               )}</div>
             </div>
-            <div style="background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center;">
-              <div style="font-size: 12px; color: #999;">Average</div>
-              <div style="font-size: 14px; font-weight: bold; color: #4CAF50;">${stats.avg.toFixed(
+            <div class="equation-evaluator-stat-card">
+              <div class="equation-evaluator-stat-label">Average</div>
+              <div class="equation-evaluator-stat-value accent-purple">${stats.avg.toFixed(
                 0
               )}</div>
             </div>
           </div>
         </div>
 
-        <div style="padding: 10px; background: white; border-radius: 4px; border-left: 4px solid #4CAF50;">
-          <p style="margin: 0; font-size: 12px; color: #999;"><strong>📈 Scaled Values (Chart Range)</strong></p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 10px;">
-            <div style="background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center;">
-              <div style="font-size: 12px; color: #999;">Min</div>
-              <div style="font-size: 14px; font-weight: bold; color: #2196F3;">${scaledStats.min.toFixed(
+        <div class="equation-evaluator-stats-group variant-success">
+          <p class="equation-evaluator-stats-title"><strong>📈 Scaled Values (Chart Range)</strong></p>
+          <div class="equation-evaluator-stats-grid">
+            <div class="equation-evaluator-stat-card">
+              <div class="equation-evaluator-stat-label">Min</div>
+              <div class="equation-evaluator-stat-value accent-blue">${scaledStats.min.toFixed(
                 3
               )}</div>
             </div>
-            <div style="background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center;">
-              <div style="font-size: 12px; color: #999;">Max</div>
-              <div style="font-size: 14px; font-weight: bold; color: #FF9800;">${scaledStats.max.toFixed(
+            <div class="equation-evaluator-stat-card">
+              <div class="equation-evaluator-stat-label">Max</div>
+              <div class="equation-evaluator-stat-value accent-orange">${scaledStats.max.toFixed(
                 3
               )}</div>
             </div>
-            <div style="background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center;">
-              <div style="font-size: 12px; color: #999;">Average</div>
-              <div style="font-size: 14px; font-weight: bold; color: #4CAF50;">${scaledStats.avg.toFixed(
+            <div class="equation-evaluator-stat-card">
+              <div class="equation-evaluator-stat-label">Average</div>
+              <div class="equation-evaluator-stat-value accent-green">${scaledStats.avg.toFixed(
                 3
               )}</div>
             </div>
-            <div style="background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center;">
-              <div style="font-size: 12px; color: #999;">Scale Factor</div>
-              <div style="font-size: 14px; font-weight: bold; color: #9C27B0;">${(
+            <div class="equation-evaluator-stat-card">
+              <div class="equation-evaluator-stat-label">Scale Factor</div>
+              <div class="equation-evaluator-stat-value accent-purple">${(
                 scalingFactor / 1000000
               ).toFixed(2)}M</div>
             </div>
           </div>
         </div>
 
-        <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-          <button id="save-channel-btn" style="flex: 1; min-width: 180px; padding: 12px; background: #27AE60; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">
+        <div class="equation-evaluator-actions">
+          <button id="save-channel-btn" class="equation-evaluator-button success">
             💾 Save as Computed Channel
           </button>
-          <button id="export-ascii-btn" style="flex: 1; min-width: 180px; padding: 12px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">
+          <button id="export-ascii-btn" class="equation-evaluator-button info">
             📥 Export as ASCII
           </button>
-          <button id="clear-results-btn" style="flex: 1; min-width: 100px; padding: 12px; background: #E74C3C; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">
+          <button id="clear-results-btn" class="equation-evaluator-button danger">
             🗑️ Clear
           </button>
         </div>
@@ -253,10 +255,10 @@ function executeEquation(equation, resultsDiv) {
     exportBtn.onclick = () => exportAsASCII(currentComputation);
     clearBtn.onclick = () => {
       resultsDiv.innerHTML =
-        '<div style="text-align: center; color: #999;">Enter an equation and click Execute</div>';
+        '<div class="equation-evaluator-empty">Enter an equation and click Execute</div>';
     };
   } catch (error) {
-    resultsDiv.innerHTML = `<div style="color: #e74c3c; padding: 10px; background: #fff5f5; border-radius: 4px;"><strong>Error:</strong> ${error.message}</div>`;
+    resultsDiv.innerHTML = `<div class="equation-evaluator-error-box"><strong>Error:</strong> ${error.message}</div>`;
   }
 }
 
@@ -346,7 +348,7 @@ function saveComputedChannel(computation, resultsDiv) {
   // Show success message
   const successMsg = document.createElement("div");
   successMsg.style.cssText =
-    "color: white; background: #27AE60; padding: 12px; border-radius: 4px; margin-top: 10px; text-align: center; font-weight: bold; animation: fadeOut 3s ease-in-out forwards;";
+    "color: #ffffff; background: var(--accent-green); padding: 12px; border-radius: var(--border-radius-sm); margin-top: 10px; text-align: center; font-weight: bold; animation: fadeOut 3s ease-in-out forwards;";
   successMsg.textContent = `✅ Channel saved as "${channelName}" with ${computation.results.length} samples`;
 
   // Add animation

@@ -82,29 +82,21 @@ body {
 }
 
 /* === Sidebar Layout === */
-.sidebar {
-  width: 420px;
-  background: var(--bg-sidebar);
-  border-left: 1px solid var(--border-color);
-  padding: 24px 16px;
-  overflow-y: auto;
-  position: fixed;
-  right: 0;
-  top: 0;
-  height: 100vh;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease;
+.uplot {
+  font-family: inherit;
+  max-width: 100%;
+  box-sizing: border-box;
 }
-
-.sidebar-header {
-  margin-bottom: 32px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.u-title {
+  display: none; /* Hide default title */
+}
+.uplot .u-wrap {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.uplot canvas {
+  max-width: 100%;
+  display: block;
 }
 
 /* === Detached Window (Floating) === */
@@ -1270,22 +1262,23 @@ input[type="file"] {
    Equation Evaluator Component Styles
    ============================================ */
 
+
 .equation-evaluator-component {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 217, 255, 0.1),
-    rgba(33, 150, 243, 0.1)
-  );
+  background: var(--bg-secondary);
   border-radius: var(--border-radius);
   padding: 20px;
   margin: 20px 0;
   box-shadow: var(--shadow-md);
-  border: 1px solid rgba(0, 217, 255, 0.2);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .equation-evaluator-component h2 {
   color: var(--text-primary);
-  margin-top: 0;
+  margin: 0;
   font-size: 24px;
   border-bottom: 3px solid var(--accent-cyan);
   padding-bottom: 10px;
@@ -1306,6 +1299,232 @@ input[type="file"] {
 
 .equation-evaluator-component button:active {
   transform: scale(0.98);
+}
+
+.equation-evaluator-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.equation-evaluator-input-wrapper {
+  flex: 1;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.equation-evaluator-input-wrapper label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.equation-evaluator-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-family: "Fira Code", "Consolas", "Courier New", monospace;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.equation-evaluator-input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+}
+
+.equation-evaluator-input::placeholder {
+  color: var(--text-muted);
+}
+
+.equation-evaluator-button {
+  padding: 10px 20px;
+  border-radius: var(--border-radius-sm);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  background: var(--accent-cyan);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.equation-evaluator-button.secondary {
+  background: transparent;
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+}
+
+.equation-evaluator-button.success {
+  background: var(--accent-green);
+}
+
+.equation-evaluator-button.info {
+  background: var(--accent-blue);
+}
+
+.equation-evaluator-button.danger {
+  background: var(--accent-red);
+}
+
+.equation-evaluator-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.equation-evaluator-button.secondary:hover {
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.equation-evaluator-results {
+  background: var(--bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  color: var(--text-primary);
+  min-height: 60px;
+}
+
+.equation-evaluator-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.equation-evaluator-error {
+  color: var(--accent-red);
+  text-align: center;
+  font-weight: 600;
+}
+
+.equation-evaluator-summary {
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.equation-evaluator-summary-text {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.equation-evaluator-summary-text code {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-family: "Fira Code", "Consolas", "Courier New", monospace;
+}
+
+.equation-evaluator-stats-group {
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-color);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.equation-evaluator-stats-group.variant-info {
+  border-left: 4px solid var(--accent-cyan);
+}
+
+.equation-evaluator-stats-group.variant-success {
+  border-left: 4px solid var(--accent-green);
+}
+
+.equation-evaluator-stats-title {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.equation-evaluator-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.equation-evaluator-stat-card {
+  background: var(--bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  padding: 12px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+}
+
+.equation-evaluator-stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.equation-evaluator-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.equation-evaluator-stat-value.accent-cyan {
+  color: var(--accent-cyan);
+}
+
+.equation-evaluator-stat-value.accent-green {
+  color: var(--accent-green);
+}
+
+.equation-evaluator-stat-value.accent-blue {
+  color: var(--accent-blue);
+}
+
+.equation-evaluator-stat-value.accent-orange {
+  color: var(--accent-orange);
+}
+
+.equation-evaluator-stat-value.accent-purple {
+  color: var(--accent-purple);
+}
+
+.equation-evaluator-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.equation-evaluator-actions .equation-evaluator-button {
+  flex: 1;
+  min-width: 160px;
+  justify-content: center;
+}
+
+.equation-evaluator-error-box {
+  color: var(--accent-red);
+  background: rgba(239, 68, 68, 0.12);
+  padding: 12px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  font-size: 14px;
 }
 
 #computed-channels-table {

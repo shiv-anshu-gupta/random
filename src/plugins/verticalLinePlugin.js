@@ -1,30 +1,19 @@
 /**
  * uPlot Plugin: Vertical Line & Crosshair Points
  * FIXED: Prevents selection box during drag using event capture phase
- * FIXED: Uses getBoundingClientRect + clientX for accurate coordinate math
  */
 import { crosshairColors } from "../utils/constants.js";
 import { getNearestIndex } from "../utils/helpers.js";
 import { debounce } from "../utils/computedChannelOptimization.js";
 
-/**
- * Convert a mouse event to the correct X value relative to the uPlot overlay.
- * Uses getBoundingClientRect() + clientX instead of e.offsetX to handle scrolling,
- * CSS transforms, and container positioning correctly.
- * @param {uPlot} u - The uPlot instance
- * @param {MouseEvent} e - The mouse event
- * @returns {number} The X value in data coordinates
- */
 function getEventXValue(u, e) {
-  const over = u.over;
-  if (!over) return u.posToVal(e.offsetX, "x"); // fallback for safety
-  
-  // Get precise coordinates relative to the overlay using getBoundingClientRect
-  // This accounts for scrolling, CSS transforms, and container positioning
-  const rect = over.getBoundingClientRect();
+  const overlay = u.over;
+  if (!overlay) {
+    return u.posToVal(e.offsetX, "x");
+  }
+
+  const rect = overlay.getBoundingClientRect();
   const x = e.clientX - rect.left;
-  
-  // Convert pixel position to data value
   return u.posToVal(x, "x");
 }
 
@@ -38,7 +27,7 @@ export default function verticalLinePlugin(
   let overlayRef = null;
   let unsubscribe = null;
   const lineColors = options.lineColors || crosshairColors;
-  const lineWidth = options.lineWidth || 4;
+  const lineWidth = options.lineWidth || 2;
   const pointRadius = options.pointRadius || 5;
   const labelFormatter =
     options.labelFormatter ||
@@ -124,18 +113,13 @@ export default function verticalLinePlugin(
 
             const lines = verticalLinesXState.asArray();
             const xVal = getEventXValue(u, e);
-            // Use the same radius as cursor display for consistent hover detection
-            const hoverRadius = (u.scales.x.max - u.scales.x.min) * 0.045;
+            const hoverRadius = (u.scales.x.max - u.scales.x.min) * 0.01;
 
             for (let idx = 0; idx < lines.length; idx++) {
               const xData = lines[idx];
               if (Math.abs(xVal - xData) < hoverRadius) {
-                // ✅ Set drag state BEFORE consuming event
                 isDragging = true;
                 draggedLineIndex = idx;
-                console.log(
-                  `[verticalLinePlugin] 🎯 mousedown: Starting drag of line ${idx} at xVal=${xVal.toFixed(2)}`
-                );
 
                 // ✅ STOP event from reaching uPlot's handlers
                 e.stopPropagation();
@@ -152,43 +136,18 @@ export default function verticalLinePlugin(
             if (!u || !u.scales) return;
 
             const xVal = getEventXValue(u, e);
-            // Use same radius for consistency with mousedown detection
-            const hoverRadius = (u.scales.x.max - u.scales.x.min) * 0.045;
+            const hoverRadius = (u.scales.x.max - u.scales.x.min) * 0.005;
             const isHovering = isHoveringLine(u, xVal, hoverRadius);
 
             overlay.style.cursor = isHovering ? "ew-resize" : "default";
 
-            // ✅ SUPPRESS uPlot's default crosshair cursor/behavior when hovering OR dragging
-            // This ensures uPlot's own cursor logic doesn't fire and obscure our custom line
-            if (isHovering || isDragging) {
+            if (isDragging) {
+              // ✅ BLOCK event during drag to prevent selection box
               e.stopPropagation();
               e.stopImmediatePropagation();
               e.preventDefault();
-            }
 
-            if (isDragging && draggedLineIndex !== null) {
-              // ✅ Update dragged line position (event already stopped above)
-              // Validate that draggedLineIndex is still within bounds
-              const current = verticalLinesXState.asArray();
-              if (draggedLineIndex < 0 || draggedLineIndex >= current.length) {
-                console.warn(
-                  `[verticalLinePlugin] ⚠️ Invalid draggedLineIndex ${draggedLineIndex}, resetting drag`
-                );
-                isDragging = false;
-                draggedLineIndex = null;
-                return;
-              }
-
-              // ✅ Update state reactively via array assignment to trigger subscriptions
-              // This ensures the state change propagates to all subscribers and redraws
-              const next = [...current];
-              next[draggedLineIndex] = xVal;
-              // Direct assignment on reactive state triggers the proxy's set trap
-              verticalLinesXState.value = next;
-              
-              console.log(
-                `[verticalLinePlugin] 🔄 mousemove: Dragging line ${draggedLineIndex} to xVal=${xVal.toFixed(2)}`
-              );
+              verticalLinesXState[draggedLineIndex] = xVal;
 
               // ✅ IMMEDIATELY redraw the current chart being dragged for smooth movement
               u.redraw();
@@ -245,9 +204,6 @@ export default function verticalLinePlugin(
 
           const handleMouseUp = (e) => {
             if (isDragging) {
-              console.log(
-                `[verticalLinePlugin] 🛑 mouseup on overlay: Ending drag of line ${draggedLineIndex}`
-              );
               isDragging = false;
               draggedLineIndex = null;
               overlay.style.cursor = "default";
@@ -275,28 +231,6 @@ export default function verticalLinePlugin(
             },
             true
           );
-
-          // ✅ Add window-level mouseup in capture phase to ensure drag state is reset
-          // even when the mouse is released outside the overlay
-          const handleWindowMouseUp = (e) => {
-            if (isDragging) {
-              console.log(
-                `[verticalLinePlugin] 🛑 mouseup on window: Ending drag of line ${draggedLineIndex} (released outside overlay)`
-              );
-              isDragging = false;
-              draggedLineIndex = null;
-              overlay.style.cursor = "default";
-              
-              // ✅ Suppress uPlot's end-of-selection logic to prevent cursor/selection artifacts
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-              e.preventDefault();
-            }
-          };
-          window.addEventListener("mouseup", handleWindowMouseUp, true);
-          
-          // Store reference for cleanup in destroy hook
-          overlayRef._handleWindowMouseUp = handleWindowMouseUp;
         },
       ],
       draw: [
@@ -331,8 +265,7 @@ export default function verticalLinePlugin(
                 return;
               }
 
-              // Draw line at EXACT xData position, not rounded to nearest index
-              const xPos = u.valToPos(xData, "x", true);
+              const xPos = u.valToPos(u.data[0][nearestIdx], "x", true);
               const color = lineColors[idx % lineColors.length];
 
               // Draw vertical line
@@ -382,10 +315,6 @@ export default function verticalLinePlugin(
         (u) => {
           if (unsubscribe) unsubscribe();
           if (overlayRef) {
-            // Clean up window-level mouseup listener
-            if (overlayRef._handleWindowMouseUp) {
-              window.removeEventListener("mouseup", overlayRef._handleWindowMouseUp, true);
-            }
             overlayRef.replaceWith(overlayRef.cloneNode(true));
           }
         },

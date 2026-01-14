@@ -46,43 +46,45 @@ export function createEquationEvaluatorInChannelList(
   section.id = "equation-evaluator-popup";
   section.style.cssText = `
     padding: 16px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg-secondary, #ffffff);
     border-radius: 8px;
-    color: white;
+    color: var(--text-primary, #1e293b);
     margin-bottom: 12px;
+    border: 1px solid var(--border-color, rgba(102, 126, 234, 0.4));
+    box-shadow: var(--shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.18));
   `;
 
   section.innerHTML = `
-    <h3 style="margin: 0 0 12px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+    <h3 style="margin: 0 0 12px 0; font-size: 18px; display: flex; align-items: center; gap: 8px; color: var(--text-primary, #1e293b);">
       <span>🧮</span> Equation Evaluator
     </h3>
     
     <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: flex-end;">
       <div style="flex: 1; min-width: 200px;">
-        <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 12px;">Equation:</label>
+        <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 12px; color: var(--text-primary, #1e293b);">Equation:</label>
         <input 
           type="text" 
           id="equation-input-popup" 
           placeholder="e.g., sqrt(a0^2 + a1^2)" 
-          style="width: 100%; padding: 8px; border: none; border-radius: 4px; box-sizing: border-box; font-family: monospace; font-size: 13px;"
+          style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color, rgba(148, 163, 184, 0.45)); border-radius: 4px; box-sizing: border-box; font-family: 'Fira Code', 'Consolas', monospace; font-size: 13px; background: var(--bg-tertiary, #f1f5f9); color: var(--text-primary, #1e293b);"
         >
       </div>
       <button 
         id="execute-btn-popup" 
-        style="padding: 8px 16px; background: white; color: #667eea; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap;"
+        style="padding: 8px 16px; background: var(--accent-cyan, #0ea5e9); color: var(--bg-primary, #f8fafc); border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap;"
       >
         ▶️ Execute
       </button>
       <button 
         id="channels-btn-popup" 
-        style="padding: 8px 16px; background: white; color: #667eea; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap;"
+        style="padding: 8px 16px; background: transparent; color: var(--accent-cyan, #0ea5e9); border: 1px solid var(--accent-cyan, #0ea5e9); border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap;"
       >
         📋 Channels
       </button>
     </div>
 
-    <div id="results-popup" style="background: white; border-radius: 6px; color: #333; padding: 12px; font-size: 13px;">
-      <div style="text-align: center; color: #999;">Enter an equation and click Execute</div>
+    <div id="results-popup" style="background: var(--bg-tertiary, #f1f5f9); border-radius: 6px; color: var(--text-primary, #1e293b); padding: 12px; font-size: 13px; border: 1px solid var(--border-color, rgba(148, 163, 184, 0.45));">
+      <div style="text-align: center; color: var(--text-muted, #94a3b8);">Enter an equation and click Execute</div>
     </div>
   `;
 
@@ -97,7 +99,7 @@ export function createEquationEvaluatorInChannelList(
     const equation = equationInput.value.trim();
     if (!equation) {
       resultsDiv.innerHTML =
-        '<div style="color: #e74c3c; text-align: center;">Please enter an equation</div>';
+        '<div style="color: var(--accent-red, #ef4444); text-align: center; font-weight: 600;">Please enter an equation</div>';
       return;
     }
     executeEquation(equation, resultsDiv, doc);
@@ -273,7 +275,7 @@ export function createEquationEvaluatorInChannelList(
       const sampleCount = analogArray?.[0]?.length || 0;
       if (!sampleCount) {
         resultsDivEl.innerHTML =
-          '<div style="color:#e74c3c;padding:10px;background:#fff5f5;border-radius:4px;font-size:12px;">No analog samples available in popup (analog/analogData empty). Ensure cfg/data are bound.</div>';
+          '<div style="color: var(--accent-red, #ef4444); padding: 10px; background: rgba(239, 68, 68, 0.12); border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.35); font-size: 12px;">No analog samples available in popup (analog/analogData empty). Ensure cfg/data are bound.</div>';
         return;
       }
 
@@ -333,16 +335,16 @@ export function createEquationEvaluatorInChannelList(
       }
 
       // ✅ OPTIMIZATION: Minimal HTML for instant display
-      let html = `<div style="background: #27AE60; color: white; padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>✓ Ready</strong>: ${
+      let html = `<div style="background: var(--accent-green, #27AE60); color: var(--bg-primary, #f8fafc); padding: 10px; border-radius: 4px; margin-bottom: 10px;"><strong>✓ Ready</strong>: ${
         resultsArray.length
       } samples | Min: ${stats.min.toFixed(2)} | Max: ${stats.max.toFixed(
         2
       )}</div>`;
 
       // ✅ Add LaTeX equation display with MathJax rendering
-      html += `<div style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #667eea;"><strong style="color: #667eea; font-size: 13px;">Equation (LaTeX):</strong><div style="margin-top: 8px; padding: 8px; background: white; border-radius: 3px; font-size: 14px;">$$${equation}$$</div></div>`;
+      html += `<div style="background: var(--bg-tertiary, #f1f5f9); padding: 10px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid var(--accent-cyan, #667eea);"><strong style="color: var(--accent-cyan, #667eea); font-size: 13px;">Equation (LaTeX):</strong><div style="margin-top: 8px; padding: 8px; background: var(--bg-secondary, #ffffff); border-radius: 3px; font-size: 14px; color: var(--text-primary, #1e293b);">$$${equation}$$</div></div>`;
 
-      html += `<div style="display: flex; gap: 8px;"><button id="save-computed-btn-popup" style="flex: 1; padding: 10px; background: #27AE60; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px;">💾 Save</button><button id="clear-results-btn-popup" style="flex: 1; padding: 10px; background: #E74C3C; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px;">🗑️ Clear</button></div>`;
+      html += `<div style="display: flex; gap: 8px; flex-wrap: wrap;"><button id="save-computed-btn-popup" style="flex: 1; padding: 10px; background: var(--accent-green, #27AE60); color: var(--bg-primary, #f8fafc); border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px;">💾 Save</button><button id="clear-results-btn-popup" style="flex: 1; padding: 10px; background: var(--accent-red, #ef4444); color: var(--bg-primary, #f8fafc); border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px;">🗑️ Clear</button></div>`;
 
       resultsDivEl.innerHTML = html;
 
@@ -363,12 +365,12 @@ export function createEquationEvaluatorInChannelList(
         saveComputedChannelPopup(currentComputation, resultsDivEl, ownerDoc);
       clearBtn.onclick = () => {
         resultsDivEl.innerHTML =
-          '<div style="text-align: center; color: #999;">Enter an equation and click Execute</div>';
+          '<div style="text-align: center; color: var(--text-muted, #94a3b8);">Enter an equation and click Execute</div>';
         currentComputation = null;
       };
     } catch (error) {
       resultsDivEl.innerHTML = `
-        <div style="color: #e74c3c; padding: 10px; background: #fff5f5; border-radius: 4px; font-size: 12px;">
+        <div style="color: var(--accent-red, #ef4444); padding: 10px; background: rgba(239, 68, 68, 0.12); border-radius: 4px; font-size: 12px; border: 1px solid rgba(239, 68, 68, 0.35);">
           <strong>Error:</strong> ${error.message}
         </div>
       `;

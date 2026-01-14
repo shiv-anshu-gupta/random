@@ -47,8 +47,8 @@ import {
   exportComputedChannelAsASCII,
   importComputedChannelFromJSON,
   exportComputedChannelAsCFGDAT,
-  exportAllComputedChannels,
 } from "./components/EquationEvaluatorInChannelList.js";
+import { exportVisibleChartsAsComtrade } from "./utils/visibleChartExport.js";
 import {
   showFileInfo,
   updateStatsCards,
@@ -504,6 +504,7 @@ let chartsComputed = [];
 // Expose charts globally for theme system to access
 window.__charts = charts;
 window.__chartsComputed = chartsComputed;
+window.chartsArray = charts;
 
 /**
  * Update computed channel color by ID in channelState
@@ -1582,6 +1583,7 @@ async function processCombinedDataFromMerger(cfgText, datText) {
       TIME_UNIT,
       channelState
     );
+    updateExportButtonState();
 
     console.log(
       "[processCombinedDataFromMerger] 🎯 PHASE 5: Polar chart initialization"
@@ -2252,6 +2254,7 @@ window.addEventListener("mergedFilesReceived", async (event) => {
       TIME_UNIT,
       channelState
     );
+    updateExportButtonState();
 
     // Yield to event loop
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -2322,9 +2325,7 @@ window.addEventListener("mergedFilesReceived", async (event) => {
     );
 
     if (restoredChannels.length > 0) {
-      const exportBtn = document.getElementById("exportComputedChannelBtn");
       const csvBtn = document.getElementById("exportCSVBtn");
-      if (exportBtn) exportBtn.disabled = false;
       if (csvBtn) csvBtn.disabled = false;
       renderComputedChannels(
         data,
@@ -2333,6 +2334,9 @@ window.addEventListener("mergedFilesReceived", async (event) => {
         verticalLinesX,
         channelState
       );
+      updateExportButtonState();
+    } else {
+      updateExportButtonState();
     }
     subscribeToComputedChannelStateChanges();
     setupComputedChannelsListener();
@@ -2933,6 +2937,7 @@ try {
           // Re-render computed channels on the chart
           if (typeof renderComputedChannels === "function") {
             renderComputedChannels(charts, channelState, channels);
+            updateExportButtonState();
           }
 
           // 🎯 Broadcast computed channels update to Channel List popup if open
@@ -3042,6 +3047,59 @@ if (redoBtn) {
   });
 }
 
+function updateExportButtonState() {
+  const exportBtn = document.getElementById("exportComputedChannelBtn");
+  if (!exportBtn) return;
+  const resolvedCharts = Array.isArray(charts)
+    ? charts
+    : Array.isArray(window.__charts)
+    ? window.__charts
+    : Array.isArray(window.chartsArray)
+    ? window.chartsArray
+    : [];
+
+  const getSeriesLength = (series) => {
+    if (!series) return 0;
+    if (typeof series.length === "number") return series.length;
+    if (Array.isArray(series.data) && typeof series.data.length === "number") {
+      return series.data.length;
+    }
+    return 0;
+  };
+
+  const timeSeries = data?.time;
+  let hasSamples = getSeriesLength(timeSeries) > 0;
+
+  if (!hasSamples) {
+    const hasAnalog = Array.isArray(data?.analogData)
+      && data.analogData.some((series) => getSeriesLength(series) > 0);
+    const hasDigital = !hasAnalog
+      && Array.isArray(data?.digitalData)
+      && data.digitalData.some((series) => getSeriesLength(series) > 0);
+    const hasComputed = !hasAnalog
+      && !hasDigital
+      && Array.isArray(data?.computedData)
+      && data.computedData.some((series) => getSeriesLength(series?.data) > 0);
+    hasSamples = hasAnalog || hasDigital || hasComputed;
+  }
+
+  const chartHasData = Array.isArray(resolvedCharts)
+    && resolvedCharts.some((chart) => {
+      if (!chart) return false;
+      const candidateData = chart.data ?? chart._data;
+      if (!candidateData || typeof candidateData.length !== "number" || candidateData.length === 0) {
+        return false;
+      }
+      const baseSeries = candidateData[0];
+      return getSeriesLength(baseSeries) > 0;
+    });
+
+  const hasCharts = Array.isArray(resolvedCharts)
+    && resolvedCharts.some((chart) => chart && chart._chartType);
+
+  exportBtn.disabled = !(hasCharts && (hasSamples || chartHasData));
+}
+
 // Export Computed Channel button
 const exportComputedChannelBtn = document.getElementById(
   "exportComputedChannelBtn"
@@ -3049,22 +3107,35 @@ const exportComputedChannelBtn = document.getElementById(
 if (exportComputedChannelBtn) {
   exportComputedChannelBtn.addEventListener("click", () => {
     try {
-      // Export ALL computed channels as CFG+DAT (COMTRADE 2013 format)
-      if (!data || !data.computedData || data.computedData.length === 0) {
-        alert(
-          "❌ No computed channels to export. Please create and execute equations first from the Channel List popup."
-        );
+      const resolvedData = data || window.globalData;
+      const resolvedCfg = cfg || window.globalCfg;
+      const resolvedCharts = Array.isArray(charts) && charts.length > 0
+        ? charts
+        : Array.isArray(window.__charts) && window.__charts.length > 0
+        ? window.__charts
+        : Array.isArray(window.chartsArray) && window.chartsArray.length > 0
+        ? window.chartsArray
+        : [];
+
+      if (!resolvedData || resolvedCharts.length === 0) {
+        alert("❌ No charts to export. Load a COMTRADE file first.");
         return;
       }
 
-      const sampleRate = cfg?.sampleRate || 4800;
-      exportAllComputedChannels(data, sampleRate);
+      exportVisibleChartsAsComtrade({
+        cfg: resolvedCfg,
+        data: resolvedData,
+        charts: resolvedCharts,
+        channelState,
+      });
     } catch (error) {
       console.error("[Export] Error:", error);
       alert(`❌ Export failed: ${error.message}`);
     }
   });
 }
+
+updateExportButtonState();
 
 // CSV Export button
 const exportCSVBtn = document.getElementById("exportCSVBtn");
@@ -3284,6 +3355,7 @@ async function handleLoadFiles() {
       TIME_UNIT,
       channelState
     );
+    updateExportButtonState();
 
     console.log("[handleLoadFiles] 🎯 PHASE 5: Polar chart initialization");
 
@@ -3352,9 +3424,7 @@ async function handleLoadFiles() {
         }
       }
       if (data.computedData.length > 0) {
-        const exportBtn = document.getElementById("exportComputedChannelBtn");
         const csvBtn = document.getElementById("exportCSVBtn");
-        if (exportBtn) exportBtn.disabled = false;
         if (csvBtn) csvBtn.disabled = false;
         renderComputedChannels(
           data,
@@ -3363,6 +3433,9 @@ async function handleLoadFiles() {
           verticalLinesX,
           channelState
         );
+        updateExportButtonState();
+      } else {
+        updateExportButtonState();
       }
     }
     setupComputedChannelsListener();
@@ -3733,14 +3806,11 @@ function setupComputedChannelsListener() {
     console.log("[Main] Processing computed channel saved event");
 
     // ✅ Enable export buttons when computed channel is saved
-    const exportBtn = document.getElementById("exportComputedChannelBtn");
     const csvBtn = document.getElementById("exportCSVBtn");
-    if (exportBtn) {
-      exportBtn.disabled = false;
-    }
     if (csvBtn) {
       csvBtn.disabled = false;
     }
+    updateExportButtonState();
 
     // ✅ FIXED: Initialize data object if it doesn't exist
     // Computed channels can be created independently of base data
@@ -4005,6 +4075,7 @@ function setupComputedChannelsListener() {
           verticalLinesX,
           channelState
         );
+        updateExportButtonState();
         const renderTime = performance.now() - renderStartTime;
         console.log(
           `[Main] ⏱️ renderComputedChannels function: ${renderTime.toFixed(
@@ -5003,6 +5074,7 @@ window.addEventListener("message", (ev) => {
                     calculateDeltas,
                     TIME_UNIT
                   );
+                  updateExportButtonState();
                   console.log(
                     `[DELETE CALLBACK] ✅ Charts rebuilt successfully - empty containers removed`
                   );
@@ -5113,6 +5185,7 @@ window.addEventListener("message", (ev) => {
               calculateDeltas,
               TIME_UNIT
             );
+            updateExportButtonState();
             console.log(`[DELETE CALLBACK] ✅ Charts rebuilt successfully`);
           } catch (err) {
             console.error(
