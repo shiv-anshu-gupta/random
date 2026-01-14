@@ -153,11 +153,16 @@ export default function verticalLinePlugin(
 
             overlay.style.cursor = isHovering ? "ew-resize" : "default";
 
-            if (isDragging) {
-              // ✅ BLOCK event during drag to prevent selection box
+            // ✅ SUPPRESS uPlot's default crosshair cursor/behavior when hovering OR dragging
+            // This ensures uPlot's own cursor logic doesn't fire and obscure our custom line
+            if (isHovering || isDragging) {
               e.stopPropagation();
               e.stopImmediatePropagation();
               e.preventDefault();
+            }
+
+            if (isDragging) {
+              // ✅ Update dragged line position (event already stopped above)
 
               // ✅ Update state reactively via array assignment to trigger subscriptions
               // This ensures the state change propagates to all subscribers and redraws
@@ -257,6 +262,11 @@ export default function verticalLinePlugin(
               isDragging = false;
               draggedLineIndex = null;
               overlay.style.cursor = "default";
+              
+              // ✅ Suppress uPlot's end-of-selection logic to prevent cursor/selection artifacts
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              e.preventDefault();
             }
           };
           window.addEventListener("mouseup", handleWindowMouseUp, true);
