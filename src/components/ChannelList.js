@@ -1262,6 +1262,32 @@ function openMathLiveEditor(
   const currentValue = cell.getValue() || "";
   const currentUnit = row.unit || "";
 
+  // ✅ Detect current theme from document or localStorage
+  const isDarkTheme = document.documentElement.hasAttribute('data-theme-dark') || 
+                      localStorage.getItem('comtrade-theme') === 'dark' ||
+                      document.body.classList.contains('dark');
+  
+  // ✅ Theme-aware colors
+  const themeColors = isDarkTheme ? {
+    bgPrimary: "#2d2d2d",
+    bgSecondary: "#1a1a1a",
+    textPrimary: "#ffffff",
+    textSecondary: "#cccccc",
+    borderColor: "#404040",
+    buttonBg: "#3a3a3a",
+    buttonHoverBg: "#4a4a4a",
+    labelColor: "#cccccc"
+  } : {
+    bgPrimary: "#ffffff",
+    bgSecondary: "#f5f5f5",
+    textPrimary: "#1a1a1a",
+    textSecondary: "#666666",
+    borderColor: "#e0e0e0",
+    buttonBg: "#f9f9f9",
+    buttonHoverBg: "#e3f2fd",
+    labelColor: "#555555"
+  };
+
   // Use provided channels or fall back to defaults
   const channels =
     availableChannels.length > 0
@@ -1322,13 +1348,12 @@ function openMathLiveEditor(
     "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;";
 
   const modal = doc.createElement("div");
-  modal.style.cssText =
-    "background:#fff;border-radius:8px;padding:24px;width:700px;max-width:95%;box-shadow:0 4px 16px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;position:relative;z-index:10000;";
+  modal.style.cssText = `background:${themeColors.bgPrimary};color:${themeColors.textPrimary};border-radius:8px;padding:24px;width:700px;max-width:95%;box-shadow:0 4px 16px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;position:relative;z-index:10000;`;
 
   const createButtonsHTML = (items, sectionTitle) => {
     return `
       <div style="margin-bottom:16px;">
-        <h4 style="margin:0 0 8px 0;font-size:14px;font-weight:600;color:#555;">${sectionTitle}</h4>
+        <h4 style="margin:0 0 8px 0;font-size:14px;font-weight:600;color:${themeColors.labelColor};">${sectionTitle}</h4>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
           ${items
             .map(
@@ -1337,9 +1362,9 @@ function openMathLiveEditor(
               /"/g,
               "&quot;"
             )}" 
-              style="padding:6px 12px;border:1px solid #ddd;border-radius:4px;background:#f9f9f9;cursor:pointer;font-size:13px;transition:all 0.2s;"
-              onmouseover="this.style.background='#e3f2fd';this.style.borderColor='#2196f3';"
-              onmouseout="this.style.background='#f9f9f9';this.style.borderColor='#ddd';">
+              style="padding:6px 12px;border:1px solid ${themeColors.borderColor};border-radius:4px;background:${themeColors.buttonBg};color:${themeColors.textPrimary};cursor:pointer;font-size:13px;transition:all 0.2s;"
+              onmouseover="this.style.background='${themeColors.buttonHoverBg}';this.style.borderColor='#2196f3';"
+              onmouseout="this.style.background='${themeColors.buttonBg}';this.style.borderColor='${themeColors.borderColor}';">
               ${item.label}
             </button>
           `
@@ -1351,16 +1376,16 @@ function openMathLiveEditor(
   };
 
   modal.innerHTML = `
-    <h3 style="margin:0 0 16px 0;font-size:18px;font-weight:600;color:#333;">Edit Channel Expression</h3>
+    <h3 style="margin:0 0 16px 0;font-size:18px;font-weight:600;color:${themeColors.textPrimary};">Edit Channel Expression</h3>
     
     <div style="margin-bottom:16px;">
-      <label style="display:block;margin-bottom:8px;font-weight:500;color:#555;">Available Channels:</label>
-      <select id="channel-dropdown" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px;">
+      <label style="display:block;margin-bottom:8px;font-weight:500;color:${themeColors.labelColor};">Available Channels:</label>
+      <select id="channel-dropdown" style="width:100%;padding:8px;border:1px solid ${themeColors.borderColor};border-radius:4px;font-size:14px;background:${themeColors.bgSecondary};color:${themeColors.textPrimary};">
         <option value="">-- Select a channel to insert --</option>
         ${channels
           .map(
             (ch) =>
-              `<option value="${ch.latex.replace(/"/g, "&quot;")}">${
+              `<option value="${ch.latex.replace(/"/g, "&quot;")}" style="background:${themeColors.bgSecondary};color:${themeColors.textPrimary};">${
                 ch.label
               }</option>`
           )
@@ -1372,17 +1397,17 @@ function openMathLiveEditor(
     ${createButtonsHTML(functions, "Functions")}
     
     <div style="margin-bottom:16px;">
-      <label style="display:block;margin-bottom:8px;font-weight:500;color:#555;">Math Expression:</label>
-      <math-field id="math-editor" virtual-keyboard-mode="manual" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:16px;--keyboard-zindex:10001;"></math-field>
+      <label style="display:block;margin-bottom:8px;font-weight:500;color:${themeColors.labelColor};">Math Expression:</label>
+      <math-field id="math-editor" virtual-keyboard-mode="manual" style="width:100%;padding:8px;border:1px solid ${themeColors.borderColor};border-radius:4px;font-size:16px;background:${themeColors.bgSecondary};color:${themeColors.textPrimary};--keyboard-zindex:10001;"></math-field>
     </div>
     
     <div style="margin-bottom:16px;">
-      <label style="display:block;margin-bottom:8px;font-weight:500;color:#555;">Unit (for new computed channel):</label>
-      <input type="text" id="channel-unit" placeholder="e.g., Amps, Volts, Hz" value="${currentUnit}" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px;box-sizing:border-box;">
+      <label style="display:block;margin-bottom:8px;font-weight:500;color:${themeColors.labelColor};">Unit (for new computed channel):</label>
+      <input type="text" id="channel-unit" placeholder="e.g., Amps, Volts, Hz" value="${currentUnit}" style="width:100%;padding:8px;border:1px solid ${themeColors.borderColor};border-radius:4px;font-size:14px;box-sizing:border-box;background:${themeColors.bgSecondary};color:${themeColors.textPrimary};">
     </div>
     
     <div style="display:flex;gap:8px;justify-content:flex-end;">
-      <button id="cancel-btn" style="padding:8px 16px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;">Cancel</button>
+      <button id="cancel-btn" style="padding:8px 16px;border:1px solid ${themeColors.borderColor};border-radius:4px;background:${themeColors.buttonBg};color:${themeColors.textPrimary};cursor:pointer;font-size:14px;">Cancel</button>
       <button id="save-btn" style="padding:8px 16px;border:none;border-radius:4px;background:#22c55e;color:#fff;cursor:pointer;font-size:14px;">Save</button>
     </div>
     <div id="status-message" style="margin-top:12px;padding:8px;border-radius:4px;display:none;font-size:13px;"></div>
@@ -1390,6 +1415,79 @@ function openMathLiveEditor(
 
   overlay.appendChild(modal);
   doc.body.appendChild(overlay);
+
+  // ✅ Add dynamic CSS for mathLive theming
+  const themeStyle = doc.createElement("style");
+  themeStyle.textContent = `
+    /* MathLive Editor Field Theming */
+    math-field {
+      --ML__fieldBackground: ${themeColors.bgSecondary} !important;
+      --ML__fieldText: ${themeColors.textPrimary} !important;
+      --ML__fieldBorderColor: ${themeColors.borderColor} !important;
+    }
+
+    /* MathLive Keyboard Theming */
+    .ML__keyboard {
+      background-color: ${themeColors.bgSecondary} !important;
+      color: ${themeColors.textPrimary} !important;
+      border: 1px solid ${themeColors.borderColor} !important;
+    }
+
+    /* Keyboard Keys */
+    .ML__keyboard .keyboard-button,
+    .ML__keyboard button {
+      background-color: ${themeColors.buttonBg} !important;
+      color: ${themeColors.textPrimary} !important;
+      border: 1px solid ${themeColors.borderColor} !important;
+    }
+
+    .ML__keyboard .keyboard-button:hover,
+    .ML__keyboard button:hover,
+    .ML__keyboard .keyboard-button:focus,
+    .ML__keyboard button:focus {
+      background-color: ${themeColors.buttonHoverBg} !important;
+      border-color: #2196f3 !important;
+    }
+
+    /* Keyboard Text/Operators */
+    .ML__keyboard .keyboard-button span,
+    .ML__keyboard button span {
+      color: ${themeColors.textPrimary} !important;
+    }
+
+    /* MathLive Input Field */
+    .ML__field {
+      background-color: ${themeColors.bgSecondary} !important;
+      color: ${themeColors.textPrimary} !important;
+      border-color: ${themeColors.borderColor} !important;
+    }
+
+    .ML__field:focus {
+      border-color: #2196f3 !important;
+      box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1) !important;
+    }
+
+    /* MathLive Cursor */
+    .ML__field .ML__cursor {
+      background-color: ${themeColors.textPrimary} !important;
+    }
+
+    /* MathLive Selection */
+    .ML__field .ML__selection {
+      background-color: rgba(33, 150, 243, 0.3) !important;
+    }
+
+    /* Dropdown Select */
+    select {
+      accent-color: #2196f3;
+    }
+
+    option {
+      background-color: ${themeColors.bgSecondary};
+      color: ${themeColors.textPrimary};
+    }
+  `;
+  doc.head.appendChild(themeStyle);
 
   // Make cfg and data available to popup window for evaluateAndSaveComputedChannel
   try {
