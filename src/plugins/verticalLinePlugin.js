@@ -124,13 +124,18 @@ export default function verticalLinePlugin(
 
             const lines = verticalLinesXState.asArray();
             const xVal = getEventXValue(u, e);
-            const hoverRadius = (u.scales.x.max - u.scales.x.min) * 0.04;
+            // Use the same radius as cursor display for consistent hover detection
+            const hoverRadius = (u.scales.x.max - u.scales.x.min) * 0.045;
 
             for (let idx = 0; idx < lines.length; idx++) {
               const xData = lines[idx];
               if (Math.abs(xVal - xData) < hoverRadius) {
+                // ✅ Set drag state BEFORE consuming event
                 isDragging = true;
                 draggedLineIndex = idx;
+                console.log(
+                  `[verticalLinePlugin] 🎯 mousedown: Starting drag of line ${idx} at xVal=${xVal.toFixed(2)}`
+                );
 
                 // ✅ STOP event from reaching uPlot's handlers
                 e.stopPropagation();
@@ -147,9 +152,9 @@ export default function verticalLinePlugin(
             if (!u || !u.scales) return;
 
             const xVal = getEventXValue(u, e);
-            // For cursor display: use 0.045 (slightly larger) to make it easier to grab
-            const hoverRadiusDisplay = (u.scales.x.max - u.scales.x.min) * 0.045;
-            const isHovering = isHoveringLine(u, xVal, hoverRadiusDisplay);
+            // Use same radius for consistency with mousedown detection
+            const hoverRadius = (u.scales.x.max - u.scales.x.min) * 0.045;
+            const isHovering = isHoveringLine(u, xVal, hoverRadius);
 
             overlay.style.cursor = isHovering ? "ew-resize" : "default";
 
@@ -161,16 +166,29 @@ export default function verticalLinePlugin(
               e.preventDefault();
             }
 
-            if (isDragging) {
+            if (isDragging && draggedLineIndex !== null) {
               // ✅ Update dragged line position (event already stopped above)
+              // Validate that draggedLineIndex is still within bounds
+              const current = verticalLinesXState.asArray();
+              if (draggedLineIndex < 0 || draggedLineIndex >= current.length) {
+                console.warn(
+                  `[verticalLinePlugin] ⚠️ Invalid draggedLineIndex ${draggedLineIndex}, resetting drag`
+                );
+                isDragging = false;
+                draggedLineIndex = null;
+                return;
+              }
 
               // ✅ Update state reactively via array assignment to trigger subscriptions
               // This ensures the state change propagates to all subscribers and redraws
-              const current = verticalLinesXState.asArray();
               const next = [...current];
               next[draggedLineIndex] = xVal;
               // Direct assignment on reactive state triggers the proxy's set trap
               verticalLinesXState.value = next;
+              
+              console.log(
+                `[verticalLinePlugin] 🔄 mousemove: Dragging line ${draggedLineIndex} to xVal=${xVal.toFixed(2)}`
+              );
 
               // ✅ IMMEDIATELY redraw the current chart being dragged for smooth movement
               u.redraw();
@@ -227,6 +245,9 @@ export default function verticalLinePlugin(
 
           const handleMouseUp = (e) => {
             if (isDragging) {
+              console.log(
+                `[verticalLinePlugin] 🛑 mouseup on overlay: Ending drag of line ${draggedLineIndex}`
+              );
               isDragging = false;
               draggedLineIndex = null;
               overlay.style.cursor = "default";
@@ -259,6 +280,9 @@ export default function verticalLinePlugin(
           // even when the mouse is released outside the overlay
           const handleWindowMouseUp = (e) => {
             if (isDragging) {
+              console.log(
+                `[verticalLinePlugin] 🛑 mouseup on window: Ending drag of line ${draggedLineIndex} (released outside overlay)`
+              );
               isDragging = false;
               draggedLineIndex = null;
               overlay.style.cursor = "default";
