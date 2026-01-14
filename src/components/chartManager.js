@@ -200,7 +200,8 @@ export function subscribeChartUpdates(
   data, // ✅ add
   createState, // ✅ add
   calculateDeltas, // ✅ add
-  TIME_UNIT // ✅ add
+  TIME_UNIT, // ✅ add
+  getProgressCallback // ✅ NEW: Function to get current progress callback
 ) {
   const chartTypes = ["analog", "digital"];
 
@@ -229,6 +230,18 @@ export function subscribeChartUpdates(
 
   // ✅ Flag to prevent dataState subscriber from interfering during deletion
   let isHandlingDeletion = false;
+
+  // ✅ FIX: Helper to get progress callback from state
+  const callProgress = (percent, message) => {
+    const callback = channelState?._meta?.progressCallback;
+    console.log(`[callProgress] percent=${percent}%, message="${message}", hasCallback=${typeof callback === "function"}`);
+    if (typeof callback === "function") {
+      console.log(`[callProgress] ✅ Invoking callback with ${percent}%`);
+      callback(percent, message);
+    } else {
+      console.warn(`[callProgress] ❌ No callback available at ${percent}%`);
+    }
+  };
 
   function rebuildChannelToChartsIndex() {
     channelToChartsIndex.clear();
@@ -1411,17 +1424,22 @@ export function subscribeChartUpdates(
 
         try {
           console.log(`[group subscriber] 🔄 Processing group change...`);
+          callProgress(30, "Analyzing group structure...");
+          console.log(`[group subscriber] ✅ callProgress(30) called`);
 
           // ✅ FUNCTIONAL APPROACH: Analyze groups and publish maxYAxes to global store
           // This single call handles all axis calculations reactively
           const { analyzeGroupsAndPublishMaxYAxes } = await import(
             "../utils/analyzeGroupsAndPublish.js"
           );
+          console.log(`[group subscriber] ✅ Import successful`);
+          
           const newMaxYAxes = analyzeGroupsAndPublishMaxYAxes(
             charts,
             channelState,
             cfg
           );
+          console.log(`[group subscriber] ✅ analyzeGroupsAndPublishMaxYAxes completed, newMaxYAxes=${newMaxYAxes}`);
 
           // Get previous axes to detect if rebuild needed
           const previousGlobalAxes = previousAxisCounts?.analog?.globalMax || 1;
@@ -1430,6 +1448,8 @@ export function subscribeChartUpdates(
           console.log(
             `[group subscriber] 📊 Axis count: old=${previousGlobalAxes}, new=${newMaxYAxes}, changed=${axisCountChanged}`
           );
+
+          callProgress(40, `Axis count: ${axisCountChanged ? "changing" : "stable"}...`);
 
           // Build currentGroups for state tracking
           const userGroups = channelState?.analog?.groups || [];
@@ -1461,6 +1481,8 @@ export function subscribeChartUpdates(
             console.log(
               `[group subscriber] 🔥 Axis requirement changed -> FULL REBUILD`
             );
+
+            callProgress(50, "Rebuilding chart structure...");
 
             // Import render functions
             const { autoGroupChannels: autoGroup } = await import(
@@ -1562,6 +1584,8 @@ export function subscribeChartUpdates(
               });
             }
 
+            callProgress(65, "Rendering new charts...");
+
             // Re-render with fresh axis calculation
             renderAnalog(
               cfg,
@@ -1572,6 +1596,8 @@ export function subscribeChartUpdates(
               channelState,
               autoGroup
             );
+
+            callProgress(80, "Finalizing group structure...");
 
             // ✅ FIX: Always render digital charts if they should exist
             // (either axes changed OR digital chart was removed)
@@ -1661,6 +1687,8 @@ export function subscribeChartUpdates(
             };
             isRebuildingFromGroup = false;
 
+            callProgress(100, "Group change complete!");
+
             console.log(
               `[group subscriber] ✅ All charts rebuilt - analog + digital + computed`
             );
@@ -1669,6 +1697,7 @@ export function subscribeChartUpdates(
             console.log(
               `[group subscriber] ✓ Axis counts unchanged: ${newMaxYAxes}`
             );
+            callProgress(50, "Reusing existing charts...");
           }
 
           console.log(
@@ -1912,11 +1941,18 @@ export function subscribeChartUpdates(
           charts.length = 0;
           chartsContainer.innerHTML = "";
 
+          // ✅ Progress: Starting analog chart rendering
+          callProgress(60, "Rendering analog charts...");
+
           // Render with new groups
+          const { autoGroupChannels: autoGroup } = await import(
+            "../utils/autoGroupChannels.js"
+          );
           const { renderAnalogCharts: renderAnalog } = await import(
             "./renderAnalogCharts.js"
           );
 
+          const analogRenderStart = performance.now();
           renderAnalog(
             cfg,
             data,
@@ -1926,6 +1962,11 @@ export function subscribeChartUpdates(
             channelState,
             autoGroup
           );
+          const analogRenderTime = performance.now() - analogRenderStart;
+          console.log(`[group subscriber] ✓ Analog charts rendered in ${analogRenderTime.toFixed(0)}ms`);
+
+          // ✅ Progress: Analog charts done, starting digital
+          callProgress(75, "Rendering digital charts...");
 
           // ✅ Render digital charts IMMEDIATELY in parallel (no freeze!)
           if (
@@ -1938,6 +1979,7 @@ export function subscribeChartUpdates(
               const { renderDigitalCharts: renderDigital } = await import(
                 "./renderDigitalCharts.js"
               );
+              const digitalRenderStart = performance.now();
               renderDigital(
                 cfg,
                 data,
@@ -1947,8 +1989,9 @@ export function subscribeChartUpdates(
                 channelState
                 // ✅ REMOVED: currentGlobalAxes parameter - digital charts now read from global store
               );
+              const digitalRenderTime = performance.now() - digitalRenderStart;
               console.log(
-                `[group subscriber] ✓ Digital charts rendered (reading maxYAxes from global store)`
+                `[group subscriber] ✓ Digital charts rendered in ${digitalRenderTime.toFixed(0)}ms (reading maxYAxes from global store)`
               );
             } catch (err) {
               console.error(
@@ -1957,6 +2000,9 @@ export function subscribeChartUpdates(
               );
             }
           }
+
+          // ✅ Progress: All charts rendered, finalizing
+          callProgress(90, "Finalizing chart layout...");
 
           console.log(`[group subscriber] ✓ Charts rendered: ${charts.length}`);
 
@@ -1979,6 +2025,9 @@ export function subscribeChartUpdates(
             globalMax: newMaxYAxes,
             perGroup: currentGroups.map((g) => g.axisCount),
           };
+
+          // ✅ NEW: Final progress update
+          callProgress(100, "Group change complete!");
         } catch (err) {
           console.error(
             `[group subscriber] ❌ Group change processing failed:`,
@@ -1989,6 +2038,7 @@ export function subscribeChartUpdates(
             console.log(
               `[group subscriber] 🔄 Falling back to full renderComtradeCharts...`
             );
+            callProgress(90, "Fallback rebuild in progress...");
             renderComtradeCharts(
               cfg,
               data,
@@ -2000,6 +2050,7 @@ export function subscribeChartUpdates(
               TIME_UNIT,
               channelState
             );
+            callProgress(100, "Group change complete!");
           } catch (fallbackErr) {
             console.error(
               `[group subscriber] ❌ Full rebuild also failed:`,
@@ -2563,4 +2614,267 @@ export function subscribeChartUpdates(
 function updateVerticalLinesOverlay(chart, verticalLines) {
   // Your logic to update vertical lines on the chart
   // For example, re-draw or update plugin state
+}
+
+/**
+ * ============================================================================
+ * CENTRALIZED CHANNEL UPDATE HANDLER (NEW OPTIMIZATION PATH)
+ * ============================================================================
+ *
+ * Central entry point for all channel updates from the ChannelList popup.
+ * Decides whether to apply cheap in-place updates or fall back to expensive
+ * full rebuild based on the update type and impact analysis.
+ *
+ * This function is imported and called from main.js message handler to
+ * replace the scattered update logic for better performance.
+ */
+
+import {
+  applyColorChangeInPlace,
+  applyDataTransformInPlace,
+  simulateChannelGroupChange,
+  simulateChannelDeletion,
+  getChannelStateSnapshot,
+  axisCountDidChange,
+  applyGroupChangeInPlace,
+  removeSeriesInPlace,
+} from "./chartUpdateHelpers.js";
+
+/**
+ * Central handler for channel updates coming from the Tabulator / ChannelList.
+ * Decides whether we can apply a cheap in-place update or must rebuild.
+ *
+ * @param {string} type - Update type ('color', 'scale', 'time_window', 'group', 'delete', 'update', etc.)
+ * @param {any} payload - Payload from ChannelList (usually { row, value } or raw rowData)
+ * @param {Object} channelState - Reactive channel state (required for some update types)
+ * @param {Object} dataState - Reactive data state (used for data recalculation)
+ * @param {Array} charts - Chart instances array [analogChart, digitalChart, ...]
+ * @param {HTMLElement} chartsContainer - Container element for charts
+ * @param {Function} onFullRebuild - Callback to trigger full rebuild if needed
+ * @param {Function} [onProgress] - Optional progress callback: (percent, message) => void
+ *
+ * @returns {boolean} true if handled via cheap path, false if fallback to rebuild
+ *
+ * @example
+ * import { handleChannelUpdate } from './components/chartManager.js';
+ * 
+ * handleChannelUpdate(
+ *   'color',
+ *   { row: {...}, value: '#ff0000' },
+ *   channelState,
+ *   dataState,
+ *   charts,
+ *   chartsContainer,
+ *   () => fullRebuildFromState(),
+ *   (percent, message) => updateProgress(percent, message)
+ * );
+ */
+export function handleChannelUpdate(
+  type,
+  payload,
+  channelState,
+  dataState,
+  charts,
+  chartsContainer,
+  onFullRebuild,
+  onProgress
+) {
+  const startTime = performance.now();
+
+  // ✅ NEW: Support progress callback
+  const updateProgress = (percent, message) => {
+    if (typeof onProgress === "function") {
+      onProgress(percent, message);
+    }
+  };
+
+  console.log("[handleChannelUpdate] Processing update:", {
+    type,
+    hasPayload: !!payload,
+    hasChannelState: !!channelState,
+    hasProgressCallback: !!onProgress,
+  });
+
+  try {
+    switch (type) {
+      case "color": {
+        // Try cheap color update in-place
+        console.log("[handleChannelUpdate] Attempting cheap color update...");
+        const success = applyColorChangeInPlace(payload, channelState);
+
+        if (success) {
+          const elapsed = (performance.now() - startTime).toFixed(2);
+          console.log(
+            `[handleChannelUpdate] ✅ Cheap color update succeeded (${elapsed}ms)`
+          );
+          return true;
+        }
+
+        console.log(
+          "[handleChannelUpdate] Color update failed, falling back to rebuild"
+        );
+        break; // Fallback to full rebuild
+      }
+
+      case "scale":
+      case "time_window": {
+        // Try cheap data transform (or defer to rebuild)
+        console.log(
+          "[handleChannelUpdate] Attempting cheap data transform update..."
+        );
+        const success = applyDataTransformInPlace(payload, channelState);
+
+        if (success) {
+          const elapsed = (performance.now() - startTime).toFixed(2);
+          console.log(
+            `[handleChannelUpdate] ✅ Cheap data transform succeeded (${elapsed}ms)`
+          );
+          return true;
+        }
+
+        console.log(
+          "[handleChannelUpdate] Data transform deferred, using full rebuild"
+        );
+        break; // Fallback to full rebuild
+      }
+
+      case "group": {
+        // Compare axis counts before and after simulated change
+        console.log(
+          "[handleChannelUpdate] Analyzing group change for structural impact..."
+        );
+        updateProgress(35, "Analyzing group change impact...");
+
+        const row = payload?.row;
+        const newGroup = payload?.value || payload?.group;
+
+        if (!row || !newGroup || !channelState) {
+          console.warn(
+            "[handleChannelUpdate] Missing data for group change:",
+            { row: !!row, newGroup, channelState: !!channelState }
+          );
+          break; // Fallback to full rebuild
+        }
+
+        // Simulate the change
+        const beforeState = getChannelStateSnapshot(channelState);
+        const channelID = row.channelID;
+
+        const simulatedState = simulateChannelGroupChange(
+          beforeState,
+          channelID,
+          newGroup
+        );
+
+        if (!simulatedState) {
+          console.warn("[handleChannelUpdate] Could not simulate group change");
+          break; // Fallback to full rebuild
+        }
+
+        // Check if axis count changed
+        const axisChanged = axisCountDidChange(beforeState, simulatedState);
+        updateProgress(50, "Comparing axis structures...");
+
+        if (!axisChanged) {
+          // Cheap path: just update group without axis change
+          console.log(
+            "[handleChannelUpdate] ✅ Group change does not affect axis count - using cheap path"
+          );
+          applyGroupChangeInPlace(channelID, newGroup, channelState);
+          updateProgress(100, "Group change complete!");
+          const elapsed = (performance.now() - startTime).toFixed(2);
+          console.log(
+            `[handleChannelUpdate] ✅ Cheap group change succeeded (${elapsed}ms)`
+          );
+          return true;
+        }
+
+        console.log(
+          "[handleChannelUpdate] Group change affects axis count - using full rebuild"
+        );
+        updateProgress(75, "Rebuilding chart structure...");
+        break; // Fallback to full rebuild
+      }
+
+      case "delete": {
+        // Compare axis counts before and after simulated deletion
+        console.log(
+          "[handleChannelUpdate] Analyzing deletion for structural impact..."
+        );
+
+        const row = payload;
+
+        if (!row || !channelState) {
+          console.warn(
+            "[handleChannelUpdate] Missing data for deletion:",
+            { row: !!row, channelState: !!channelState }
+          );
+          break; // Fallback to full rebuild
+        }
+
+        // Simulate the deletion
+        const beforeState = getChannelStateSnapshot(channelState);
+        const channelID = row.channelID;
+
+        const simulatedState = simulateChannelDeletion(beforeState, channelID);
+
+        if (!simulatedState) {
+          console.warn("[handleChannelUpdate] Could not simulate deletion");
+          break; // Fallback to full rebuild
+        }
+
+        // Check if axis count changed
+        const axisChanged = axisCountDidChange(beforeState, simulatedState);
+
+        if (!axisChanged) {
+          // Cheap path: just remove series without axis change
+          console.log(
+            "[handleChannelUpdate] ✅ Deletion does not affect axis count - using cheap path"
+          );
+          removeSeriesInPlace(channelID);
+          const elapsed = (performance.now() - startTime).toFixed(2);
+          console.log(
+            `[handleChannelUpdate] ✅ Cheap deletion succeeded (${elapsed}ms)`
+          );
+          return true;
+        }
+
+        console.log(
+          "[handleChannelUpdate] Deletion affects axis count - using full rebuild"
+        );
+        break; // Fallback to full rebuild
+      }
+
+      default: {
+        // Unknown or complex update type
+        console.log(
+          `[handleChannelUpdate] Unknown or generic update type: "${type}" - using full rebuild`
+        );
+        break;
+      }
+    }
+  } catch (err) {
+    console.error("[handleChannelUpdate] Error in update handler:", err);
+    // Fallback to full rebuild on error
+  }
+
+  // Fallback: execute full rebuild
+  console.log(
+    "[handleChannelUpdate] Falling back to full rebuild via onFullRebuild callback"
+  );
+  updateProgress(75, "Rebuilding charts...");
+  
+  if (typeof onFullRebuild === "function") {
+    try {
+      onFullRebuild();
+      updateProgress(100, "Update complete!");
+    } catch (err) {
+      console.error("[handleChannelUpdate] Error calling onFullRebuild:", err);
+    }
+  }
+
+  const elapsed = (performance.now() - startTime).toFixed(2);
+  console.log(`[handleChannelUpdate] Full rebuild path (${elapsed}ms)`);
+
+  return false;
 }

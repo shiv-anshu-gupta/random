@@ -2314,12 +2314,23 @@ export function createChannelList(
             channelID: rowData?.channelID,
             scale: newValue,
             row: rowData,
+            value: newValue, // Also include as 'value' for consistency with new handler
+          };
+        } else if (field === "start" || field === "duration") {
+          // Time window changes (start/duration)
+          messageType = "callback_time_window";
+          payload = {
+            channelID: rowData?.channelID,
+            field: field,
+            value: newValue,
+            row: rowData,
           };
         } else if (field === "group") {
           messageType = "callback_group";
           payload = {
             channelID: rowData?.channelID,
             group: newValue,
+            value: newValue, // Also include as 'value' for consistency with new handler
             row: rowData,
           };
         }

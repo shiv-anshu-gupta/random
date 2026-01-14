@@ -38,7 +38,7 @@ if (typeof window !== "undefined") {
     window.COMPUTED_CHANNEL_COLORS
   );
 }
-import { subscribeChartUpdates } from "./components/chartManager.js";
+import { subscribeChartUpdates, handleChannelUpdate } from "./components/chartManager.js";
 import { debugLite } from "./components/debugPanelLite.js";
 import { autoGroupChannels } from "./utils/autoGroupChannels.js";
 import { initVerticalLineControl } from "./components/initVerticalLineControl.js";
@@ -148,6 +148,20 @@ if (typeof window !== "undefined") {
   console.log(
     "💡 [Debug] Type debugChartMetadata() in console to view chart groups"
   );
+}
+
+// ✅ NEW: Global progress callback for chart operations
+// Used to pass progress updates from subscribeChartUpdates → handleChannelUpdate
+let globalProgressCallback = null;
+
+function setProgressCallback(callback) {
+  globalProgressCallback = callback;
+}
+
+function callProgress(percent, message) {
+  if (typeof globalProgressCallback === "function") {
+    globalProgressCallback(percent, message);
+  }
 }
 
 /**
@@ -820,6 +834,7 @@ export const CALLBACK_TYPE = {
   GROUP: "callback_group",
   ADD_CHANNEL: "callback_addChannel",
   DELETE: "callback_delete",
+  TIME_WINDOW: "callback_time_window", // ✅ NEW: Combined start/duration updates
 };
 
 const COMPUTED_COLOR_PALETTE = computedPalette;
@@ -2423,7 +2438,8 @@ window.addEventListener("mergedFilesReceived", async (event) => {
             data,
             createState,
             calculateDeltas,
-            TIME_UNIT
+            TIME_UNIT,
+            () => globalProgressCallback // ✅ NEW: Pass progress callback getter
           );
           console.log("[main.js] ✅ Chart subscriptions ready");
         },
@@ -2441,7 +2457,8 @@ window.addEventListener("mergedFilesReceived", async (event) => {
           data,
           createState,
           calculateDeltas,
-          TIME_UNIT
+          TIME_UNIT,
+          () => globalProgressCallback // ✅ NEW: Pass progress callback getter
         );
       }, 500);
     }
@@ -4465,67 +4482,148 @@ window.addEventListener("message", (ev) => {
         break;
       }
       case CALLBACK_TYPE.COLOR: {
+        // ✅ NEW: Try cheap in-place color update first (v2.1.0 optimization)
+        console.log(`[COLOR HANDLER] 📢 Color change received:`, {
+          type: payload?.row?.type,
+          color: payload?.color || payload?.newValue,
+        });
+
+        // ✅ NEW: Show progress for color change
+        const colorChannelName = payload?.row?.name || "Channel";
+        showProgress(0, `Changing color for ${colorChannelName}...`);
+
+        // ✅ NEW: Set up progress callback
+        setProgressCallback((percent, message) => {
+          updateProgress(percent, message);
+          // Auto-hide after completion
+          if (percent >= 100) {
+            setTimeout(() => hideProgress(), 500);
+          }
+        });
+
+        // Try the new optimized path
+        const row = payload && payload.row ? payload.row : null;
+        const channelID = row?.channelID;
+        const color =
+          payload?.color ||
+          payload?.newValue ||
+          (Array.isArray(payload) && payload.length >= 3 ? payload[2] : null);
+
+        if (
+          channelID &&
+          row &&
+          color &&
+          typeof handleChannelUpdate === "function"
+        ) {
+          console.log(
+            "[COLOR HANDLER] ✅ Attempting optimized cheap color path..."
+          );
+          const handled = handleChannelUpdate(
+            "color",
+            { row, value: color },
+            channelState,
+            dataState,
+            charts,
+            chartsContainer,
+            null, // No fallback needed for color-only changes
+            (percent, message) => {
+              // ✅ NEW: Progress callback from handleChannelUpdate
+              callProgress(percent, message);
+            }
+          );
+
+          if (handled) {
+            console.log(
+              "[COLOR HANDLER] ✅ Handled via cheap path - skipping legacy logic"
+            );
+            callProgress(100, "Color change complete!");
+            return;
+          }
+
+          console.log(
+            "[COLOR HANDLER] ⚠️ Cheap path failed, falling back to legacy logic"
+          );
+        }
+
+        // LEGACY PATH (fallback if cheap path not available or failed)
         // Support payload shapes:
         // - legacy: { row: {...}, newValue: ... }
         // - tabulator: payload = [chartInstance, channelID, newValue]
         // - alt: { channelID, newValue }
-        let row = payload && payload.row ? payload.row : null;
-        let channelID = null;
-        let color =
+        let legacyRow = payload && payload.row ? payload.row : null;
+        let legacyChannelID = null;
+        let legacyColor =
           payload && payload.newValue
             ? payload.newValue
             : payload && payload.color
             ? payload.color
             : null;
 
-        if (!row) {
+        if (!legacyRow) {
           if (Array.isArray(payload) && payload.length >= 3) {
-            channelID = payload[1];
-            color = payload[2];
+            legacyChannelID = payload[1];
+            legacyColor = payload[2];
           } else if (payload && payload.channelID) {
-            channelID = payload.channelID;
+            legacyChannelID = payload.channelID;
           }
         }
 
-        console.log(`[COLOR HANDLER] 📢 Color change received:`, {
-          type: row?.type,
-          color,
-        });
-
         // ✅ STEP 1: Update channelState (UI update)
-        if (channelID) {
+        if (legacyChannelID) {
+          callProgress(50, "Updating color in state...");
           const updated = updateChannelFieldByID(
-            channelID,
+            legacyChannelID,
             "lineColors",
-            color
+            legacyColor
           );
           if (updated) {
             console.log(
-              `[COLOR HANDLER] ✅ Updated by channelID: ${channelID}`
+              `[COLOR HANDLER] ✅ Updated by channelID: ${legacyChannelID}`
             );
+            callProgress(100, "Color change complete!");
             return;
           }
           // fall through to legacy behavior if update failed
         }
 
-        if (!row) return;
-        const t = (row.type || "").toLowerCase();
-        const oi = Number(row.originalIndex ?? row.idx ?? -1);
+        if (!legacyRow) {
+          hideProgress();
+          return;
+        }
+        const t = (legacyRow.type || "").toLowerCase();
+        const oi = Number(legacyRow.originalIndex ?? legacyRow.idx ?? -1);
         if ((t === "analog" || t === "digital") && oi >= 0) {
           // use helper with bounds checks
           console.log(
-            `[COLOR HANDLER] 🎨 Updating ${t}[${oi}] color → ${color}`
+            `[COLOR HANDLER] 🎨 Updating ${t}[${oi}] color → ${legacyColor}`
           );
-          updateChannelFieldByIndex(t, oi, "lineColors", color);
+          callProgress(75, "Applying color to chart...");
+          updateChannelFieldByIndex(t, oi, "lineColors", legacyColor);
+          callProgress(100, "Color change complete!");
         } else {
           // fallback: match by label
-          let idx = channelState.analog.yLabels.indexOf(row.id ?? row.name);
-          if (idx >= 0)
-            updateChannelFieldByIndex("analog", idx, "lineColors", color);
+          let idx = channelState.analog.yLabels.indexOf(
+            legacyRow.id ?? legacyRow.name
+          );
+          if (idx >= 0) {
+            updateChannelFieldByIndex("analog", idx, "lineColors", legacyColor);
+            callProgress(100, "Color change complete!");
+          }
           else {
-            idx = channelState.digital.yLabels.indexOf(row.id ?? row.name);
-            if (idx >= 0)
-              updateChannelFieldByIndex("digital", idx, "lineColors", color);
+            idx = channelState.digital.yLabels.indexOf(
+              legacyRow.id ?? legacyRow.name
+            );
+            if (idx >= 0) {
+              updateChannelFieldByIndex(
+                "digital",
+                idx,
+                "lineColors",
+                legacyColor
+              );
+              callProgress(100, "Color change complete!");
+            } else {
+              hideProgress();
+            }
           }
         }
         break;
@@ -4834,6 +4932,70 @@ window.addEventListener("message", (ev) => {
         }
         break;
       }
+      case CALLBACK_TYPE.TIME_WINDOW: {
+        // ✅ NEW: Combined handler for start/duration changes
+        // Routes to handleChannelUpdate for potential cheap path
+        console.log("[TIME_WINDOW HANDLER] Received time window update:", payload);
+
+        const row = payload?.row;
+        const fieldName = payload?.field;
+        const newVal = payload?.value;
+
+        if (!row || !fieldName || newVal === undefined) {
+          console.warn(
+            "[TIME_WINDOW HANDLER] Missing data:",
+            { row: !!row, fieldName, newVal }
+          );
+          break;
+        }
+
+        // Determine which field to update (start or duration)
+        let fieldKey = null;
+        if (fieldName === "start") {
+          fieldKey = "starts";
+        } else if (fieldName === "duration") {
+          fieldKey = "durations";
+        } else {
+          console.warn("[TIME_WINDOW HANDLER] Unknown field:", fieldName);
+          break;
+        }
+
+        const channelID = row.channelID;
+        if (channelID) {
+          const updated = updateChannelFieldByID(channelID, fieldKey, newVal);
+          if (updated) {
+            console.log("[TIME_WINDOW HANDLER] ✅ Updated via channelID");
+            return;
+          }
+        }
+
+        // Fallback: update by index
+        const t = (row.type || "").toLowerCase();
+        const oi = Number(row.originalIndex ?? row.idx ?? -1);
+
+        if (
+          (t === "analog" || t === "digital" || t === "computed") &&
+          oi >= 0
+        ) {
+          const ok = updateChannelFieldByIndex(t, oi, fieldKey, newVal);
+          console.log(
+            "[TIME_WINDOW HANDLER] Updated via index:",
+            { type: t, idx: oi, field: fieldKey, ok }
+          );
+        } else {
+          // Fallback: search by label
+          let idx = channelState.analog.yLabels.indexOf(row.id ?? row.name);
+          if (idx >= 0) {
+            updateChannelFieldByIndex("analog", idx, fieldKey, newVal);
+          } else {
+            idx = channelState.digital.yLabels.indexOf(row.id ?? row.name);
+            if (idx >= 0) {
+              updateChannelFieldByIndex("digital", idx, fieldKey, newVal);
+            }
+          }
+        }
+        break;
+      }
       case CALLBACK_TYPE.INVERT: {
         let row = payload && payload.row ? payload.row : null;
         let channelID = null;
@@ -4915,6 +5077,27 @@ window.addEventListener("message", (ev) => {
         break;
       }
       case CALLBACK_TYPE.GROUP: {
+        // ✅ NEW: Show progress bar for group change operation
+        const channelName = payload?.row?.name || payload?.row?.id || "Channel";
+        showProgress(0, `Changing group for ${channelName}...`);
+        console.log(`[GROUP HANDLER] 🎯 Progress callback setup for: ${channelName}`);
+        
+        // ✅ FIX: Create progress callback that will be passed through state
+        const progressCallback = (percent, message) => {
+          console.log(`[GROUP HANDLER CALLBACK] Received percent=${percent}%, message="${message}"`);
+          updateProgress(percent, message);
+          // Auto-hide after completion
+          if (percent >= 100) {
+            console.log(`[GROUP HANDLER CALLBACK] ✅ Scheduling auto-hide after 800ms`);
+            setTimeout(() => hideProgress(), 800);
+          }
+        };
+        
+        // ✅ FIX: Store callback in state so it's accessible in subscriber
+        if (!channelState._meta) channelState._meta = {};
+        channelState._meta.progressCallback = progressCallback;
+        console.log(`[GROUP HANDLER] ✅ Progress callback stored in state._meta`);
+        
         // payload shapes similar to other fields: { row, newValue } or [_, channelID, newValue]
         let row = payload && payload.row ? payload.row : null;
         let channelID = null;
@@ -4936,10 +5119,16 @@ window.addEventListener("message", (ev) => {
             channelState[found.type].groups =
               channelState[found.type].groups || [];
             channelState[found.type].groups[found.idx] = newGroup;
+            // ✅ NEW: Update progress after state change
+            console.log(`[GROUP HANDLER] ✅ State updated via channelID, calling updateProgress(25)`);
+            updateProgress(25, `Processing group change...`);
             return;
           }
         }
-        if (!row) return;
+        if (!row) {
+          hideProgress();
+          return;
+        }
         const t = (row.type || "").toLowerCase();
         const oi = Number(row.originalIndex ?? row.idx ?? -1);
         if (
@@ -4948,17 +5137,26 @@ window.addEventListener("message", (ev) => {
         ) {
           channelState[t].groups = channelState[t].groups || [];
           channelState[t].groups[oi] = newGroup;
+          // ✅ NEW: Update progress after state change
+          console.log(`[GROUP HANDLER] ✅ State updated via index, calling updateProgress(25)`);
+          updateProgress(25, `Processing group change...`);
         } else {
           // fallback: find by label
           let idx = channelState.analog.yLabels.indexOf(row.id ?? row.name);
           if (idx >= 0) {
             channelState.analog.groups = channelState.analog.groups || [];
             channelState.analog.groups[idx] = newGroup;
+            // ✅ NEW: Update progress after state change
+            updateProgress(25, `Processing group change...`);
           } else {
             idx = channelState.digital.yLabels.indexOf(row.id ?? row.name);
             if (idx >= 0) {
               channelState.digital.groups = channelState.digital.groups || [];
               channelState.digital.groups[idx] = newGroup;
+              // ✅ NEW: Update progress after state change
+              updateProgress(25, `Processing group change...`);
+            } else {
+              hideProgress();
             }
           }
         }
