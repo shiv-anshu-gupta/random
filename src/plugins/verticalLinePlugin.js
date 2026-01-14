@@ -102,7 +102,7 @@ export default function verticalLinePlugin(
 
             const lines = verticalLinesXState.asArray();
             const xVal = u.posToVal(e.offsetX, "x");
-            const hoverRadius = (u.scales.x.max - u.scales.x.min) * 0.01;
+            const hoverRadius = (u.scales.x.max - u.scales.x.min) * 0.04;
 
             for (let idx = 0; idx < lines.length; idx++) {
               const xData = lines[idx];
@@ -125,8 +125,9 @@ export default function verticalLinePlugin(
             if (!u || !u.scales) return;
 
             const xVal = u.posToVal(e.offsetX, "x");
-            const hoverRadius = (u.scales.x.max - u.scales.x.min) * 0.005;
-            const isHovering = isHoveringLine(u, xVal, hoverRadius);
+            // For cursor display: use 0.045 (slightly larger) to make it easier to grab
+            const hoverRadiusDisplay = (u.scales.x.max - u.scales.x.min) * 0.045;
+            const isHovering = isHoveringLine(u, xVal, hoverRadiusDisplay);
 
             overlay.style.cursor = isHovering ? "ew-resize" : "default";
 
@@ -254,7 +255,8 @@ export default function verticalLinePlugin(
                 return;
               }
 
-              const xPos = u.valToPos(u.data[0][nearestIdx], "x", true);
+              // Draw line at EXACT xData position, not rounded to nearest index
+              const xPos = u.valToPos(xData, "x", true);
               const color = lineColors[idx % lineColors.length];
 
               // Draw vertical line

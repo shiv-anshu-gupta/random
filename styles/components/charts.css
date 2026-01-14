@@ -8,8 +8,8 @@
   color: var(--chart-text);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
-  padding: 16px;
-  margin-bottom: 20px;
+  padding: 4px;
+  
 }
 
 .chart-title {
