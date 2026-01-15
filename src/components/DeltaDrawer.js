@@ -17,7 +17,7 @@ import { filterTableRows } from "./DeltaTable.js";
 
 export function createDeltaDrawer() {
   let isOpen = false;
-  let sidebarWidth = 25; // Percentage width
+  let sidebarWidth = 20; // Percentage width
   const minWidth = 15;
   const maxWidth = 70;
   let tableRenderer = null;

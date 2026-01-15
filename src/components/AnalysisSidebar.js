@@ -11,7 +11,7 @@ const SIDEBAR_ID = "analysis-sidebar";
 const PANEL_ID = "analysis-sidebar-panel";
 const CLOSE_BTN_ID = "analysis-sidebar-close";
 const STORAGE_KEY = `${PANEL_ID}-width`;
-const DEFAULT_WIDTH = 30; // Percentage width
+const DEFAULT_WIDTH = 20; // Percentage width (same as delta drawer)
 const MIN_WIDTH = 15;
 const MAX_WIDTH = 70;
 
@@ -71,12 +71,17 @@ export function createAnalysisSidebar() {
         : DEFAULT_WIDTH;
     const applied = clampWidth(candidateWidth);
 
-    // Use CSS variables to override Tailwind hashing
+    // ✅ Update BOTH CSS variables (just like delta drawer and resizeDivider)
+    document.documentElement.style.setProperty(
+      "--main-content-width",
+      `${100 - applied}%`
+    );
     document.documentElement.style.setProperty(
       "--sidebar-width-right",
       `${applied}%`
     );
-    sidebar.style.width = `${applied}%`;
+    // Don't set inline style - let CSS variable handle it
+    // sidebar.style.width = `${applied}%`;
     return applied;
   }
 
@@ -84,7 +89,16 @@ export function createAnalysisSidebar() {
     if (!isOpen) return;
     const { panel } = getElements();
     if (!panel) return;
-    const applied = syncSidebarWidth(panel.offsetWidth);
+    
+    // Calculate percentage width from pixel width
+    const panelContainer = panel.parentElement;
+    if (!panelContainer) return;
+    
+    const panelWidthPx = panel.offsetWidth;
+    const containerWidthPx = panelContainer.parentElement?.offsetWidth || window.innerWidth;
+    const widthPercent = (panelWidthPx / containerWidthPx) * 100;
+    
+    const applied = syncSidebarWidth(widthPercent);
     storeWidth(applied);
   }
 
@@ -132,6 +146,16 @@ export function createAnalysisSidebar() {
       const appliedWidth = syncSidebarWidth(savedWidth || DEFAULT_WIDTH);
       storeWidth(appliedWidth);
 
+      // ✅ Update CSS variables to adjust flex layout (SAME AS DELTA DRAWER)
+      document.documentElement.style.setProperty(
+        "--main-content-width",
+        `${100 - appliedWidth}%`
+      );
+      document.documentElement.style.setProperty(
+        "--sidebar-width-right",
+        `${appliedWidth}%`
+      );
+
       // Add sidebar-resized class to apply CSS variable widths
       sidebar.classList.remove("hidden");
       sidebar.classList.add("sidebar-resized");
@@ -164,10 +188,16 @@ export function createAnalysisSidebar() {
       panel.classList.remove("translate-x-0");
       panel.classList.add("translate-x-full");
 
+      // ✅ Reset CSS variables (SAME AS DELTA DRAWER)
+      document.documentElement.style.setProperty(
+        "--main-content-width",
+        "100%"
+      );
+      document.documentElement.style.setProperty("--sidebar-width-right", "0%");
+
       // Remove resized class to clear CSS variable widths
       sidebar.classList.remove("sidebar-resized");
       mainContent.classList.remove("sidebar-resized");
-      document.documentElement.style.setProperty("--sidebar-width-right", "0%");
 
       if (divider) {
         divider.classList.add("hidden");
