@@ -57,7 +57,7 @@ import {
   toggleChartsVisibility,
   clearChartsContainer,
 } from "./utils/uiHelpers.js";
-import { exportComputedChannelsAsCSV } from "./utils/csvExport.js";
+import { exportComputedChannelsAsCSV, exportAllChannelsAsCSV } from "./utils/csvExport.js";
 import {
   saveComputedChannelsToStorage,
   loadComputedChannelsFromStorage,
@@ -3157,20 +3157,36 @@ updateExportButtonState();
 // CSV Export button
 const exportCSVBtn = document.getElementById("exportCSVBtn");
 if (exportCSVBtn) {
-  exportCSVBtn.addEventListener("click", () => {
+  exportCSVBtn.addEventListener("click", async () => {
     try {
-      if (!data || !data.computedData || data.computedData.length === 0) {
-        alert(
-          "❌ No computed channels to export. Please create and execute equations first from the Channel List popup."
-        );
+      const resolvedData = data || window.globalData;
+      const resolvedCfg = cfg || window.globalCfg;
+
+      if (!resolvedData) {
+        alert("❌ No data available to export. Load a COMTRADE file first.");
+        return;
+      }
+
+      // Check if we have at least some data to export
+      const hasAnalog = resolvedData.analogData && resolvedData.analogData.length > 0;
+      const hasDigital = resolvedData.digitalData && resolvedData.digitalData.length > 0;
+      const hasComputed = resolvedData.computedData && resolvedData.computedData.length > 0;
+      const hasTime = resolvedData.time && resolvedData.time.length > 0;
+
+      if (!hasTime || (!hasAnalog && !hasDigital && !hasComputed)) {
+        alert("❌ No data available to export. Load a COMTRADE file first.");
         return;
       }
 
       // Generate filename with timestamp
       const now = new Date();
       const timestamp = now.toISOString().slice(0, 19).replace(/[:-]/g, "");
-      const filename = `computed-channels-${timestamp}.csv`;
-      exportComputedChannelsAsCSV(data, filename);
+      const filename = `all-channels-${timestamp}.csv`;
+      
+      // Export ALL available data (analog, digital, computed)
+      // Pass both data and cfg for proper metadata
+      // Use await since exportAllChannelsAsCSV is now async
+      await exportAllChannelsAsCSV(resolvedData, resolvedCfg, filename);
     } catch (error) {
       console.error("[CSV Export] Error:", error);
       alert(`❌ CSV export failed: ${error.message}`);
