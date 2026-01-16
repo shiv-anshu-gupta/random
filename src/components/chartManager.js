@@ -1597,15 +1597,8 @@ export function subscribeChartUpdates(
               autoGroup
             );
 
-            callProgress(80, "Finalizing group structure...");
-
-            // ✅ FIX: Always render digital charts if they should exist
-            // (either axes changed OR digital chart was removed)
-            const digitalChartExists = charts.some(
-              (c) => c && c._type === "digital"
-            );
+            // Render digital charts immediately after analog, in the same rebuild phase
             const shouldRenderDigital =
-              !digitalChartExists && // Digital chart doesn't exist
               cfg.digitalChannels &&
               cfg.digitalChannels.length > 0 &&
               data.digitalData &&
@@ -1634,11 +1627,9 @@ export function subscribeChartUpdates(
                   err
                 );
               }
-            } else {
-              console.log(
-                `[group subscriber] ⏭️ Skipping digital chart (exists: ${digitalChartExists}, shouldRender: ${shouldRenderDigital})`
-              );
             }
+
+            callProgress(80, "Finalizing group structure...");
 
             // ✅ DEBUG: Log state after changes
             console.log(`[group subscriber] 📊 AFTER changes:`, {

@@ -159,7 +159,7 @@ export function createChartOptions({
   scales = {}, // Unified: scales[0] is x, rest are y
   select = { show: true },
   singleYAxis = true,
-  maxYAxes = 1, // ✅ NEW: Number of Y-axes to create
+  maxYAxes = undefined, // ✅ CHANGED: Default to undefined so singleYAxis logic works. Pass explicit number for multi-axis.
   autoScaleUnit = { x: true, y: true }, // NEW: default autoScaleUnit
 }) {
   const verticalLinesXVal = unwrap(verticalLinesX);

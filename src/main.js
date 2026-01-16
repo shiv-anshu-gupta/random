@@ -4497,6 +4497,43 @@ window.addEventListener("message", (ev) => {
         }
         break;
       }
+      case CALLBACK_TYPE.GROUP: {
+        console.group(`[main.js] GROUP CHANGE HANDLER`);
+        try {
+          const { channelID, group, value, row } = payload || {};
+          const newGroup = group || value;
+          if (!newGroup) { console.groupEnd(); break; }
+          const normalizedGroup = typeof newGroup === 'string' && /^G\d+$/.test(newGroup.trim()) ? newGroup.trim() : 'G0';
+          let updated = false;
+          if (channelID) {
+            const found = findChannelByID(channelID);
+            if (found) {
+              channelState[found.type].groups = channelState[found.type].groups || [];
+              channelState[found.type].groups[found.idx] = normalizedGroup;
+              if (found.type === 'analog' && cfg?.analogChannels?.[found.idx]) cfg.analogChannels[found.idx].group = normalizedGroup;
+              else if (found.type === 'digital' && cfg?.digitalChannels?.[found.idx]) cfg.digitalChannels[found.idx].group = normalizedGroup;
+              else if (found.type === 'computed' && cfg?.computedChannels?.[found.idx]) cfg.computedChannels[found.idx].group = normalizedGroup;
+              updated = true;
+            }
+          }
+          if (!updated && row) {
+            const t = (row.type || '').toLowerCase();
+            const idx = typeof row.originalIndex === 'number' ? row.originalIndex : (typeof row.id === 'number' ? row.id - 1 : -1);
+            if ((t === 'analog' || t === 'digital' || t === 'computed') && idx >= 0) {
+              channelState[t].groups = channelState[t].groups || [];
+              channelState[t].groups[idx] = normalizedGroup;
+              if (t === 'analog' && cfg?.analogChannels?.[idx]) cfg.analogChannels[idx].group = normalizedGroup;
+              else if (t === 'digital' && cfg?.digitalChannels?.[idx]) cfg.digitalChannels[idx].group = normalizedGroup;
+              else if (t === 'computed' && cfg?.computedChannels?.[idx]) cfg.computedChannels[idx].group = normalizedGroup;
+              updated = true;
+            }
+          }
+          try { debugLite.log('msg.group', { channelID, newGroup: normalizedGroup, updated }); } catch (e) { }
+        } catch (err) { console.error(`[GROUP HANDLER] Error:`, err); }
+        console.groupEnd();
+        break;
+      }
+
       case CALLBACK_TYPE.COLOR: {
         // ✅ NEW: Try cheap in-place color update first (v2.1.0 optimization)
         console.log(`[COLOR HANDLER] 📢 Color change received:`, {
