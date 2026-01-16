@@ -3,7 +3,7 @@ import { createDragBar } from "./createDragBar.js";
 import { createDigitalFillPlugin } from "../plugins/digitalFillPlugin.js";
 import { findChangedDigitalChannelIndices } from "../utils/digitalChannelUtils.js";
 import { createCustomElement } from "../utils/helpers.js";
-import { createChartContainer, initUPlotChart } from "../utils/chartDomUtils.js";
+import { createChartContainer } from "../utils/chartDomUtils.js";
 import verticalLinePlugin from "../plugins/verticalLinePlugin.js";
 import { getMaxYAxes } from "../utils/maxYAxesStore.js";
 import { attachListenerWithCleanup } from "../utils/eventListenerManager.js";
@@ -46,34 +46,17 @@ export function renderDigitalCharts(
   const digitalDataToShow = digitalIndicesToShow.map(
     (i) => data.digitalData[i]
   );
-  
-  // ✅ CRITICAL FIX: Use FILTERED labels that match digitalChannelsToShow
-  const fullYLabels = channelState.digital.yLabels || [];
-  const fullLineColors = channelState.digital.lineColors || [];
-  const fullYUnits = channelState.digital.yUnits || [];
-  const fullAxesScales = channelState.digital.axesScales || [];
-  
-  // Build yLabels with fallback to channel config if state labels are missing
-  const yLabels = digitalIndicesToShow.map((i) => {
-    // Try state label first
-    if (fullYLabels[i]) {
-      return fullYLabels[i];
-    }
-    // Fallback to channel config
-    const ch = cfg.digitalChannels[i];
-    return ch?.id || ch?.channelID || ch?.name || `Digital-${i}`;
-  });
-  
-  const lineColors = fullLineColors;
-  const yUnits = fullYUnits;
-  const axesScales = fullAxesScales;
-  const xLabel = channelState.digital.xLabel || "";
-  const xUnit = channelState.digital.xUnit || "";
+  const yLabels = channelState.digital.yLabels;
+  const lineColors = channelState.digital.lineColors;
+  const yUnits = channelState.digital.yUnits;
+  const axesScales = channelState.digital.axesScales;
+  const xLabel = channelState.digital.xLabel;
+  const xUnit = channelState.digital.xUnit;
   // Colors corresponding to the displayed channels (map from full channelState)
-  const displayedColors = digitalIndicesToShow.map((i) => lineColors[i] || "#888");
+  const displayedColors = digitalIndicesToShow.map((i) => lineColors[i]);
 
   // Get digital channel names for display on left side
-  const digitalYLabels = yLabels; // Already filtered to displayed channels
+  const digitalYLabels = digitalIndicesToShow.map((i) => yLabels[i]);
 
   console.log(
     `[renderDigitalCharts] 📋 Channel labels: ${digitalYLabels.join(", ")}`
@@ -81,15 +64,6 @@ export function renderDigitalCharts(
   console.log(
     `[renderDigitalCharts] 🎨 Line colors: [${displayedColors.join(", ")}]`
   );
-  
-  // ✅ DEBUG: Verify arrays match
-  console.log(`[renderDigitalCharts] 📊 Array lengths:`, {
-    digitalYLabels: digitalYLabels?.length || 0,
-    displayedColors: displayedColors?.length || 0,
-    digitalChannelsToShow: digitalChannelsToShow?.length || 0,
-    digitalDataToShow: digitalDataToShow?.length || 0,
-    fullYLabels: fullYLabels?.length || 0,
-  });
 
   // Create a pseudo-group for alignment calculation
   const digitalGroup = {
@@ -98,205 +72,378 @@ export function renderDigitalCharts(
   };
 
   // ✅ FIX: Extract digital group ID (like analog charts do)
-  // ✅ CRITICAL CHANGE: Group digital channels by their assigned group ID
   const userGroups = channelState.digital?.groups || [];
-  const digitalGroupsMap = new Map();
-  
-  // Build group -> indices mapping
-  digitalIndicesToShow.forEach((globalIdx) => {
-    const groupId = typeof userGroups[globalIdx] === 'string' && /^G\d+$/.test(userGroups[globalIdx].trim())
-      ? userGroups[globalIdx].trim()
-      : 'G0';
-    
-    if (!digitalGroupsMap.has(groupId)) {
-      digitalGroupsMap.set(groupId, []);
-    }
-    digitalGroupsMap.get(groupId).push(globalIdx);
-  });
-  
-  console.log(`[renderDigitalCharts] 🧩 Grouped digital channels:`, Array.from(digitalGroupsMap.entries()));
-  
-  // ✅ FOR EACH GROUP: Create a separate chart
-  digitalGroupsMap.forEach((groupIndices, groupId) => {
-    console.log(`[renderDigitalCharts] 🎯 Rendering digital group ${groupId} with indices:`, groupIndices);
-    
-    // Filter data for this group
-    const groupDigitalChannels = groupIndices.map((i) => ({...cfg.digitalChannels[i], originalIndex: i}));
-    const groupDigitalData = groupIndices.map((i) => data.digitalData[i]);
-    const groupDisplayedColors = groupIndices.map((i) => displayedColors[i] || '#888');
-    const groupYLabels = groupIndices.map((i) => yLabels[i]);
-    
-    const dragBar = createDragBar(
-      {
-        indices: groupDigitalChannels.map((_, i) => i),
-        colors: groupDisplayedColors,
-      },
-      { analogChannels: groupDigitalChannels },
-      channelState
-    );
-    
-    const metadata = addChart({
-      chartType: 'digital',
-      name: `Digital ${groupId}`,
-      userGroupId: groupId,
-      channels: groupDigitalChannels.map((ch, idx) => ch?.id || ch?.channelID || ch?.name || `digital-${ch?.originalIndex}`),
-      colors: groupDisplayedColors.slice(),
-      indices: groupIndices.slice(),
-      sourceGroupId: groupId,
-    });
-    
-    const { parentDiv, chartDiv } = createChartContainer(
-      dragBar,
-      'chart-container',
-      groupYLabels,
-      groupDisplayedColors,
-      `Digital ${groupId}`,
-      metadata.userGroupId,
-      'digital'
-    );
-    
-    parentDiv.dataset.userGroupId = metadata.userGroupId;
-    parentDiv.dataset.uPlotInstance = metadata.uPlotInstance;
-    parentDiv.dataset.chartType = 'digital';
-    chartsContainer.appendChild(parentDiv);
-    console.log(`[renderDigitalCharts] 🏗️ Chart container created and appended`);
+  const groupId =
+    digitalIndicesToShow.length > 0 && userGroups.length > 0
+      ? userGroups[digitalIndicesToShow[0]]
+      : "";
 
-    //const verticalLinesXState = verticalLinesX;
-    const groupDigitalDataZeroOne = groupDigitalData.map((arr) =>
-      arr.map((v) => (v ? 1 : 0))
-    );
-    const groupChartData = [data.time, ...groupDigitalDataZeroOne];
-    
-    // ✅ CRITICAL FIX: Ensure fill signals have proper fill colors with opacity
-    const groupDigitalFillSignals = groupDigitalChannels.map((ch, i) => {
-      const baseColor = groupDisplayedColors[i] || '#888888';
-      // Create fill color with opacity (0.3 for semi-transparent fill)
-      const fillColor = baseColor.includes('rgba')
-        ? baseColor // Already has opacity
-        : baseColor.includes('rgb')
-        ? baseColor.replace(')', ', 0.3)') // Convert rgb to rgba with 0.3 opacity
-        : `rgba(0, 150, 255, 0.3)`; // Fallback if color is problematic
-      
-      return {
-        signalIndex: i + 1,
-        offset: (groupDigitalChannels.length - 1 - i) * DigChannelOffset,
-        color: fillColor,
-        targetVal: 1,
-        originalIndex: ch.originalIndex,
-      };
-    });
-    
-    console.log(`[renderDigitalCharts] 🎨 Group ${groupId} fill signals:`, {
-      count: groupDigitalFillSignals.length,
-      signals: groupDigitalFillSignals.map((s, i) => ({
-        index: i,
-        signalIndex: s.signalIndex,
-        color: s.color,
-        offset: s.offset,
-      })),
-    });
-    const groupYMin = -0.5;
-    const groupYMax = (groupDigitalChannels.length - 1) * DigChannelOffset + 2;
+  console.log(`[renderDigitalCharts] 🏷️ Digital groupId = "${groupId}"`);
 
-    const maxYAxes = getMaxYAxes() || 1;
+  const dragBar = createDragBar(
+    {
+      indices: digitalChannelsToShow.map((_, i) => i),
+      colors: displayedColors,
+    },
+    { analogChannels: digitalChannelsToShow },
+    channelState
+  );
 
-    const groupChartOptionsParams = {
-      title: `Digital ${groupId}`,
-      yLabels: groupYLabels,
-      lineColors: yUnits,
-      verticalLinesX: verticalLinesX,
-      xLabel,
-      xUnit,
-      getCharts: () => charts,
-      yUnits: yUnits,
-      axesScales,
-      singleYAxis: true,
-      autoScaleUnit: { x: true, y: false },
-      scales: {
-        x: { time: false, auto: true },
-        y: { min: groupYMin, max: groupYMax, auto: false },
-      },
-    };
-
-    const groupOpts = createChartOptions(groupChartOptionsParams);
-
-    if (groupOpts.axes && Array.isArray(groupOpts.axes) && groupOpts.axes[1]) {
-      const firstAxis = groupOpts.axes[1];
-      firstAxis.show = true;
-      const channelCount = groupDigitalChannels.length;
-      const offset = DigChannelOffset;
-      const splits = [];
-      for (let i = 0; i < channelCount; ++i) {
-        splits.push(i * offset);
-        splits.push(i * offset + 1);
-      }
-      firstAxis.splits = () => splits;
-      firstAxis.values = (u, vals) => {
-        return vals.map((v) => {
-          for (let i = 0; i < channelCount; ++i) {
-            if (Math.abs(v - i * offset) < 0.1) return '0';
-            if (Math.abs(v - (i * offset + 1)) < 0.1) return '1';
-          }
-          return '';
-        });
-      };
-      firstAxis.label = 'Digital States';
-      firstAxis.show = true;
-    }
-
-    groupOpts.series = groupOpts.series.map((originalSeries, idx) => {
-      if (idx === 0) return originalSeries; // index 0 is time axis
-
-      const channelIdx = idx - 1;
-      const label = groupYLabels[channelIdx] || `Digital-${channelIdx}`;
-      const strokeColor =
-        groupDisplayedColors[channelIdx] ||
-        originalSeries.stroke ||
-        '#888';
-
-      return {
-        ...originalSeries,
-        label,
-        stroke: strokeColor, // use a real color, not 'transparent'
-        scale: 'y',
-      };
-    });
-
-    groupOpts.plugins = groupOpts.plugins || [];
-    groupOpts.plugins = groupOpts.plugins.filter((p) => !(p && p.id === 'verticalLinePlugin'));
-
-    const groupDigitalPlugin = createDigitalFillPlugin(groupDigitalFillSignals);
-    
-    // ✅ CRITICAL DEBUG: Verify plugin setup before attaching
-    console.log(`[renderDigitalCharts] 📊 Plugin setup validation for group ${groupId}:`, {
-      fillSignalsCount: groupDigitalFillSignals.length,
-      chartDataArrays: groupChartData.length,
-      chartDataLengths: groupChartData.map((arr, i) => ({ index: i, length: arr?.length || 0 })),
-      groupDigitalChannelsCount: groupDigitalChannels.length,
-      groupDisplayedColorsCount: groupDisplayedColors.length,
-      groupYLabelsCount: groupYLabels.length,
-      allMatch: groupDigitalFillSignals.length === groupDisplayedColors.length && 
-                groupDisplayedColors.length === groupYLabels.length &&
-                groupChartData.length === groupDigitalFillSignals.length + 1,
-    });
-    
-    groupOpts.plugins.push(groupDigitalPlugin);
-    groupOpts.plugins.push(verticalLinePlugin(verticalLinesX, () => charts));
-
-    const groupChart = initUPlotChart(groupOpts, groupChartData, chartDiv, charts);
-
-    groupChart._type = 'digital';
-    groupChart._metadata = metadata;
-    groupChart._userGroupId = groupId;
-    charts.push(groupChart);
-
-    console.log(`[renderDigitalCharts] ✅ Created digital chart for groupId: ${groupId}, metadata:`, metadata);
+  const metadata = addChart({
+    chartType: "digital",
+    name: "Digital Channels",
+    userGroupId: groupId,
+    channels: digitalChannelsToShow.map((ch, idx) => {
+      return (
+        ch?.id ||
+        ch?.channelID ||
+        ch?.name ||
+        (typeof ch?.originalIndex === "number"
+          ? `digital-${ch.originalIndex}`
+          : `digital-${idx}`)
+      );
+    }),
+    colors: displayedColors.slice(),
+    indices: digitalIndicesToShow.slice(),
+    sourceGroupId: groupId,
   });
 
-  console.log(`[renderDigitalCharts] ⏱️ All digital groups rendered`);
-  
-  const totalTime = performance.now() - renderStartTime;
   console.log(
-    `[renderDigitalCharts] ⏱️ Total digital rendering time: ${totalTime.toFixed(2)}ms`
+    `[renderDigitalCharts] Creating ${metadata.userGroupId} → ${metadata.uPlotInstance}`
+  );
+
+  // Create chart container with individual digital channel names, colors, and type label
+  const { parentDiv, chartDiv } = createChartContainer(
+    dragBar,
+    "chart-container",
+    digitalYLabels,
+    displayedColors,
+    "Digital Channels",
+    metadata.userGroupId,
+    "digital"
+  );
+  parentDiv.dataset.userGroupId = metadata.userGroupId;
+  parentDiv.dataset.uPlotInstance = metadata.uPlotInstance;
+  parentDiv.dataset.chartType = "digital";
+  chartsContainer.appendChild(parentDiv);
+  console.log(`[renderDigitalCharts] 🏗️ Chart container created`);
+
+  //const verticalLinesXState = verticalLinesX;
+  const digitalDataZeroOne = digitalDataToShow.map((arr) =>
+    arr.map((v) => (v ? 1 : 0))
+  );
+  const chartData = [data.time, ...digitalDataZeroOne];
+  const digitalFillSignals = digitalChannelsToShow.map((ch, i) => ({
+    signalIndex: i + 1,
+    offset: (digitalChannelsToShow.length - 1 - i) * DigChannelOffset,
+    color: displayedColors[i],
+    targetVal: 1,
+    originalIndex: ch.originalIndex,
+  }));
+  const yMin = -0.5;
+  const yMax = (digitalChannelsToShow.length - 1) * DigChannelOffset + 2;
+  const scales = {
+    x: { time: false, auto: true },
+    y: { min: yMin, max: yMax, auto: false },
+  };
+
+  // ✅ Get global axis alignment from global store (default 1 for digital)
+  const maxYAxes = getMaxYAxes() || 1;
+  console.log(
+    `[renderDigitalCharts] ✅ Chart config: maxYAxes=${maxYAxes}, channels=${digitalChannelsToShow.length}, yMin=${yMin}, yMax=${yMax}`
+  );
+
+  const chartOptionsStartTime = performance.now();
+  const opts = createChartOptions({
+    title: "Digital Channels",
+    yLabels,
+    lineColors,
+    verticalLinesX: verticalLinesX,
+    xLabel,
+    xUnit,
+    getCharts: () => charts,
+    yUnits,
+    axesScales,
+    scales,
+    singleYAxis: true,
+    autoScaleUnit: { x: true, y: false },
+    maxYAxes: maxYAxes,
+  });
+
+  // ✅ DEBUG: Log Y-Axes Configuration
+  console.log(`[renderDigitalCharts] 📏 Y-Axes Configuration:`, {
+    maxYAxes,
+    optsAxesLength: opts.axes?.length,
+    firstAxisExists: !!opts.axes?.[1],
+    additionalAxes: opts.axes?.slice(2).length,
+    digitalChannelsCount: digitalChannelsToShow.length,
+    originalAxes: opts.axes,
+  });
+
+  // ✅ Keep digital-specific formatting on first Y-axis, preserve additional axes for multi-axis sync
+  const firstAxis = {
+    ...opts.axes[1], // Preserve original axis properties
+    scale: "y", // Ensure correct scale
+    side: 3, // Left side
+    show: true, // Ensure axis is visible
+    size: 60, // Reserve space for axis
+    stroke: "#d1d5db", // Visible stroke
+    label: "Digital States", // Add label for clarity
+    grid: { show: true },
+    ticks: { show: true, size: 10 },
+    gap: 5,
+    values: (u, vals) =>
+      vals.map((v) => {
+        for (let i = 0; i < digitalChannelsToShow.length; ++i) {
+          if (Math.abs(v - i * DigChannelOffset) < 0.5) return "0";
+          if (Math.abs(v - (i * DigChannelOffset + 1)) < 0.5) return "1";
+        }
+        return "";
+      }),
+    splits: digitalChannelsToShow.flatMap((_, i) => [
+      i * DigChannelOffset,
+      i * DigChannelOffset + 1,
+    ]),
+    // Remove range - let scale handle it
+  };
+
+  console.log(`[renderDigitalCharts] 📏 First Axis Configuration:`, {
+    originalAxis: opts.axes[1],
+    modifiedAxis: firstAxis,
+  });
+
+  // Build axes array: [x-axis, first y-axis with digital formatting, ...additional axes]
+  opts.axes = [opts.axes[0], firstAxis, ...opts.axes.slice(2)];
+
+  console.log(`[renderDigitalCharts] 📏 Final Axes Array:`, opts.axes);
+
+  opts.series = [
+    {},
+    ...digitalChannelsToShow.map((ch, i) => {
+      // Prefer the authoritative label from channelState if available.
+      const original = ch.originalIndex;
+      let label = ch.id;
+      try {
+        if (
+          Array.isArray(channelState.digital?.yLabels) &&
+          channelState.digital.yLabels[original]
+        ) {
+          if (channelState.digital.yLabels[original] !== ch.id) {
+            // small debug hint when label sources disagree
+            console.debug(
+              "renderDigitalCharts: label mismatch for originalIndex",
+              original,
+              "cfg.id=",
+              ch.id,
+              "state.label=",
+              channelState.digital.yLabels[original]
+            );
+          }
+          label = channelState.digital.yLabels[original];
+        }
+      } catch (e) {}
+      return {
+        label,
+        stroke: "transparent",
+        show: true,
+      };
+    }),
+  ];
+  opts.plugins = opts.plugins || [];
+  opts.plugins = opts.plugins.filter(
+    (p) => !(p && p.id === "verticalLinePlugin")
+  );
+
+  console.log(`[renderDigitalCharts] 🔌 Before adding digitalFill plugin:`, {
+    pluginsCount: opts.plugins.length,
+    pluginIds: opts.plugins.map((p) => p?.id || "unknown"),
+  });
+
+  const digitalPlugin = createDigitalFillPlugin(digitalFillSignals);
+  opts.plugins.push(digitalPlugin);
+
+  console.log(`[renderDigitalCharts] 🔌 After adding digitalFill plugin:`, {
+    pluginsCount: opts.plugins.length,
+    pluginIds: opts.plugins.map((p) => p?.id || "unknown"),
+    digitalPluginExists: !!digitalPlugin,
+    digitalPluginId: digitalPlugin?.id,
+  });
+
+  opts.plugins.push(verticalLinePlugin(verticalLinesX, () => charts));
+
+  const chartOptionsEndTime = performance.now();
+  console.log(
+    `[renderDigitalCharts] ⏱️ createChartOptions took ${(
+      chartOptionsEndTime - chartOptionsStartTime
+    ).toFixed(1)}ms`
+  );
+
+  const chartStartTime = performance.now();
+  const chart = new uPlot(opts, chartData, chartDiv);
+  const chartEndTime = performance.now();
+
+  // ✅ CRITICAL FIX: Store digital plugin reference on chart for later access
+  // (uPlot doesn't expose plugins array, so we need to keep our own reference)
+  chart._digitalPlugin = digitalPlugin;
+
+  console.log(`[renderDigitalCharts] 📊 After uPlot creation:`, {
+    chartPluginsCount: chart.plugins?.length || 0,
+    digitalPluginStored: !!chart._digitalPlugin,
+    digitalPluginId: chart._digitalPlugin?.id,
+  });
+
+  chart._seriesColors = opts.series.slice(1).map((s) => s.stroke);
+  chart._metadata = metadata;
+  chart._userGroupId = metadata.userGroupId;
+  chart._uPlotInstance = metadata.uPlotInstance;
+  chart._chartType = "digital";
+
+  // Attach metadata for delta calculation scaling
+  chart._axesScales = axesScales || [];
+  chart._yUnits = yUnits || [];
+  charts.push(chart);
+  try {
+    // store mapping from chart series -> global channel indices
+    chart._channelIndices = digitalChannelsToShow.map((ch) => ch.originalIndex);
+    chart._type = "digital";
+  } catch (e) {}
+
+  console.log(
+    `[renderDigitalCharts] ✅ Digital chart created in ${(
+      chartEndTime - chartStartTime
+    ).toFixed(1)}ms with ${digitalChannelsToShow.length} channels`
+  );
+
+  const clickHandlerStartTime = performance.now();
+
+  // Click handler to add/remove vertical lines
+  const clickHandler = (e) => {
+    if (!chart.scales || !chart.scales.x) return;
+
+    const xVal = chart.posToVal(e.offsetX, "x");
+    const currentLines = verticalLinesX.asArray();
+
+    // Check if clicking near an existing line (within 2% of x-range)
+    const xRange = chart.scales.x.max - chart.scales.x.min;
+    const tolerance = xRange * 0.02;
+    const existingIdx = currentLines.findIndex(
+      (line) => Math.abs(line - xVal) < tolerance
+    );
+
+    if (existingIdx >= 0) {
+      // Remove line if clicking near existing line
+      verticalLinesX.value = currentLines.filter((_, i) => i !== existingIdx);
+    } else {
+      // Add new line
+      verticalLinesX.value = [...currentLines, xVal];
+      // Auto-trigger delta calculation and open delta window (only if 2+ lines)
+      setTimeout(async () => {
+        try {
+          // Update polar chart with new vertical line position
+          const { getPolarChart, getCfg, getData } = await import("../main.js");
+          const polarChart = getPolarChart();
+          const cfgData = getCfg();
+          const dataObj = getData();
+
+          if (polarChart && cfgData && dataObj) {
+            console.log(
+              "[renderDigitalCharts] Updating polar chart for new vertical line at:",
+              xVal
+            );
+            // Find nearest time index for this vertical line position
+            const timeIndex = dataObj.time
+              ? dataObj.time.findIndex((t) => t >= xVal)
+              : 0;
+            console.log(
+              "[renderDigitalCharts] Calculated timeIndex:",
+              timeIndex
+            );
+            polarChart.updatePhasorAtTimeIndex(
+              cfgData,
+              dataObj,
+              Math.max(0, timeIndex)
+            );
+          } else {
+            console.warn(
+              "[renderDigitalCharts] Missing polarChart, cfg, or data:",
+              {
+                polarChart: !!polarChart,
+                cfgData: !!cfgData,
+                dataObj: !!dataObj,
+              }
+            );
+          }
+
+          const { deltaWindow } = await import("../main.js");
+          // Only show delta window if there are 2 or more vertical lines
+          if (deltaWindow && verticalLinesX.value.length > 1) {
+            deltaWindow.show();
+          }
+        } catch (e) {
+          console.error(
+            "[renderDigitalCharts] Cannot update polar chart or deltaWindow:",
+            e.message
+          );
+          console.error(e);
+        }
+        charts.forEach((c) => c.redraw());
+      }, 0);
+    }
+  };
+
+  // ✅ Attach click handler with cleanup tracking
+  attachListenerWithCleanup(chart.over, "click", clickHandler, chart);
+
+  const clickHandlerEndTime = performance.now();
+  console.log(
+    `[renderDigitalCharts] ⏱️ Click handler setup took ${(
+      clickHandlerEndTime - clickHandlerStartTime
+    ).toFixed(1)}ms`
+  );
+
+  const resizeObserverStartTime = performance.now();
+  // ✅ FIX: Add debouncing to prevent ResizeObserver loop during animations
+  let resizeTimeout = null;
+  let lastSize = { width: 0, height: 0 };
+
+  const ro = new ResizeObserver((entries) => {
+    // Clear pending resize
+    if (resizeTimeout) {
+      clearTimeout(resizeTimeout);
+    }
+
+    resizeTimeout = setTimeout(() => {
+      for (let entry of entries) {
+        const newWidth = Math.floor(entry.contentRect.width);
+        const newHeight = Math.floor(entry.contentRect.height);
+
+        // Only resize if dimensions actually changed (prevents resize loops)
+        if (
+          newWidth > 0 &&
+          newHeight > 0 &&
+          (newWidth !== lastSize.width || newHeight !== lastSize.height)
+        ) {
+          lastSize = { width: newWidth, height: newHeight };
+          chart.setSize({
+            width: newWidth,
+            height: newHeight,
+          });
+        }
+      }
+    }, 50); // Debounce resize calls by 50ms
+  });
+  ro.observe(chartDiv);
+
+  const resizeObserverEndTime = performance.now();
+  console.log(
+    `[renderDigitalCharts] ⏱️ ResizeObserver.observe took ${(
+      resizeObserverEndTime - resizeObserverStartTime
+    ).toFixed(1)}ms`
+  );
+
+  const renderEndTime = performance.now();
+  const totalTime = renderEndTime - renderStartTime;
+  console.log(
+    `[renderDigitalCharts] ✓ Render complete in ${totalTime.toFixed(1)}ms`
   );
 }

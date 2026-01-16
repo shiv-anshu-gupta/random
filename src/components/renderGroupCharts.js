@@ -205,7 +205,7 @@ function createMergedGroupChart(
     }));
 
     const computedChannels = channelIndices.computed.map((idx) => ({
-      ...data.computedData[idx],
+      ...(cfg.computedChannels?.[idx] || {}),
       globalIndex: idx,
       type: "computed",
     }));
@@ -214,6 +214,11 @@ function createMergedGroupChart(
     // Step 2b: Prepare Y-axis labels and colors
     // ========================================================================
 
+    // Get line colors from channelState (these are the actual display colors)
+    const analogLineColors = channelState?.analog?.lineColors || [];
+    const digitalLineColors = channelState?.digital?.lineColors || [];
+    const computedLineColors = channelState?.computed?.lineColors || [];
+
     // Build arrays in order: analog (if any) -> digital (if any) -> computed (if any)
     const allLabels = [];
     const allColors = [];
@@ -221,27 +226,33 @@ function createMergedGroupChart(
 
     // Analog
     if (analogChannels.length > 0) {
-      analogChannels.forEach((ch) => {
+      analogChannels.forEach((ch, localIdx) => {
         allLabels.push(ch.name || `Analog ${ch.globalIndex}`);
-        allColors.push(ch.displayedColor || "#000000");
+        // Use color from channelState, fallback to cfg or default
+        const color = analogLineColors[ch.globalIndex] || ch.color || "#000000";
+        allColors.push(color);
         typeMap.push("analog");
       });
     }
 
     // Digital
     if (digitalChannels.length > 0) {
-      digitalChannels.forEach((ch) => {
+      digitalChannels.forEach((ch, localIdx) => {
         allLabels.push(ch.name || `Digital ${ch.globalIndex}`);
-        allColors.push(ch.displayedColor || "#888888");
+        // Use color from channelState, fallback to cfg or default
+        const color = digitalLineColors[ch.globalIndex] || ch.color || "#888888";
+        allColors.push(color);
         typeMap.push("digital");
       });
     }
 
     // Computed
     if (computedChannels.length > 0) {
-      computedChannels.forEach((ch) => {
+      computedChannels.forEach((ch, localIdx) => {
         allLabels.push(ch.name || ch.id || `Computed ${ch.globalIndex}`);
-        allColors.push(ch.displayedColor || "#0066FF");
+        // Use color from channelState, fallback to cfg or default
+        const color = computedLineColors[ch.globalIndex] || ch.color || "#0066FF";
+        allColors.push(color);
         typeMap.push("computed");
       });
     }
@@ -306,7 +317,21 @@ function createMergedGroupChart(
     );
 
     // ========================================================================
-    // Step 2e: Create chart container and UI elements
+    // Step 2e: Get global max Y-axes for alignment
+    // ========================================================================
+
+    const globalMaxYAxes = getMaxYAxes() || Math.max(
+      Math.ceil(analogChannels.length / 3),
+      digitalChannels.length > 0 ? 1 : 0,
+      computedChannels.length > 0 ? 1 : 0
+    );
+
+    console.log(
+      `[renderGroupCharts] 📊 Group ${groupId} will use maxYAxes: ${globalMaxYAxes}`
+    );
+
+    // ========================================================================
+    // Step 2f: Create chart container and UI elements
     // ========================================================================
 
     const dragBar = createDragBar(
@@ -332,7 +357,7 @@ function createMergedGroupChart(
     chartsContainer.appendChild(parentDiv);
 
     // ========================================================================
-    // Step 2f: Build uPlot options (chart configuration)
+    // Step 2g: Build uPlot options (chart configuration)
     // ========================================================================
 
     // For mixed charts, we need to determine axis scales intelligently:
@@ -356,30 +381,54 @@ function createMergedGroupChart(
     });
 
     // ========================================================================
-    // Step 2g: Create digital fill plugin (if digital channels exist)
+    // Step 2g2: Apply stroke colors explicitly to all series
+    // ========================================================================
+
+    if (opts.series && opts.series.length > 0) {
+      // Series[0] is time axis, skip it
+      // Series[1..n] are data series
+      for (let i = 1; i < opts.series.length; i++) {
+        const colorIndex = i - 1; // Map back to allColors index
+        if (allColors[colorIndex]) {
+          opts.series[i].stroke = allColors[colorIndex];
+        }
+        // Also set a default width for visibility
+        opts.series[i].width = opts.series[i].width || 2;
+      }
+      console.log(
+        `[renderGroupCharts] 🎨 Applied ${allColors.length} stroke colors to series`
+      );
+    }
+
+    // ========================================================================
+    // Step 2h: Create digital fill plugin (if digital channels exist)
     // ========================================================================
 
     let digitalPlugin = null;
     if (digitalChannels.length > 0) {
-      // Digital fill signals reference the data array indices for digital series
-      const digitalDataIndices = analogChannels.length + 1; // Series start index in data array
+      // Digital fill signals reference the uPlot series indices for digital channels
+      // Series 0 = time
+      // Series 1..N = analog channels
+      // Series (N+1)..(N+M) = digital channels <- these are the ones we need
+      const digitalStartSeriesIndex = 1 + analogChannels.length; // First digital series index
+
       const digitalFillSignals = digitalChannels.map((ch, i) => ({
-        signalIndex: digitalDataIndices + i, // 1-based index in uPlot data
+        signalIndex: digitalStartSeriesIndex + i, // uPlot series index for this digital channel
         offset: (digitalChannels.length - 1 - i) * 20, // Vertical stacking offset
-        color: ch.displayedColor || "#888888",
+        color: digitalLineColors[ch.globalIndex] || ch.color || "#888888",
         targetVal: 1, // Binary: "1" is considered "high"
         originalIndex: ch.globalIndex,
       }));
 
-      digitalPlugin = createDigitalFillPlugin(
-        chartData.slice(digitalDataIndices) // Pass only digital data arrays
-      );
+      // Create plugin with signals so it knows what to draw
+      digitalPlugin = createDigitalFillPlugin(digitalFillSignals);
 
       console.log(
         `[renderGroupCharts] 🔌 Digital fill plugin configured for group ${groupId}:`,
         {
           signals: digitalFillSignals.length,
-          dataArrays: chartData.length - digitalDataIndices,
+          startSeriesIndex: digitalStartSeriesIndex,
+          dataArrays: chartData.length - digitalStartSeriesIndex,
         }
       );
 
@@ -393,20 +442,17 @@ function createMergedGroupChart(
     opts.plugins.push(verticalLinePlugin(verticalLinesX, () => charts));
 
     // ========================================================================
-    // Step 2g: Initialize uPlot chart instance
+    // Step 2i: Initialize uPlot chart instance
     // ========================================================================
 
-    const uPlotInstance = initUPlotChart(opts, chartDiv, {
-      xData: data.time,
-      yData: chartData.slice(1), // All Y data (skip time axis)
-    });
+    const uPlotInstance = initUPlotChart(opts, chartData, chartDiv, charts);
 
     console.log(
       `[renderGroupCharts] ✨ Chart instance created for group ${groupId}`
     );
 
     // ========================================================================
-    // Step 2h: Register chart in metadata store
+    // Step 2j: Register chart in metadata store
     // ========================================================================
 
     const metadata = addChart({
@@ -442,7 +488,7 @@ function createMergedGroupChart(
     );
 
     // ========================================================================
-    // Step 2i: Tag chart instance with metadata
+    // Step 2k: Tag chart instance with metadata
     // ========================================================================
 
     const chartObj = {

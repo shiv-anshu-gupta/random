@@ -2,8 +2,6 @@
 import { createChartOptions } from "./chartComponent.js";
 import { createDragBar } from "./createDragBar.js";
 import { setupChartDragAndDrop } from "./setupChartDragAndDrop.js";
-import { renderGroupCharts } from "./renderGroupCharts.js";
-// DEPRECATED - kept for fallback only:
 import { renderAnalogCharts } from "./renderAnalogCharts.js";
 import { renderDigitalCharts } from "./renderDigitalCharts.js";
 import { renderComputedChannels } from "./renderComputedChannels.js";
@@ -52,30 +50,51 @@ export function renderComtradeCharts(
   chartsContainer.innerHTML = "";
   setupChartDragAndDrop(chartsContainer);
 
-  console.log("[renderComtradeCharts] Starting GROUP-CENTRIC chart rendering...");
+  console.log("[renderComtradeCharts] Starting chart rendering...");
 
-  // ✅ NEW APPROACH: Use group-centric rendering (one merged chart per group)
-  // This replaces the old type-centric approach (separate charts per type per group)
-  
-  // First, publish axis alignment data (still useful for consistency)
+  // ✅ Functional approach: Analyze groups and publish to global store
+  // This ensures consistent axis count across all displayed charts (analog + digital + computed)
   analyzeGroupsAndPublishMaxYAxes(charts, channelState, cfg);
   console.log(
     `[renderComtradeCharts] 🔧 Global axis alignment published to store`
   );
 
-  // ✅ MAIN CHANGE: Call renderGroupCharts instead of type-specific renderers
-  // This creates ONE merged chart per group with all channel types
-  renderGroupCharts(
+  // Phase 1: Render analog charts
+  renderAnalogCharts(
     cfg,
     data,
     chartsContainer,
     charts,
     verticalLinesX,
-    channelState
+    channelState,
+    autoGroupChannels
   );
 
-  console.log(
-    `[renderComtradeCharts] ✅ Group-centric rendering complete: ${charts.length} chart(s) created`
+  // Phase 2: Render digital charts (they will read maxYAxes from global store)
+  if (
+    cfg.digitalChannels &&
+    cfg.digitalChannels.length > 0 &&
+    data.digitalData &&
+    data.digitalData.length > 0
+  ) {
+    renderDigitalCharts(
+      cfg,
+      data,
+      chartsContainer,
+      charts,
+      verticalLinesX,
+      channelState
+      // ✅ REMOVED: globalMaxYAxes parameter - digital charts now read from global store
+    );
+  }
+
+  // Phase 3: Render computed channels
+  renderComputedChannels(
+    data,
+    chartsContainer,
+    charts,
+    verticalLinesX,
+    channelState
   );
 
   const metadataState = getChartMetadataState();

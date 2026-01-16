@@ -32,33 +32,16 @@ export function createChartContainer(
   // Add label on left side if provided
   if (label) {
     const labelDiv = createCustomElement("div", "chart-label");
-    console.log(`[createChartContainer] Creating label div, label is array:`, Array.isArray(label), `length=${label?.length || 0}`);
 
     // If label is an array of channel names, display them vertically with colors
     if (Array.isArray(label)) {
-      // ✅ CRITICAL: Set explicit inline styles to ensure visibility
-      labelDiv.style.cssText = `
-        width: 100px;
-        min-width: 100px;
-        max-width: 100px;
-        background: var(--bg-tertiary);
-        border-right: 1px solid var(--border-color);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        padding: 8px 4px;
-        color: var(--text-secondary);
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-align: center;
-        overflow-y: auto;
-        overflow-x: hidden;
-        word-wrap: break-word;
-        gap: 4px;
-        flex-shrink: 0;
-        flex-basis: auto;
-      `;
+      labelDiv.style.display = "flex";
+      labelDiv.style.flexDirection = "column";
+      labelDiv.style.alignItems = "center";
+      labelDiv.style.justifyContent = "flex-start";
+      labelDiv.style.gap = "12px";
+      labelDiv.style.padding = "8px 4px";
+      labelDiv.style.overflow = "auto";
 
       // Add type label at the top if provided
       if (typeLabel) {
@@ -95,7 +78,6 @@ export function createChartContainer(
       }
 
       // Add channel names with color indicators
-      console.log(`[createChartContainer] Adding ${label.length} channel labels to labelDiv`);
       label.forEach((channelName, idx) => {
         const channelContainer = document.createElement("div");
         channelContainer.style.display = "flex";
@@ -122,19 +104,16 @@ export function createChartContainer(
         nameSpan.style.textAlign = "center";
         nameSpan.style.wordBreak = "break-word";
         nameSpan.style.lineHeight = "1.1";
-        nameSpan.style.maxWidth = "90px";
         channelContainer.appendChild(nameSpan);
 
         labelDiv.appendChild(channelContainer);
       });
-      console.log(`[createChartContainer] ✅ Finished adding channel labels, labelDiv now has ${labelDiv.children.length} children`);
     } else {
       // If label is a string, display normally
       labelDiv.textContent = label;
     }
 
     parentDiv.appendChild(labelDiv);
-    console.log(`[createChartContainer] ✅ Appended labelDiv to parentDiv`);
   }
 
   parentDiv.appendChild(dragBar);

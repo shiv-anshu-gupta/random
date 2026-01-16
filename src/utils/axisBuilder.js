@@ -433,12 +433,6 @@ export function buildCompleteAxesArray({
     axisCount = yLabels.length;
   }
 
-  // ✅ DEBUG
-  const debugMode = typeof localStorage !== "undefined" && localStorage.getItem("DEBUG_CHARTS");
-  if (debugMode || typeof window !== "undefined" && window.location.pathname.includes("debug")) {
-    console.log(`[buildCompleteAxesArray] singleYAxis=${singleYAxis}, maxYAxes=${maxYAxes}, yLabels.length=${yLabels.length}, axisCount=${axisCount}`);
-  }
-
   // X-Axis
   const xAxis = {
     scale: "x",
@@ -464,14 +458,10 @@ export function buildCompleteAxesArray({
   };
 
   // Y-Axes
-  // ✅ CRITICAL: Use single-axis when singleYAxis=true AND we only need 1 axis
-  // This works regardless of whether maxYAxes is undefined, 1, or higher
-  const useSingleAxis = singleYAxis && axisCount === 1;
-  
-  // ✅ ALWAYS LOG THIS (no debugMode check)
-  console.log(`[buildCompleteAxesArray] Digital Debug: singleYAxis=${singleYAxis}, maxYAxes=${maxYAxes}, axisCount=${axisCount}, useSingleAxis=${useSingleAxis}`);
-  
-  const yAxes = useSingleAxis
+  // ✅ CRITICAL FIX: When maxYAxes is set (even to 1), always use multi-axis definition
+  // This ensures proper handling of different unit types even in single-axis mode
+  const yAxes =
+    singleYAxis && maxYAxes === undefined && axisCount === 1
       ? [
           createSingleAxisDefinition({
             yLabels,
@@ -487,8 +477,6 @@ export function buildCompleteAxesArray({
           axisCount,
           maxYAxes, // ← Pass maxYAxes so all charts have same axis count
         });
-
-  console.log(`[buildCompleteAxesArray] Using ${useSingleAxis ? "SINGLE" : "MULTI"}-axis. First axis scale=${yAxes[0]?.scale}`);
 
   return [xAxis, ...yAxes];
 }
