@@ -61,6 +61,8 @@ import { exportComputedChannelsAsCSV, exportAllChannelsAsCSV } from "./utils/csv
 import {
   saveComputedChannelsToStorage,
   loadComputedChannelsFromStorage,
+  updateComputedChannelGroupInStorage,
+  getComputedChannelById,
 } from "./utils/computedChannelStorage.js";
 import { PolarChart } from "./components/PolarChart.js";
 import { PolarChartCanvas } from "./components/PolarChartCanvas.js"; // ✅ NEW: Canvas-based renderer
@@ -4772,6 +4774,143 @@ window.addEventListener("message", (ev) => {
             `[COMPUTED COLOR HANDLER] ❌ Storage save error:`,
             e.message
           );
+        }
+
+        break;
+      }
+      case "callback_computed_group": {
+        // ✅ NEW: Handle computed channel group changes
+        // Similar to color changes but affects chart rendering
+        console.log(
+          `[COMPUTED GROUP HANDLER] 📢 Computed channel group change received:`,
+          payload
+        );
+
+        const channelId = payload?.id || payload?.channelID || payload?.row?.id;
+        const newGroup = payload?.group || payload?.value;
+        const oldGroup = payload?.oldGroup;
+
+        if (!channelId || !newGroup) {
+          console.warn(
+            `[COMPUTED GROUP HANDLER] ❌ Missing channelId or newGroup:`,
+            { channelId, newGroup }
+          );
+          break;
+        }
+
+        console.log(
+          `[COMPUTED GROUP HANDLER] 🏷️ Moving "${channelId}" from group "${oldGroup}" to "${newGroup}"`
+        );
+
+        // ✅ STEP 1: Update group in localStorage
+        const groupUpdateSuccess = updateComputedChannelGroupInStorage(
+          channelId,
+          newGroup
+        );
+
+        if (!groupUpdateSuccess) {
+          console.warn(
+            `[COMPUTED GROUP HANDLER] ⚠️ Failed to update group in storage for: ${channelId}`
+          );
+          break;
+        }
+
+        // ✅ STEP 2: Get the computed channel to access its data
+        const computedChannel = getComputedChannelById(channelId);
+        if (!computedChannel) {
+          console.warn(
+            `[COMPUTED GROUP HANDLER] ⚠️ Could not retrieve computed channel: ${channelId}`
+          );
+          break;
+        }
+
+        console.log(
+          `[COMPUTED GROUP HANDLER] ✅ Updated group in storage. Channel now belongs to group "${newGroup}"`
+        );
+
+        // ✅ STEP 3: Update the computed channel's group in-memory (cfg and state)
+        try {
+          // Update cfg.computedChannels if available
+          if (Array.isArray(cfg?.computedChannels)) {
+            const cfgIdx = cfg.computedChannels.findIndex(
+              (ch) => ch.id === channelId
+            );
+            if (cfgIdx >= 0) {
+              cfg.computedChannels[cfgIdx].group = newGroup;
+              console.log(
+                `[COMPUTED GROUP HANDLER] ✅ Updated cfg.computedChannels[${cfgIdx}].group = "${newGroup}"`
+              );
+            }
+          }
+
+          // Update computed state if available
+          const computedState = getComputedChannelsState?.();
+          if (Array.isArray(computedState?.channelIDs)) {
+            const stateIdx = computedState.channelIDs.indexOf(channelId);
+            if (stateIdx >= 0) {
+              // Update the group field in the computed state
+              if (!computedState.groups) computedState.groups = [];
+              computedState.groups[stateIdx] = newGroup;
+              console.log(
+                `[COMPUTED GROUP HANDLER] ✅ Updated computedState.groups[${stateIdx}] = "${newGroup}"`
+              );
+            }
+          }
+        } catch (e) {
+          console.warn(
+            `[COMPUTED GROUP HANDLER] ⚠️ Could not update in-memory state:`,
+            e.message
+          );
+        }
+
+        // ✅ STEP 4: Trigger chart rebuild
+        // This is critical because the computed channel needs to be rendered
+        // with its new group's analog chart instead of in the separate computed chart
+        console.log(
+          `[COMPUTED GROUP HANDLER] 🔄 Triggering chart rebuild to merge computed channel into group "${newGroup}"`
+        );
+
+        try {
+          showProgress("Reorganizing computed channels to new group...");
+          updateProgress(25, "Updated storage and state");
+
+          // Trigger full chart re-render which will pick up the new group from storage
+          if (typeof renderComtradeCharts === "function") {
+            updateProgress(50, "Rebuilding charts...");
+
+            // Clear and re-render with updated group assignment
+            const chartsContainer = document.querySelector(
+              "[id*='charts-container'], .charts-main-container, #main-charts"
+            );
+
+            if (chartsContainer) {
+              // We need to re-render just to pick up the new group from storage
+              // The renderAnalogCharts will be called internally
+              renderComtradeCharts();
+              updateProgress(100, "Charts reorganized!");
+              setTimeout(hideProgress, 1000);
+
+              console.log(
+                `[COMPUTED GROUP HANDLER] ✅ Chart rebuild triggered. Channel should now appear in group "${newGroup}"`
+              );
+            } else {
+              console.warn(
+                `[COMPUTED GROUP HANDLER] ⚠️ Could not find charts container`
+              );
+              hideProgress();
+            }
+          } else {
+            console.warn(
+              `[COMPUTED GROUP HANDLER] ⚠️ renderComtradeCharts not available`
+            );
+            hideProgress();
+          }
+        } catch (e) {
+          console.error(
+            `[COMPUTED GROUP HANDLER] ❌ Error during chart rebuild:`,
+            e.message
+          );
+          hideProgress();
         }
 
         break;

@@ -313,3 +313,60 @@ export function hasStoredComputedChannels() {
     return false;
   }
 }
+
+/**
+ * Update a computed channel's group in storage (lightweight update)
+ * @param {string} channelId - The computed channel ID
+ * @param {string} newGroup - The new group ID
+ * @returns {boolean} Success status
+ */
+export function updateComputedChannelGroupInStorage(channelId, newGroup) {
+  try {
+    const stored = loadComputedChannelsFromStorage();
+    const idx = stored.findIndex((ch) => ch.id === channelId);
+    
+    if (idx < 0) {
+      console.warn(
+        `[Storage] ⚠️ Computed channel "${channelId}" not found in storage`
+      );
+      return false;
+    }
+
+    const oldGroup = stored[idx].group;
+    stored[idx].group = newGroup;
+    
+    // Save back to storage
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+    
+    console.log(
+      `[Storage] ✅ Updated group for "${channelId}": "${oldGroup}" → "${newGroup}"`
+    );
+    
+    return true;
+  } catch (error) {
+    console.error(
+      `[Storage] ❌ Error updating computed channel group:`,
+      error.message
+    );
+    return false;
+  }
+}
+
+/**
+ * Get a computed channel by ID
+ * @param {string} channelId - The channel ID to find
+ * @returns {Object|null} The computed channel object or null
+ */
+export function getComputedChannelById(channelId) {
+  try {
+    const stored = loadComputedChannelsFromStorage();
+    return stored.find((ch) => ch.id === channelId) || null;
+  } catch (error) {
+    console.error(
+      `[Storage] ❌ Error fetching computed channel "${channelId}":`,
+      error.message
+    );
+    return null;
+  }
+}
+

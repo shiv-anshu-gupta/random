@@ -16,6 +16,7 @@ import { getGlobalAxisAlignment } from "../utils/chartAxisAlignment.js";
 import { getMaxYAxes } from "../utils/maxYAxesStore.js";
 import { attachListenerWithCleanup } from "../utils/eventListenerManager.js";
 import { addChart } from "../utils/chartMetadataStore.js";
+import { loadComputedChannelsFromStorage } from "../utils/computedChannelStorage.js";
 // import { deltaBoxPlugin } from "../plugins/deltaBoxPlugin.js"; // DISABLED: Using DeltaWindow popup instead
 
 export function renderAnalogCharts(
@@ -305,25 +306,61 @@ export function renderAnalogCharts(
     parentDiv.dataset.chartType = "analog";
     chartsContainer.appendChild(parentDiv);
 
+    // ✅ NEW: Fetch computed channels that belong to this group
+    const storedComputedChannels = loadComputedChannelsFromStorage();
+    const computedForGroup = Array.isArray(storedComputedChannels)
+      ? storedComputedChannels.filter((ch) => ch.group === groupId)
+      : [];
+
+    console.log(
+      `[renderAnalogCharts] 🟪 Group "${groupId}": Found ${computedForGroup.length} computed channels to merge`
+    );
+
+    // Build chart data: time + analog series + computed series
     const chartData = [
       data.time,
       ...validIndices.map((idx) => data.analogData[idx]),
     ];
+
+    // ✅ Append computed channel data to chartData
+    let mergedLabels = [...groupYLabels];
+    let mergedColors = [...groupLineColors];
+    let mergedUnits = [...groupYUnits];
+    let mergedAxesScales = [...groupAxesScales];
+
+    computedForGroup.forEach((computedCh) => {
+      if (Array.isArray(computedCh.data)) {
+        chartData.push(computedCh.data);
+        mergedLabels.push(computedCh.name || computedCh.id);
+        mergedColors.push(computedCh.color || "#4ECDC4");
+        mergedUnits.push(computedCh.unit || "");
+        // Add axis scale if available, otherwise default to 1
+        mergedAxesScales.push(1);
+
+        console.log(
+          `[renderAnalogCharts] 📈 Added computed channel "${computedCh.name}" (${computedCh.id}) to group "${groupId}"`
+        );
+      } else {
+        console.warn(
+          `[renderAnalogCharts] ⚠️ Computed channel "${computedCh.name}" has no data array`
+        );
+      }
+    });
     
     console.log(
-      `[renderAnalogCharts] 📊 Group "${group.name}": validIndices=[${validIndices.join(", ")}], analogData.length=${data.analogData?.length || 0}, chartData series count=${chartData.length}`
+      `[renderAnalogCharts] 📊 Group "${group.name}": analog=${groupYLabels.length}, computed=${computedForGroup.length}, total series=${chartData.length - 1}`
     );
 
     const opts = createChartOptions({
       title: group.name || "",
-      yLabels: groupYLabels,
-      lineColors: groupLineColors,
+      yLabels: mergedLabels,
+      lineColors: mergedColors,
       verticalLinesX: verticalLinesX,
       xLabel,
       xUnit,
       getCharts: () => charts,
-      yUnits: groupYUnits,
-      axesScales: groupAxesScales,
+      yUnits: mergedUnits,
+      axesScales: mergedAxesScales,
       singleYAxis: false,
       maxYAxes: globalMaxYAxes, // ✅ Use global axis alignment for all charts!
     });
@@ -331,9 +368,11 @@ export function renderAnalogCharts(
     console.log(
       `[renderAnalogCharts] ✅ Chart config: group="${
         group.name
-      }", globalMaxYAxes=${globalMaxYAxes}, channels=${
+      }", globalMaxYAxes=${globalMaxYAxes}, analog=${
         groupYLabels.length
-      }, yUnits=[${groupYUnits.join(", ")}]`
+      }, computed=${computedForGroup.length}, total=${
+        mergedLabels.length
+      }, yUnits=[${mergedUnits.join(", ")}]`
     );
 
     opts.plugins = opts.plugins || [];
@@ -349,10 +388,22 @@ export function renderAnalogCharts(
     chart._uPlotInstance = metadata.uPlotInstance;
     chart._chartType = "analog";
 
+    // ✅ NEW: Attach computed channel metadata to chart for reference
+    chart._computedChannels = computedForGroup.map((ch) => ({
+      id: ch.id,
+      name: ch.name,
+      color: ch.color,
+      group: ch.group,
+      unit: ch.unit,
+    }));
+    chart._computedChannelIds = computedForGroup.map((ch) => ch.id);
+    chart._analogSeriesCount = validIndices.length;
+    chart._computedSeriesCount = computedForGroup.length;
+
     // Attach metadata for delta calculation scaling
-    chart._axesScales = groupAxesScales || [];
-    chart._yUnits = groupYUnits || [];
-    chart._seriesColors = groupLineColors || [];
+    chart._axesScales = mergedAxesScales || [];
+    chart._yUnits = mergedUnits || [];
+    chart._seriesColors = mergedColors || [];
 
     // store mapping from chart series -> global channel indices so chartManager can map updates
     try {

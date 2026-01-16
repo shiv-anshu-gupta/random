@@ -2424,13 +2424,32 @@ export function createChannelList(
             row: rowData,
           };
         } else if (field === "group") {
-          messageType = "callback_group";
-          payload = {
-            channelID: rowData?.channelID,
-            group: newValue,
-            value: newValue, // Also include as 'value' for consistency with new handler
-            row: rowData,
-          };
+          // ✅ Use separate callback for computed channels (group change)
+          if (rowData?.type && rowData.type.toLowerCase() === "computed") {
+            messageType = "callback_computed_group";
+            payload = {
+              id: rowData?.id,
+              channelID: rowData?.channelID,
+              group: newValue,
+              oldGroup: rowData?.group,
+              value: newValue,
+              row: rowData,
+            };
+            console.log(`[ChannelList] 📤 COMPUTED GROUP MESSAGE:`, {
+              id: rowData?.id,
+              oldGroup: rowData?.group,
+              newGroup: newValue,
+            });
+          } else {
+            // Analog/Digital use regular group callback
+            messageType = "callback_group";
+            payload = {
+              channelID: rowData?.channelID,
+              group: newValue,
+              value: newValue,
+              row: rowData,
+            };
+          }
         }
 
         // 1) Call local callback if provided (existing flow)
