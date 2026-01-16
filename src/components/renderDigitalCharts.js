@@ -166,13 +166,35 @@ export function renderDigitalCharts(
       arr.map((v) => (v ? 1 : 0))
     );
     const groupChartData = [data.time, ...groupDigitalDataZeroOne];
-    const groupDigitalFillSignals = groupDigitalChannels.map((ch, i) => ({
-      signalIndex: i + 1,
-      offset: (groupDigitalChannels.length - 1 - i) * DigChannelOffset,
-      color: groupDisplayedColors[i],
-      targetVal: 1,
-      originalIndex: ch.originalIndex,
-    }));
+    
+    // ✅ CRITICAL FIX: Ensure fill signals have proper fill colors with opacity
+    const groupDigitalFillSignals = groupDigitalChannels.map((ch, i) => {
+      const baseColor = groupDisplayedColors[i] || '#888888';
+      // Create fill color with opacity (0.3 for semi-transparent fill)
+      const fillColor = baseColor.includes('rgba')
+        ? baseColor // Already has opacity
+        : baseColor.includes('rgb')
+        ? baseColor.replace(')', ', 0.3)') // Convert rgb to rgba with 0.3 opacity
+        : `rgba(0, 150, 255, 0.3)`; // Fallback if color is problematic
+      
+      return {
+        signalIndex: i + 1,
+        offset: (groupDigitalChannels.length - 1 - i) * DigChannelOffset,
+        color: fillColor,
+        targetVal: 1,
+        originalIndex: ch.originalIndex,
+      };
+    });
+    
+    console.log(`[renderDigitalCharts] 🎨 Group ${groupId} fill signals:`, {
+      count: groupDigitalFillSignals.length,
+      signals: groupDigitalFillSignals.map((s, i) => ({
+        index: i,
+        signalIndex: s.signalIndex,
+        color: s.color,
+        offset: s.offset,
+      })),
+    });
     const groupYMin = -0.5;
     const groupYMax = (groupDigitalChannels.length - 1) * DigChannelOffset + 2;
 
@@ -244,6 +266,20 @@ export function renderDigitalCharts(
     groupOpts.plugins = groupOpts.plugins.filter((p) => !(p && p.id === 'verticalLinePlugin'));
 
     const groupDigitalPlugin = createDigitalFillPlugin(groupDigitalFillSignals);
+    
+    // ✅ CRITICAL DEBUG: Verify plugin setup before attaching
+    console.log(`[renderDigitalCharts] 📊 Plugin setup validation for group ${groupId}:`, {
+      fillSignalsCount: groupDigitalFillSignals.length,
+      chartDataArrays: groupChartData.length,
+      chartDataLengths: groupChartData.map((arr, i) => ({ index: i, length: arr?.length || 0 })),
+      groupDigitalChannelsCount: groupDigitalChannels.length,
+      groupDisplayedColorsCount: groupDisplayedColors.length,
+      groupYLabelsCount: groupYLabels.length,
+      allMatch: groupDigitalFillSignals.length === groupDisplayedColors.length && 
+                groupDisplayedColors.length === groupYLabels.length &&
+                groupChartData.length === groupDigitalFillSignals.length + 1,
+    });
+    
     groupOpts.plugins.push(groupDigitalPlugin);
     groupOpts.plugins.push(verticalLinePlugin(verticalLinesX, () => charts));
 
