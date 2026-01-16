@@ -223,13 +223,19 @@ export function renderDigitalCharts(
     }
 
     groupOpts.series = groupOpts.series.map((originalSeries, idx) => {
-      if (idx === 0) return originalSeries;
+      if (idx === 0) return originalSeries; // index 0 is time axis
+
       const channelIdx = idx - 1;
       const label = groupYLabels[channelIdx] || `Digital-${channelIdx}`;
+      const strokeColor =
+        groupDisplayedColors[channelIdx] ||
+        originalSeries.stroke ||
+        '#888';
+
       return {
         ...originalSeries,
         label,
-        stroke: originalSeries.stroke || 'transparent',
+        stroke: strokeColor, // use a real color, not 'transparent'
         scale: 'y',
       };
     });
