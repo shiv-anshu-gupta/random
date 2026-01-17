@@ -265,13 +265,123 @@ export function renderAnalogCharts(
       )}], extracted groupId = "${groupId}"`
     );
 
-    // Create chart container with individual channel names, colors, type label, and single group ID
+    // ✅ EARLY: Fetch computed channels that belong to this group
+    // This must happen BEFORE creating the chart container so we can include computed channel names in the left sidebar
+    const storedComputedChannels = loadComputedChannelsFromStorage();
+    const computedForGroup = Array.isArray(storedComputedChannels)
+      ? storedComputedChannels.filter((ch) => ch.group === groupId)
+      : [];
+
+    console.log(
+      `[renderAnalogCharts] 🟪 Group "${groupId}": Found ${computedForGroup.length} computed channels to merge`
+    );
+
+    // (moved) Build container after data checks to avoid mismatches
+
+    // Build chart data: time + analog series + computed series
+    // ✅ Robust time + length harmonization: make all series match a common sampleCount
+    // Resolve time array first
+    let timeArray = data.time;
+    if (!Array.isArray(timeArray) || timeArray.length === 0) {
+      if (Array.isArray(data?.time?.data) && data.time.data.length > 0) {
+        timeArray = data.time.data;
+      } else if (Array.isArray(data?.timeArray) && data.timeArray.length > 0) {
+        timeArray = data.timeArray;
+      }
+    }
+
+    // ✅ Do NOT depend on data.time; derive sampleCount from available series and build synthetic time
+    const analogSeriesWithData = validIndices.filter(
+      (idx) => Array.isArray(data.analogData?.[idx]) && data.analogData[idx].length > 0
+    );
+    const seriesLengths = [];
+    analogSeriesWithData.forEach((idx) => seriesLengths.push(data.analogData[idx].length));
+    computedForGroup.forEach((ch) => {
+      if (Array.isArray(ch?.data) && ch.data.length > 0) seriesLengths.push(ch.data.length);
+    });
+    let sampleCount = seriesLengths.length ? Math.min(...seriesLengths) : 0;
+    if (!sampleCount) sampleCount = 62464; // fallback
+    timeArray = Array.from({ length: sampleCount }, (_, i) => i * 0.01);
+    console.log(
+      `[renderAnalogCharts] ✅ Using synthetic time (${sampleCount} samples) from series data`
+    );
+
+    const chartData = [timeArray];
+    // ✅ Use only analog indices that actually have data to avoid empty series
+    const includedAnalogIndices = analogSeriesWithData.length ? analogSeriesWithData : [];
+    if (includedAnalogIndices.length === 0 && computedForGroup.length === 0) {
+      console.warn(
+        `[renderAnalogCharts] ⏭️ Skipping group "${groupId}" (no analog data and no computed to merge)`
+      );
+      return; // skip creating this chart entirely (forEach callback)
+    }
+    includedAnalogIndices.forEach((idx) => {
+      const series = data.analogData?.[idx];
+      if (Array.isArray(series) && series.length > 0) {
+        chartData.push(series.slice(0, sampleCount));
+        if (series.length !== sampleCount) {
+          console.log(
+            `[renderAnalogCharts] 🔧 Trimmed analog series idx=${idx} from ${series.length} → ${sampleCount}`
+          );
+        }
+      } else {
+        // Skip pushing truly empty analog series
+        console.warn(
+          `[renderAnalogCharts] ⚠️ Skipping analog channel at index ${idx} (no data array)`
+        );
+      }
+    });
+
+    // ✅ Append computed channel data to chartData
+    computedForGroup.forEach((computedCh) => {
+      if (Array.isArray(computedCh.data) && computedCh.data.length > 0) {
+        const normalizedComputed = computedCh.data.slice(0, sampleCount);
+        chartData.push(normalizedComputed);
+
+        console.log(
+          `[renderAnalogCharts] 📈 Added computed channel data "${computedCh.name}" (${computedCh.id}) to chart for group "${groupId}" (len=${normalizedComputed.length})`
+        );
+      } else {
+        console.warn(
+          `[renderAnalogCharts] ⚠️ Computed channel "${computedCh.name}" has no data or empty array; skipping`
+        );
+      }
+    });
+    
+    // Build merged labels/colors/units/scales to match included series
+    const includedYLabels = includedAnalogIndices.map((idx) => yLabels[idx]);
+    const includedLineColors = includedAnalogIndices.map((idx) => lineColors[idx]);
+    const includedYUnits = includedAnalogIndices.map((idx) => yUnits[idx]);
+    const includedAxesScales = [
+      axesScales[0],
+      ...includedAnalogIndices.map((idx) => axesScales[idx + 1]),
+    ];
+
+    let mergedLabels = [...includedYLabels];
+    let mergedColors = [...includedLineColors];
+    let mergedUnits = [...includedYUnits];
+    let mergedAxesScales = [...includedAxesScales];
+
+    computedForGroup.forEach((computedCh) => {
+      if (Array.isArray(computedCh.data) && computedCh.data.length > 0) {
+        mergedLabels.push(computedCh.name || computedCh.id);
+        mergedColors.push(computedCh.color || "#4ECDC4");
+        mergedUnits.push(computedCh.unit || "");
+        mergedAxesScales.push(1);
+
+        console.log(
+          `[renderAnalogCharts] 📈 Adding computed channel "${computedCh.name}" (${computedCh.id}) to labels for group "${groupId}"`
+        );
+      }
+    });
+
+    // Create chart metadata and container only when we have series
     const metadata = addChart({
       chartType: "analog",
       name: group.name,
       groupName: group.name,
       userGroupId: groupId,
-      channels: validIndices.map((idx) => {
+      channels: includedAnalogIndices.map((idx) => {
         const ch = cfg.analogChannels?.[idx];
         return (
           ch?.id ||
@@ -282,8 +392,8 @@ export function renderAnalogCharts(
             : `analog-${idx}`)
         );
       }),
-      colors: group.colors || groupLineColors,
-      indices: validIndices.slice(),
+      colors: mergedColors,
+      indices: includedAnalogIndices.slice(),
       sourceGroupId: groupId,
     });
 
@@ -295,8 +405,8 @@ export function renderAnalogCharts(
     const { parentDiv, chartDiv } = createChartContainer(
       dragBar,
       "chart-container",
-      groupYLabels,
-      groupLineColors,
+      mergedLabels,
+      mergedColors,
       "Analog Channels",
       metadata.userGroupId,
       "analog"
@@ -306,49 +416,8 @@ export function renderAnalogCharts(
     parentDiv.dataset.chartType = "analog";
     chartsContainer.appendChild(parentDiv);
 
-    // ✅ NEW: Fetch computed channels that belong to this group
-    const storedComputedChannels = loadComputedChannelsFromStorage();
-    const computedForGroup = Array.isArray(storedComputedChannels)
-      ? storedComputedChannels.filter((ch) => ch.group === groupId)
-      : [];
-
     console.log(
-      `[renderAnalogCharts] 🟪 Group "${groupId}": Found ${computedForGroup.length} computed channels to merge`
-    );
-
-    // Build chart data: time + analog series + computed series
-    const chartData = [
-      data.time,
-      ...validIndices.map((idx) => data.analogData[idx]),
-    ];
-
-    // ✅ Append computed channel data to chartData
-    let mergedLabels = [...groupYLabels];
-    let mergedColors = [...groupLineColors];
-    let mergedUnits = [...groupYUnits];
-    let mergedAxesScales = [...groupAxesScales];
-
-    computedForGroup.forEach((computedCh) => {
-      if (Array.isArray(computedCh.data)) {
-        chartData.push(computedCh.data);
-        mergedLabels.push(computedCh.name || computedCh.id);
-        mergedColors.push(computedCh.color || "#4ECDC4");
-        mergedUnits.push(computedCh.unit || "");
-        // Add axis scale if available, otherwise default to 1
-        mergedAxesScales.push(1);
-
-        console.log(
-          `[renderAnalogCharts] 📈 Added computed channel "${computedCh.name}" (${computedCh.id}) to group "${groupId}"`
-        );
-      } else {
-        console.warn(
-          `[renderAnalogCharts] ⚠️ Computed channel "${computedCh.name}" has no data array`
-        );
-      }
-    });
-    
-    console.log(
-      `[renderAnalogCharts] 📊 Group "${group.name}": analog=${groupYLabels.length}, computed=${computedForGroup.length}, total series=${chartData.length - 1}`
+      `[renderAnalogCharts] 📊 Group "${group.name}": analog=${includedAnalogIndices.length}, computed=${computedForGroup.length}, total series=${chartData.length - 1}`
     );
 
     const opts = createChartOptions({
@@ -397,7 +466,7 @@ export function renderAnalogCharts(
       unit: ch.unit,
     }));
     chart._computedChannelIds = computedForGroup.map((ch) => ch.id);
-    chart._analogSeriesCount = validIndices.length;
+    chart._analogSeriesCount = includedAnalogIndices.length;
     chart._computedSeriesCount = computedForGroup.length;
 
     // Attach metadata for delta calculation scaling

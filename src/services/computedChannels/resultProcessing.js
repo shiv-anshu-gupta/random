@@ -176,6 +176,8 @@ export const buildChannelData = (
 
   return {
     id: channelName,
+    // Alias for compatibility with UI/table code that expects channelID
+    channelID: channelName,
     name: channelName,
     equation: expression,
     mathJsExpression: mathJsExpr,

@@ -2,7 +2,7 @@
 // Single Responsibility: Update application state
 
 import { getComputedChannelsState } from "../../utils/computedChannelsState.js";
-import { appendComputedChannelToStorage } from "../../utils/computedChannelStorage.js";
+import { appendComputedChannelToStorage, saveComputedChannelsToStorage } from "../../utils/computedChannelStorage.js";
 
 function resolveComputedGroup(channelData, cfgData) {
   const candidateGroup = (channelData?.group || "").trim();
@@ -151,7 +151,17 @@ export const saveToCfg = (channelData, cfgData) => {
       group: mergedChannel.group,
     });
 
-    appendComputedChannelToStorage(mergedChannel);
+    // ✅ Persist with full data: save cfg.computedChannels + globalData.computedData
+    try {
+      const cfgList = cfgData.computedChannels || [];
+      const dataList = (typeof window !== "undefined" && Array.isArray(window.globalData?.computedData))
+        ? window.globalData.computedData
+        : [];
+      saveComputedChannelsToStorage(cfgList, dataList);
+    } catch (e) {
+      console.warn("[stateUpdate] ⚠️ Storage save failed (update):", e.message);
+      appendComputedChannelToStorage(mergedChannel);
+    }
   } else {
     const newChannel = buildChannelPayload();
 
@@ -163,7 +173,17 @@ export const saveToCfg = (channelData, cfgData) => {
       group: newChannel.group,
     });
 
-    appendComputedChannelToStorage(newChannel);
+    // ✅ Persist with full data: save cfg.computedChannels + globalData.computedData
+    try {
+      const cfgList = cfgData.computedChannels || [];
+      const dataList = (typeof window !== "undefined" && Array.isArray(window.globalData?.computedData))
+        ? window.globalData.computedData
+        : [];
+      saveComputedChannelsToStorage(cfgList, dataList);
+    } catch (e) {
+      console.warn("[stateUpdate] ⚠️ Storage save failed (add):", e.message);
+      appendComputedChannelToStorage(newChannel);
+    }
   }
 };
 

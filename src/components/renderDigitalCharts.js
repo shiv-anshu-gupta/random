@@ -29,23 +29,24 @@ export function renderDigitalCharts(
     changedIndices
   );
 
-  // ✅ FIX: Skip rendering if no digital channels exist (prevent phantom containers)
+  // ✅ If none changed, fall back to rendering all digital channels
+  const digitalIndicesToShow =
+    changedIndices.length > 0
+      ? changedIndices
+      : Array.isArray(cfg.digitalChannels)
+      ? cfg.digitalChannels.map((_, i) => i)
+      : [];
   if (changedIndices.length === 0) {
     console.log(
-      `[renderDigitalCharts] ⏭️ No digital channels to render, skipping container creation`
+      `[renderDigitalCharts] ℹ️ No changed channels detected; rendering all ${digitalIndicesToShow.length} digital channels`
     );
-    return;
   }
-
-  const digitalIndicesToShow = changedIndices;
   // Keep originalIndex on displayed channel objects so mapping is stable
   const digitalChannelsToShow = digitalIndicesToShow.map((i) => ({
     ...cfg.digitalChannels[i],
     originalIndex: i,
   }));
-  const digitalDataToShow = digitalIndicesToShow.map(
-    (i) => data.digitalData[i]
-  );
+  const digitalDataToShow = digitalIndicesToShow.map((i) => data.digitalData[i]);
   const yLabels = channelState.digital.yLabels;
   const lineColors = channelState.digital.lineColors;
   const yUnits = channelState.digital.yUnits;
@@ -132,7 +133,31 @@ export function renderDigitalCharts(
   const digitalDataZeroOne = digitalDataToShow.map((arr) =>
     arr.map((v) => (v ? 1 : 0))
   );
-  const chartData = [data.time, ...digitalDataZeroOne];
+  // ✅ Do NOT depend on data.time; derive sampleCount from digital series and build synthetic time
+  const digitalLengths = digitalDataZeroOne
+    .filter((arr) => Array.isArray(arr) && arr.length > 0)
+    .map((arr) => arr.length);
+  const sampleCount = digitalLengths.length ? Math.min(...digitalLengths) : 0;
+  const timeArray = Array.from({ length: sampleCount }, (_, i) => i * 0.01);
+  const trimmedDigital = digitalDataZeroOne.map((arr, idx) => {
+    if (!Array.isArray(arr)) {
+      console.warn(`[renderDigitalCharts] ⚠️ Digital channel at originalIndex=${digitalChannelsToShow[idx].originalIndex} missing data; using empty`);
+      return [];
+    }
+    if (sampleCount && arr.length !== sampleCount) {
+      console.log(
+        `[renderDigitalCharts] 🔧 Trimmed digital series originalIndex=${digitalChannelsToShow[idx].originalIndex} from ${arr.length} → ${sampleCount}`
+      );
+    }
+    return sampleCount ? arr.slice(0, sampleCount) : [];
+  });
+  // If no valid sampleCount or all digital arrays are empty, skip rendering
+  const hasAnyDigital = trimmedDigital.some((arr) => Array.isArray(arr) && arr.length > 0);
+  if (!sampleCount || !hasAnyDigital) {
+    console.log(`[renderDigitalCharts] ⏭️ Skipping digital chart (no data available)`);
+    return;
+  }
+  const chartData = [timeArray, ...trimmedDigital];
   const digitalFillSignals = digitalChannelsToShow.map((ch, i) => ({
     signalIndex: i + 1,
     offset: (digitalChannelsToShow.length - 1 - i) * DigChannelOffset,

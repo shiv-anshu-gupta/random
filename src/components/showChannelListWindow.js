@@ -685,6 +685,7 @@ export function showChannelListWindow(
       cfg && cfg.computedChannels
         ? cfg.computedChannels.map((ch, idx) => ({
             id: ch.id,
+            channelID: ch.id, // alias for uniformity
             name: ch.name,
             type: "Computed",
             unit: ch.unit || "",
@@ -704,6 +705,7 @@ export function showChannelListWindow(
         if (!computedChannels.some((ch) => ch.id === id)) {
           computedChannels.push({
             id,
+            channelID: id, // alias for uniformity
             name: channelState.computed.yLabels[idx] || id,
             type: "Computed",
             unit: channelState.computed.yUnits[idx] || "",

@@ -88,58 +88,53 @@ export function renderComputedChannels(
     `[renderComputedChannels] 🟪 Starting computed channels rendering...`
   );
 
-  const computedChannels =
+  const allComputedChannels =
     data?.computedData && Array.isArray(data.computedData)
       ? data.computedData
       : [];
 
+  // ✅ NEW: Filter out computed channels that are assigned to analog groups
+  // A computed channel should NOT render in standalone computed chart if its group
+  // matches an analog group (it's already merged into that analog group's chart)
+  const analogGroupIds = new Set(channelState?.analog?.groups || []);
+  const computedChannels = allComputedChannels.filter((ch) => {
+    // If channel has a group and it matches an analog group ID, exclude it
+    if (ch && ch.group && analogGroupIds.has(ch.group)) {
+      console.log(
+        `[renderComputedChannels] ⏭️ Skipping computed channel "${ch.id}" (group="${ch.group}" matches analog group)`
+      );
+      return false;
+    }
+    return true;
+  });
+
   if (computedChannels.length === 0) {
-    console.log("[renderComputedChannels] ℹ️ No computed channels to render");
+    console.log("[renderComputedChannels] ℹ️ No unassigned computed channels to render");
     return;
   }
 
+  // ✅ NEW: Group standalone computed channels by unit and render one chart per unit
+  // Normalization: empty/unknown units fall into 'unknown'
+  const unitGroups = new Map();
+  for (const ch of computedChannels) {
+    const unitKey = (ch?.unit || "unknown").trim();
+    if (!unitGroups.has(unitKey)) unitGroups.set(unitKey, []);
+    unitGroups.get(unitKey).push(ch);
+  }
+
   console.log(
-    `[renderComputedChannels] 📊 Creating single group chart for ${computedChannels.length} computed channels...`
+    `[renderComputedChannels] 📊 Rendering ${unitGroups.size} computed chart(s) grouped by unit`
   );
 
-  // ✅ FIX: Check if a computed chart already exists and remove the old one
-  // This prevents multiple computed charts from being created when new channels are added at runtime
-  let existingComputedChartIndex = -1;
-  for (let i = 0; i < charts.length; i++) {
-    if (charts[i] && (charts[i]._type === "computed" || charts[i]._computed === true)) {
-      existingComputedChartIndex = i;
-      console.log(`[renderComputedChannels] 🔄 Found existing computed chart at index ${i}, will replace it`);
-      break;
-    }
-  }
-
-  // Remove the old computed chart container from DOM if it exists
-  if (existingComputedChartIndex >= 0) {
-    const oldChart = charts[existingComputedChartIndex];
-    if (oldChart && typeof oldChart.destroy === "function") {
-      try {
-        oldChart.destroy();
-        console.log(`[renderComputedChannels] ✅ Destroyed old computed chart`);
-      } catch (e) {
-        console.warn(`[renderComputedChannels] ⚠️ Error destroying old chart:`, e);
-      }
-    }
-
-    // Remove from charts array
-    charts.splice(existingComputedChartIndex, 1);
-    console.log(`[renderComputedChannels] ✅ Removed old computed chart from charts array`);
-
-    // Remove the old DOM container
-    const oldContainers = chartsContainer.querySelectorAll('[data-chartType="computed"]');
-    oldContainers.forEach((container) => {
-      try {
-        container.remove();
-        console.log(`[renderComputedChannels] ✅ Removed old computed chart container from DOM`);
-      } catch (e) {
-        console.warn(`[renderComputedChannels] ⚠️ Error removing DOM container:`, e);
-      }
-    });
-  }
+  // ✅ FIX: Remove ALL existing computed charts/containers before re-rendering
+  const oldComputedCharts = charts.filter((c) => c && (c._type === "computed" || c._computed === true));
+  oldComputedCharts.forEach((oldChart) => {
+    try { oldChart.destroy?.(); } catch {}
+    const idx = charts.indexOf(oldChart);
+    if (idx >= 0) charts.splice(idx, 1);
+  });
+  const oldContainers = chartsContainer.querySelectorAll('[data-chartType="computed"]');
+  oldContainers.forEach((container) => { try { container.remove(); } catch {} });
 
   // Get time array
   let timeArray = data.time;
@@ -170,354 +165,185 @@ export function renderComputedChannels(
   // Get global axis alignment
   const maxYAxes = getMaxYAxes() || 1;
 
-  // All computed channels in one group
-  const groupYLabels = computedChannels.map((ch) => ch.id || "Computed");
-  const groupLineColors = computedChannels.map((ch) =>
-    ch.color && typeof ch.color === "string" ? ch.color.trim() : ""
-  );
-  const groupYUnits = computedChannels.map((ch) => ch.unit || "");
+  // Render one computed chart per unit group
+  for (const [unitKey, unitChannels] of unitGroups.entries()) {
+    const groupYLabels = unitChannels.map((ch) => ch.id || "Computed");
+    const groupLineColors = unitChannels.map((ch) =>
+      ch.color && typeof ch.color === "string" ? ch.color.trim() : ""
+    );
+    const groupYUnits = unitChannels.map((ch) => ch.unit || unitKey);
 
-  console.log(
-    "[renderComputedChannels] 🎨 DEBUG - computedChannels:",
-    computedChannels
-  );
-  console.log(
-    "[renderComputedChannels] 🎨 DEBUG - groupLineColors:",
-    groupLineColors
-  );
-
-  const candidateGroups = computedChannels
-    .map((ch) => (ch && typeof ch.group === "string" ? ch.group.trim() : ""))
-    .filter((g) => g !== "");
-  if (
-    (!candidateGroups || candidateGroups.length === 0) &&
-    Array.isArray(channelState?.computed?.groups)
-  ) {
-    channelState.computed.groups.forEach((value) => {
-      if (typeof value === "string" && value.trim()) {
-        candidateGroups.push(value.trim());
-      }
+    const metadata = addChart({
+      chartType: "computed",
+      name: `Computed (${unitKey})`,
+      expression: unitChannels
+        .map((ch) => ch.expression || ch.mathJsExpression || ch.name)
+        .filter(Boolean)
+        .join(" | "),
+      channels: unitChannels.map((ch) => ch.id),
+      colors: groupLineColors.slice(),
+      userGroupId: unitKey,
+      sourceGroupId: unitKey,
     });
-  }
-  const computedGroupId =
-    candidateGroups.length > 0
-      ? candidateGroups[candidateGroups.length - 1]
-      : null;
 
-  const metadata = addChart({
-    chartType: "computed",
-    name: "Computed Channels",
-    expression: computedChannels
-      .map((ch) => ch.expression || ch.mathJsExpression || ch.name)
-      .filter(Boolean)
-      .join(" | "),
-    channels: computedChannels.map((ch) => ch.id),
-    colors: groupLineColors.slice(),
-    userGroupId: computedGroupId,
-    sourceGroupId: computedGroupId,
-  });
+    // Chart data for this unit
+    const channelDataArrays = unitChannels.map((ch) => ch.data || []);
+    const chartData = [timeArray, ...channelDataArrays];
 
-  console.log(
-    `[renderComputedChannels] Creating ${metadata.userGroupId} → ${metadata.uPlotInstance}:`,
-    metadata.expression
-  );
-
-  // Create single-group data array [timeArray, ch1Data, ch2Data, ...]
-  const channelDataArrays = computedChannels.map((ch) => ch.data || []);
-  const chartData = [timeArray, ...channelDataArrays];
-
-  // Create drag bar for computed channels group
-  const dragBar = createDragBar(
-    {
-      indices: Array.from({ length: computedChannels.length }, (_, i) => i),
-      name: "Computed Channels",
-    },
-    {},
-    channelState
-  );
-
-  // Create single chart container for all computed channels
-  const { parentDiv, chartDiv } = createChartContainer(
-    dragBar,
-    "chart-container",
-    groupYLabels,
-    groupLineColors,
-    "Computed Channels",
-    metadata.userGroupId,
-    "computed" // type
-  );
-  parentDiv.dataset.userGroupId = metadata.userGroupId;
-  parentDiv.dataset.uPlotInstance = metadata.uPlotInstance;
-  parentDiv.dataset.chartType = "computed";
-  chartsContainer.appendChild(parentDiv);
-
-  console.log(`[renderComputedChannels] 🏗️ Chart container created`);
-
-  // Create chart options for all channels
-  const opts = createChartOptions({
-    title: "Computed Channels",
-    yLabels: groupYLabels,
-    lineColors: groupLineColors,
-    verticalLinesX,
-    xLabel: data.xLabel || "Time",
-    xUnit: data.xUnit || "s",
-    getCharts: () => charts,
-    yUnits: groupYUnits,
-    axesScales: [1, ...computedChannels.map(() => 1)],
-    singleYAxis: false,
-    maxYAxes: maxYAxes,
-  });
-
-  // Add vertical line plugin
-  opts.plugins = opts.plugins || [];
-  opts.plugins = opts.plugins.filter(
-    (p) => !(p && p.id === "verticalLinePlugin")
-  );
-  opts.plugins.push(verticalLinePlugin(verticalLinesX, () => charts));
-
-  // Create uPlot chart instance (will be pushed to charts array)
-  const chartStartTime = performance.now();
-  const chart = initUPlotChart(opts, chartData, chartDiv, charts);
-  const chartTime = performance.now() - chartStartTime;
-
-  console.log(
-    `[renderComputedChannels] ⏱️ uPlot chart creation: ${chartTime.toFixed(
-      2
-    )}ms`
-  );
-
-  // Tag chart with metadata (matching analog/digital pattern)
-  chart._computed = true;
-  chart._computedIds = computedChannels.map((ch) => ch.id);
-  chart._type = "computed";
-  chart._metadata = metadata;
-  chart._userGroupId = metadata.userGroupId;
-  chart._uPlotInstance = metadata.uPlotInstance;
-  chart._chartType = "computed";
-
-  // Attach metadata for delta calculation scaling
-  chart._axesScales = [1, ...computedChannels.map(() => 1)];
-  chart._yUnits = groupYUnits || [];
-  chart._seriesColors = groupLineColors || [];
-  
-  // ✅ FIX: Add _channelIndices for computed chart color updates
-  // Map computed channel IDs (e.g., "V0", "V1") to their array indices
-  // This maps: "V0" -> 0, "V1" -> 1, etc.
-  // The color subscriber uses this to find which series to update
-  chart._channelIndices = computedChannels.map((ch, idx) => ({
-    id: ch.id,
-    index: idx
-  }));
-
-  console.log(
-    `[renderComputedChannels] ✅ Chart created with ${computedChannels.length} series`
-  );
-
-  // Create tooltip
-  const tooltip = createTooltip();
-
-  // Mouse move handler
-  const mousemoveHandler = (e) => {
-    const idx = chart.posToIdx(e.offsetX);
-    if (idx >= 0 && idx < chart.data[0].length) {
-      const time = chart.data[0][idx];
-      const values = chart.data
-        .slice(1)
-        .map((series, i) => {
-          const label = groupYLabels[i] || `Computed${i + 1}`;
-          const stroke = groupLineColors[i];
-          const val =
-            series[idx] != null && series[idx].toFixed
-              ? series[idx].toFixed(2)
-              : String(series[idx]);
-          return `<span style="color:${stroke}">${label}</span>: ${val}`;
-        })
-        .join("<br>");
-      updateTooltip(
-        e.pageX,
-        e.pageY,
-        `<b>t:</b> ${time.toFixed(2)}<br>${values}`
-      );
-    }
-  };
-
-  // Attach listeners with cleanup
-  attachListenerWithCleanup(chart.over, "mousemove", mousemoveHandler, chart);
-  attachListenerWithCleanup(chart.over, "mouseleave", hideTooltip, chart);
-
-  // Click handler for vertical lines
-  const clickHandler = (e) => {
-    if (!chart.scales || !chart.scales.x) return;
-
-    const xVal = chart.posToVal(e.offsetX, "x");
-    const currentLines =
-      verticalLinesX.asArray?.() || verticalLinesX.value || [];
-
-    // Check if clicking near existing line
-    const xRange = chart.scales.x.max - chart.scales.x.min;
-    const tolerance = xRange * 0.02;
-    const existingIdx = currentLines.findIndex(
-      (line) => Math.abs(line - xVal) < tolerance
+    const dragBar = createDragBar(
+      {
+        indices: Array.from({ length: unitChannels.length }, (_, i) => i),
+        name: `Computed (${unitKey})`,
+      },
+      {},
+      channelState
     );
 
-    if (existingIdx >= 0) {
-      // Remove line
-      verticalLinesX.value = currentLines.filter((_, i) => i !== existingIdx);
-    } else {
-      // Add new line
-      verticalLinesX.value = [...currentLines, xVal];
+    const { parentDiv, chartDiv } = createChartContainer(
+      dragBar,
+      "chart-container",
+      groupYLabels,
+      groupLineColors,
+      `Computed (${unitKey})`,
+      metadata.userGroupId,
+      "computed"
+    );
+    parentDiv.dataset.userGroupId = metadata.userGroupId;
+    parentDiv.dataset.uPlotInstance = metadata.uPlotInstance;
+    parentDiv.dataset.chartType = "computed";
+    chartsContainer.appendChild(parentDiv);
 
-      // Auto-trigger delta calculation
-      setTimeout(async () => {
-        try {
-          const { getPolarChart, getCfg, getData, deltaWindow } = await import(
-            "../main.js"
-          );
-          const polarChart = getPolarChart();
-          const cfgData = getCfg();
-          const dataObj = getData();
-
-          if (polarChart && cfgData && dataObj) {
-            const timeIndex = dataObj.time
-              ? dataObj.time.findIndex((t) => t >= xVal)
-              : 0;
-            polarChart.updatePhasorAtTimeIndex(
-              cfgData,
-              dataObj,
-              Math.max(0, timeIndex)
-            );
-          }
-
-          if (deltaWindow && verticalLinesX.value.length > 1) {
-            deltaWindow.show();
-          }
-        } catch (e) {
-          console.error(
-            "[renderComputedChannels] Cannot update polar chart:",
-            e.message
-          );
-        }
-
-        // Redraw all charts
-        charts.forEach((c) => {
-          if (c && c.redraw) c.redraw();
-        });
-      }, 0);
-    }
-  };
-
-  attachListenerWithCleanup(chart.over, "click", clickHandler, chart);
-
-  // Add equation labels
-  const labelDiv = parentDiv.querySelector(".chart-label");
-  if (labelDiv) {
-    labelDiv.innerHTML = ""; // Clear default labels
-
-    // Add type label
-    const typeSpan = document.createElement("span");
-    typeSpan.textContent = "Computed Channels";
-    typeSpan.style.cssText = `
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--accent-cyan);
-      text-align: center;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding-bottom: 4px;
-      border-bottom: 1px solid var(--border-color);
-      width: 100%;
-    `;
-    labelDiv.appendChild(typeSpan);
-
-    // Add channel labels with equations
-    computedChannels.forEach((channel, idx) => {
-      const channelContainer = document.createElement("div");
-      channelContainer.style.cssText = `
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        width: 100%;
-        padding: 6px 4px;
-        border: 1px solid var(--border-color, #e0e0e0);
-        border-radius: 3px;
-        background: var(--bg-tertiary, #f9f9f9);
-        color: var(--chart-text, #333);
-        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-      `;
-
-      // Color dot + name
-      const nameContainer = document.createElement("div");
-      nameContainer.style.cssText = `
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        width: 100%;
-      `;
-
-      const colorDot = document.createElement("span");
-      colorDot.style.cssText = `
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: ${groupLineColors[idx % groupLineColors.length]};
-        border: 1px solid var(--border-color);
-      `;
-      nameContainer.appendChild(colorDot);
-
-      const nameSpan = document.createElement("span");
-      nameSpan.textContent = channel.id;
-      nameSpan.style.cssText = `
-        font-size: 0.7rem;
-        font-weight: 500;
-        color: var(--text-secondary);
-        text-align: center;
-        word-break: break-word;
-        line-height: 1.1;
-      `;
-      nameContainer.appendChild(nameSpan);
-      channelContainer.appendChild(nameContainer);
-
-      // LaTeX equation
-      if (channel.equation) {
-        const formulaMatch = channel.equation.match(/=\s*(.+)$/);
-        const formulaOnly = formulaMatch
-          ? formulaMatch[1].trim()
-          : channel.equation;
-
-        const latexEquation = formatEquationForLatex(formulaOnly);
-        
-        // Create a temporary container for MathJax rendering
-        const tempDiv = document.createElement("div");
-        tempDiv.style.cssText = `
-          font-size: 10px;
-          text-align: center;
-          padding: 4px 2px;
-          width: 100%;
-          overflow-x: auto;
-          max-width: 280px;
-        `;
-        tempDiv.innerHTML = `<span style="font-weight: 600; margin-right: 4px; white-space: nowrap;">Eq: $$${latexEquation}$$</span>`;
-        channelContainer.appendChild(tempDiv);
-      }
-
-      labelDiv.appendChild(channelContainer);
+    const opts = createChartOptions({
+      title: `Computed (${unitKey})`,
+      yLabels: groupYLabels,
+      lineColors: groupLineColors,
+      verticalLinesX,
+      xLabel: data.xLabel || "Time",
+      xUnit: data.xUnit || "s",
+      getCharts: () => charts,
+      yUnits: groupYUnits,
+      axesScales: [1, ...unitChannels.map(() => 1)],
+      singleYAxis: false,
+      maxYAxes: maxYAxes,
     });
 
-    // Render LaTeX
-    setTimeout(() => {
-      renderLatex(labelDiv).catch((err) => {
-        console.warn("[renderComputedChannels] ⚠️ MathJax render failed:", err);
+    // Plugin
+    opts.plugins = opts.plugins || [];
+    opts.plugins = opts.plugins.filter((p) => !(p && p.id === "verticalLinePlugin"));
+    opts.plugins.push(verticalLinePlugin(verticalLinesX, () => charts));
+
+    const chartStartTime = performance.now();
+    const chart = initUPlotChart(opts, chartData, chartDiv, charts);
+    const chartTime = performance.now() - chartStartTime;
+    console.log(`[renderComputedChannels] ⏱️ uPlot chart (${unitKey}) in ${chartTime.toFixed(2)}ms`);
+
+    // Tag chart
+    chart._computed = true;
+    chart._computedIds = unitChannels.map((ch) => ch.id);
+    chart._type = "computed";
+    chart._metadata = metadata;
+    chart._userGroupId = metadata.userGroupId;
+    chart._uPlotInstance = metadata.uPlotInstance;
+    chart._chartType = "computed";
+    chart._axesScales = [1, ...unitChannels.map(() => 1)];
+    chart._yUnits = groupYUnits || [];
+    chart._seriesColors = groupLineColors || [];
+    chart._unitKey = unitKey;
+
+    console.log(`[renderComputedChannels] ✅ Chart (${unitKey}) created with ${unitChannels.length} series`);
+
+    // Tooltip & interactions (reuse existing handlers)
+    const tooltip = createTooltip();
+    const mousemoveHandler = (e) => {
+      const idx = chart.posToIdx(e.offsetX);
+      if (idx >= 0 && idx < chart.data[0].length) {
+        const time = chart.data[0][idx];
+        const values = chart.data
+          .slice(1)
+          .map((series, i) => {
+            const label = groupYLabels[i] || `Computed${i + 1}`;
+            const stroke = groupLineColors[i];
+            const val = series[idx] != null && series[idx].toFixed ? series[idx].toFixed(2) : String(series[idx]);
+            return `<span style="color:${stroke}">${label}</span>: ${val}`;
+          })
+          .join("<br>");
+        updateTooltip(e.pageX, e.pageY, `<b>t:</b> ${time.toFixed(2)}<br>${values}`);
+      }
+    };
+    attachListenerWithCleanup(chart.over, "mousemove", mousemoveHandler, chart);
+    attachListenerWithCleanup(chart.over, "mouseleave", hideTooltip, chart);
+
+    const clickHandler = (e) => {
+      if (!chart.scales || !chart.scales.x) return;
+      const xVal = chart.posToVal(e.offsetX, "x");
+      const currentLines = verticalLinesX.asArray?.() || verticalLinesX.value || [];
+      const xRange = chart.scales.x.max - chart.scales.x.min;
+      const tolerance = xRange * 0.02;
+      const existingIdx = currentLines.findIndex((line) => Math.abs(line - xVal) < tolerance);
+      if (existingIdx >= 0) {
+        verticalLinesX.value = currentLines.filter((_, i) => i !== existingIdx);
+      } else {
+        verticalLinesX.value = [...currentLines, xVal];
+        setTimeout(async () => {
+          try {
+            const { getPolarChart, getCfg, getData, deltaWindow } = await import("../main.js");
+            const polarChart = getPolarChart();
+            const cfgData = getCfg();
+            const dataObj = getData();
+            if (polarChart && cfgData && dataObj) {
+              const timeIndex = dataObj.time ? dataObj.time.findIndex((t) => t >= xVal) : 0;
+              polarChart.updatePhasorAtTimeIndex(cfgData, dataObj, Math.max(0, timeIndex));
+            }
+            if (deltaWindow && verticalLinesX.value.length > 1) { deltaWindow.show(); }
+          } catch (e) {}
+          charts.forEach((c) => { if (c && c.redraw) c.redraw(); });
+        }, 0);
+      }
+    };
+    attachListenerWithCleanup(chart.over, "click", clickHandler, chart);
+
+    // Labels with equations (reuse)
+    const labelDiv = parentDiv.querySelector(".chart-label");
+    if (labelDiv) {
+      labelDiv.innerHTML = "";
+      const typeSpan = document.createElement("span");
+      typeSpan.textContent = `Computed (${unitKey})`;
+      typeSpan.style.cssText = `font-size: 0.7rem; font-weight: 700; color: var(--accent-cyan); text-align: center; text-transform: uppercase; letter-spacing: 0.05em; padding-bottom: 4px; border-bottom: 1px solid var(--border-color); width: 100%;`;
+      labelDiv.appendChild(typeSpan);
+      unitChannels.forEach((channel, idx) => {
+        const channelContainer = document.createElement("div");
+        channelContainer.style.cssText = `display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;padding:6px 4px;border:1px solid var(--border-color,#e0e0e0);border-radius:3px;background:var(--bg-tertiary,#f9f9f9);color:var(--chart-text,#333)`;
+        const nameContainer = document.createElement("div");
+        nameContainer.style.cssText = `display:flex;flex-direction:column;align-items:center;gap:4px;width:100%`;
+        const colorDot = document.createElement("span");
+        colorDot.style.cssText = `width:10px;height:10px;border-radius:50%;background:${groupLineColors[idx % groupLineColors.length]};border:1px solid var(--border-color)`;
+        nameContainer.appendChild(colorDot);
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = channel.id;
+        nameSpan.style.cssText = `font-size:0.7rem;font-weight:500;color:var(--text-secondary);text-align:center;word-break:break-word;line-height:1.1`;
+        nameContainer.appendChild(nameSpan);
+        channelContainer.appendChild(nameContainer);
+        if (channel.equation) {
+          const formulaMatch = channel.equation.match(/=\s*(.+)$/);
+          const formulaOnly = formulaMatch ? formulaMatch[1] : channel.equation;
+          const latex = formatEquationForLatex(formulaOnly);
+          const formulaSpan = document.createElement("span");
+          formulaSpan.innerHTML = latex;
+          formulaSpan.style.cssText = `font-size:0.65rem;color:var(--text-secondary);text-align:center;line-height:1.1`;
+          labelDiv.appendChild(channelContainer);
+          renderLatex(labelDiv);
+        } else {
+          labelDiv.appendChild(channelContainer);
+        }
       });
-    }, 200);
+    }
   }
 
   const renderEndTime = performance.now();
   const totalTime = renderEndTime - renderStartTime;
+  const chartCount = unitGroups.size;
+  const seriesCount = computedChannels.length;
   console.log(
-    `[renderComputedChannels] ✅ Render complete: Single chart with ${
-      computedChannels.length
-    } series created in ${totalTime.toFixed(1)}ms`
+    `[renderComputedChannels] ✅ Render complete: ${chartCount} computed chart(s) with ${seriesCount} series in ${totalTime.toFixed(1)}ms`
   );
 }

@@ -93,6 +93,8 @@ import { createChartOptions } from "./chartComponent.js";
 const uPlot = window.uPlot;
 import { debugLite } from "./debugPanelLite.js";
 import { renderComtradeCharts } from "./renderComtradeCharts.js";
+import { loadComputedChannelsFromStorage } from "../utils/computedChannelStorage.js";
+
 
 // Defensive: ensure uPlot is available to avoid runtime errors during subscription wiring
 if (!uPlot) {
@@ -892,51 +894,87 @@ export function subscribeChartUpdates(
             }
           }
 
-          // ✅ FIX: Handle computed charts (single chart with all computed series)
+          // ✅ FIX: Handle computed charts (may be multiple charts, map by global ID order)
           if (type === "computed") {
-            console.log(`[COLOR SUBSCRIBER] 🎨 Updating computed chart colors...`);
+            console.log(`[COLOR SUBSCRIBER] 🎨 Updating computed chart colors (global ID mapping)...`);
+            const computedIdsState = channelState?.computed?.channelIDs || [];
             
             for (let ci = 0; ci < charts.length; ci++) {
               const chart = charts[ci];
-              
-              if (!chart || chart._type !== "computed") {
-                continue;
-              }
+              if (!chart || chart._type !== "computed") continue;
 
-              console.log(`[COLOR SUBSCRIBER] 🎯 Found computed chart ${ci}, updating series colors`);
-              
-              // For computed charts, we have _computedIds array with channel IDs
-              // and we need to match them to update the correct series
               const computedIds = chart._computedIds || [];
-              
+              let updated = 0;
+
               for (let seriesIdx = 1; seriesIdx < chart.series.length; seriesIdx++) {
-                const colorIdx = seriesIdx - 1; // series[1] maps to colors[0]
-                const channelId = computedIds[colorIdx]; // Get the channel ID (e.g., "V0")
-                const color = change.newValue[colorIdx];
-                
-                if (color && channelId) {
-                  try {
-                    const strokeFn = () => color;
-                    chart.series[seriesIdx].stroke = strokeFn;
-                    chart.series[seriesIdx]._paths = null; // Clear path cache
-                    
-                    if (chart.series[seriesIdx].points) {
-                      chart.series[seriesIdx].points.stroke = strokeFn;
-                    }
-                    
-                    console.log(`[COLOR SUBSCRIBER] ✅ Computed "${channelId}" series[${seriesIdx}] color → ${color}`);
-                  } catch (e) {
-                    console.error(`[COLOR SUBSCRIBER] ❌ Failed to update computed "${channelId}" series[${seriesIdx}]:`, e);
+                const localIdx = seriesIdx - 1;
+                const channelId = computedIds[localIdx];
+                const globalIdx = computedIdsState.indexOf(channelId);
+                if (globalIdx < 0 || globalIdx >= change.newValue.length) continue;
+
+                const color = change.newValue[globalIdx];
+                try {
+                  const strokeFn = () => color;
+                  chart.series[seriesIdx].stroke = strokeFn;
+                  chart.series[seriesIdx]._paths = null;
+                  if (chart.series[seriesIdx].points) {
+                    chart.series[seriesIdx].points.stroke = strokeFn;
                   }
+                  updated++;
+                  console.log(`[COLOR SUBSCRIBER] ✅ Computed "${channelId}" series[${seriesIdx}] color → ${color}`);
+                } catch (e) {
+                  console.error(`[COLOR SUBSCRIBER] ❌ Failed to update computed "${channelId}" series[${seriesIdx}]:`, e);
                 }
               }
-              
-              // Redraw the computed chart
-              try {
-                chart.redraw(false);
-                console.log(`[COLOR SUBSCRIBER] ✅ Computed chart redrawn`);
-              } catch (e) {
-                console.error(`[COLOR SUBSCRIBER] ❌ Failed to redraw computed chart:`, e);
+
+              if (updated > 0) {
+                try { chart.redraw(false); } catch {}
+                console.log(`[COLOR SUBSCRIBER] ✅ Computed chart ${ci} redrawn after ${updated} updates`);
+              }
+            }
+
+            // ✅ NEW: Also update colors in analog charts for computed channels merged into them
+            console.log(`[COLOR SUBSCRIBER] 🔄 Checking analog charts for merged computed channels...`);
+            // Use state ID order for reliable mapping of color array indices (already defined above as computedIdsState)
+            for (let ci = 0; ci < charts.length; ci++) {
+              const chart = charts[ci];
+              if (!chart || chart._type !== "analog") continue;
+
+              const numAnalogChannels = chart._analogSeriesCount || 0;
+              const computedIdsInChart = chart._computedChannelIds || [];
+              if (!computedIdsInChart.length) continue;
+
+              let updatedCount = 0;
+              // For each computed channel present in this analog chart, find its global color index
+              computedIdsInChart.forEach((computedId, positionInChart) => {
+                const globalIdx = computedIdsState.indexOf(computedId);
+                if (globalIdx >= 0 && globalIdx < change.newValue.length) {
+                  const newColor = change.newValue[globalIdx];
+                  const seriesIdx = 1 + numAnalogChannels + positionInChart; // +1 for time series
+                  if (seriesIdx > 0 && seriesIdx < chart.series.length) {
+                    try {
+                      const strokeFn = () => newColor;
+                      chart.series[seriesIdx].stroke = strokeFn;
+                      chart.series[seriesIdx]._paths = null;
+                      if (chart.series[seriesIdx].points) {
+                        chart.series[seriesIdx].points.stroke = strokeFn;
+                      }
+                      updatedCount++;
+                      console.log(`[COLOR SUBSCRIBER] ✅ Analog chart ${ci} - Computed "${computedId}" series[${seriesIdx}] color → ${newColor}`);
+                    } catch (e) {
+                      console.error(`[COLOR SUBSCRIBER] ❌ Failed to update analog merged computed "${computedId}":`, e);
+                    }
+                  }
+                }
+              });
+
+              if (updatedCount > 0) {
+                try {
+                  chart.redraw(false);
+                  console.log(`[COLOR SUBSCRIBER] ✅ Analog chart ${ci} redrawn after ${updatedCount} computed color updates`);
+                } catch (e) {
+                  console.error(`[COLOR SUBSCRIBER] ❌ Failed to redraw analog chart ${ci}:`, e);
+                }
               }
             }
           }
@@ -1142,10 +1180,71 @@ export function subscribeChartUpdates(
 
         const t7 = performance.now();
 
-        // 🔍 DIAGNOSTIC: Log detailed color update information
-        console.group(
-          `[DIAGNOSTIC] 🔍 Color Update Trace - ${type}[${globalIdx}] → ${newColor}`
-        );
+        // ✅ NEW: For single computed color change, update computed charts and analog charts that include it
+        if (type === "computed") {
+          console.log(`[COLOR SUBSCRIBER] 🔄 Checking analog charts for single computed color update...`);
+          // Use channelState.computed.channelIDs as source of truth for index → ID mapping
+          const computedIds = channelState?.computed?.channelIDs || [];
+          const changedComputedId = computedIds[globalIdx];
+
+          if (changedComputedId) {
+            // Update standalone computed charts containing this ID
+            for (let ci = 0; ci < charts.length; ci++) {
+              const chart = charts[ci];
+              if (!chart || chart._type !== "computed") continue;
+              const ids = chart._computedIds || [];
+              const pos = ids.indexOf(changedComputedId);
+              if (pos < 0) continue;
+              const seriesIdx = 1 + pos;
+              if (chart.series && chart.series[seriesIdx]) {
+                try {
+                  const strokeFn = () => newColor;
+                  chart.series[seriesIdx].stroke = strokeFn;
+                  chart.series[seriesIdx]._stroke = newColor;
+                  chart.series[seriesIdx]._paths = null;
+                  if (chart.series[seriesIdx].points) {
+                    chart.series[seriesIdx].points.stroke = strokeFn;
+                    chart.series[seriesIdx].points._stroke = newColor;
+                  }
+                  chart.redraw(false);
+                  console.log(`[COLOR SUBSCRIBER] ✅ Computed chart ${ci} - "${changedComputedId}" series[${seriesIdx}] color → ${newColor}`);
+                } catch (e) {
+                  console.error(`[COLOR SUBSCRIBER] ❌ Failed to update computed chart for "${changedComputedId}":`, e);
+                }
+              }
+            }
+
+            for (let ci = 0; ci < charts.length; ci++) {
+              const chart = charts[ci];
+              if (!chart || chart._type !== "analog") continue;
+
+              const numAnalogChannels = chart._analogSeriesCount || 0;
+              const computedIdsInChart = chart._computedChannelIds || [];
+              const posInChart = computedIdsInChart.indexOf(changedComputedId);
+              if (posInChart < 0) continue; // This analog chart doesn't include the computed channel
+
+              const seriesIdx = 1 + numAnalogChannels + posInChart;
+              if (seriesIdx > 0 && seriesIdx < chart.series.length) {
+                try {
+                  const strokeFn = () => newColor;
+                  chart.series[seriesIdx].stroke = strokeFn;
+                  chart.series[seriesIdx]._stroke = newColor;
+                  chart.series[seriesIdx]._paths = null;
+                  if (chart.series[seriesIdx].points) {
+                    chart.series[seriesIdx].points.stroke = strokeFn;
+                    chart.series[seriesIdx].points._stroke = newColor;
+                  }
+                  chart.redraw(false);
+                  console.log(`[COLOR SUBSCRIBER] ✅ Analog chart ${ci} - Computed "${changedComputedId}" series[${seriesIdx}] color → ${newColor}`);
+                } catch (e) {
+                  console.error(`[COLOR SUBSCRIBER] ❌ Failed to update analog merged computed color:`, e);
+                }
+              }
+            }
+          }
+        }
+
+        const t8 = performance.now();
         console.log(`Successfully updated: ${updateCount} charts`);
         console.log(`Redraws scheduled: ${redrawCount}`);
 
@@ -1235,7 +1334,7 @@ export function subscribeChartUpdates(
           });
         }
 
-        const totalTime = t7 - t0;
+        const totalTime = t8 - t0;
 
         // Detailed timing breakdown
         const timings = {
@@ -1243,6 +1342,7 @@ export function subscribeChartUpdates(
           cacheFunc: (t3 - t2).toFixed(2),
           seriesUpdate: (t5 - t4).toFixed(2),
           redraw: (t7 - t6).toFixed(2),
+          groupedComputed: (t8 - t7).toFixed(2),
           total: totalTime.toFixed(2),
         };
 

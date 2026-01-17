@@ -85,6 +85,7 @@ import {
 import {
   getChartMetadataState,
   removeChart,
+  clearAllCharts,
 } from "./utils/chartMetadataStore.js";
 
 // Initialize global DOM update queue for selectiveUpdate feature
@@ -535,15 +536,11 @@ function updateComputedChannelColorInState(channelId, color) {
       `[updateComputedChannelColorInState] 🔍 Looking for channel ID: "${channelId}" in computed state`
     );
 
-    // Direct approach: access the computed state property directly (it's a Proxy, not a function)
+    // Access computed state (Proxy). Do not invoke as a function.
     let computedState = null;
-
     try {
-      // Try to access computed state directly - DO NOT CALL IT as a function
       computedState = channelState.computed;
-      console.log(
-        `[updateComputedChannelColorInState] Got computed state directly`
-      );
+      console.log(`[updateComputedChannelColorInState] Got computed state directly`);
     } catch (e) {
       console.warn(
         `[updateComputedChannelColorInState] Failed to get computed state directly:`,
@@ -551,17 +548,17 @@ function updateComputedChannelColorInState(channelId, color) {
       );
     }
 
-    // If direct access failed, try the getter
-    if (!computedState?.channelIDs) {
-      console.log(
-        `[updateComputedChannelColorInState] Trying getComputedChannelsState()...`
-      );
+    // Try getter fallback if needed
+    if (!computedState || (!computedState.channelIDs && typeof getComputedChannelsState === "function")) {
+      console.log(`[updateComputedChannelColorInState] Trying getComputedChannelsState()...`);
       try {
-        computedState = getComputedChannelsState?.();
-        if (computedState?.channelIDs) {
-          console.log(
-            `[updateComputedChannelColorInState] ✅ Got state from getComputedChannelsState()`
-          );
+        const s = getComputedChannelsState?.();
+        if (s) {
+          computedState = s;
+          if (computedState?.channelIDs) {
+            console.log(`[
+updateComputedChannelColorInState] ✅ Got state from getComputedChannelsState()`);
+          }
         }
       } catch (e) {
         console.warn(
@@ -571,46 +568,52 @@ function updateComputedChannelColorInState(channelId, color) {
       }
     }
 
-    if (!computedState?.channelIDs) {
-      console.warn(
-        `[updateComputedChannelColorInState] ⚠️ Could not access computed state with channelIDs`
-      );
-      console.log(
-        `[updateComputedChannelColorInState] computedState available:`,
-        !!computedState
-      );
-      console.log(
-        `[updateComputedChannelColorInState] Will continue with chart/storage update only`
-      );
-      return false;
+    // Determine index of channelId in computed ordering
+    let idx = -1;
+    if (computedState?.channelIDs && Array.isArray(computedState.channelIDs)) {
+      idx = computedState.channelIDs.indexOf(channelId);
     }
 
-    // Find the index by channel ID
-    const idx = computedState.channelIDs.indexOf(channelId);
+    // Fallback 1: use fast channelIDMap if available
+    if (idx < 0 && channelIDMap && typeof channelIDMap.get === "function") {
+      const loc = channelIDMap.get(channelId);
+      if (loc?.type === "computed" && Number.isFinite(loc.idx)) {
+        idx = loc.idx;
+        console.log(
+          `[updateComputedChannelColorInState] ✅ Index from channelIDMap: ${idx}`
+        );
+      }
+    }
+
+    // Fallback 2: derive from cfg/global computed arrays (last resort)
+    if (idx < 0) {
+      idx = findComputedChannelIndexById(channelId);
+      if (idx >= 0) {
+        console.log(
+          `[updateComputedChannelColorInState] ✅ Index from cfg/global computed arrays: ${idx}`
+        );
+      }
+    }
 
     if (idx < 0) {
       console.warn(
-        `[updateComputedChannelColorInState] ⚠️ Channel "${channelId}" not in state.channelIDs`
+        `[updateComputedChannelColorInState] ⚠️ Channel "${channelId}" index not resolved`
       );
       return false;
     }
 
     // Update the lineColors array
-    if (!Array.isArray(computedState.lineColors)) {
-      console.warn(
-        `[updateComputedChannelColorInState] ⚠️ lineColors is not an array`
-      );
+    const lineColors = computedState?.lineColors || channelState?.computed?.lineColors;
+    if (!Array.isArray(lineColors)) {
+      console.warn(`[updateComputedChannelColorInState] ⚠️ lineColors is not an array`);
       return false;
     }
 
     console.log(
-      `[updateComputedChannelColorInState] Updating color for "${channelId}" at state index ${idx}`
+      `[updateComputedChannelColorInState] Updating color for "${channelId}" at index ${idx}`
     );
-    computedState.lineColors[idx] = color;
-
-    console.log(
-      `[updateComputedChannelColorInState] ✅ Updated state color for "${channelId}"`
-    );
+    lineColors[idx] = color;
+    console.log(`[updateComputedChannelColorInState] ✅ Updated state color for "${channelId}"`);
     return true;
   } catch (e) {
     console.error(`[updateComputedChannelColorInState] ❌ Error:`, e.message);
@@ -722,94 +725,81 @@ function updateComputedChartColorById(channelId, newColor) {
       return false;
     }
 
-    // Find the computed channels chart (marked with _type="computed")
-    let computedChart = null;
+    // Iterate all computed charts and update the one containing this id
+    let updated = false;
     for (const chart of chartsArr) {
-      if (chart && (chart._computed === true || chart._type === "computed")) {
-        computedChart = chart;
-        break;
-      }
+      if (!chart || !(chart._computed === true || chart._type === "computed")) continue;
+      if (!Array.isArray(chart._computedIds)) continue;
+
+      const seriesIndex = chart._computedIds.indexOf(channelId);
+      if (seriesIndex < 0) continue;
+
+      const actualSeriesIdx = seriesIndex + 1; // series[0] is x-axis
+      const series = chart.series?.[actualSeriesIdx];
+      if (!series) continue;
+
+      series.stroke = () => newColor;
+      if (series._paths) series._paths = null;
+      try { chart.redraw?.(false); } catch {}
+      console.log(`[updateComputedChartColorById] ✅ Updated computed chart series for "${channelId}"`);
+      updated = true;
     }
 
-    if (!computedChart) {
-      console.warn(
-        `[updateComputedChartColorById] ⚠️ No computed chart found (tried ${chartsArr.length} charts)`
-      );
+    if (!updated) {
+      console.warn(`[updateComputedChartColorById] ⚠️ No computed chart contained "${channelId}"`);
       return false;
     }
-
-    console.log(
-      `[updateComputedChartColorById] ✅ Found computed chart with ${
-        computedChart._computedIds?.length || 0
-      } series`
-    );
-
-    // Find the series index by matching channel ID
-    if (!Array.isArray(computedChart._computedIds)) {
-      console.warn(
-        `[updateComputedChartColorById] ⚠️ Chart doesn't have _computedIds array`
-      );
-      return false;
-    }
-
-    const seriesIndex = computedChart._computedIds.indexOf(channelId);
-    if (seriesIndex < 0) {
-      console.warn(
-        `[updateComputedChartColorById] ❌ Channel "${channelId}" not found in computed chart`
-      );
-      console.log(
-        `[updateComputedChartColorById] Available channels:`,
-        computedChart._computedIds
-      );
-      return false;
-    }
-
-    // Series indices are offset by 1 (series[0] is x-axis, series[1+] are data)
-    const actualSeriesIdx = seriesIndex + 1;
-
-    if (!computedChart.series || !Array.isArray(computedChart.series)) {
-      console.warn(
-        `[updateComputedChartColorById] ❌ Series array not found on chart`
-      );
-      return false;
-    }
-
-    if (actualSeriesIdx >= computedChart.series.length) {
-      console.warn(
-        `[updateComputedChartColorById] ❌ Series index ${actualSeriesIdx} out of bounds (length: ${computedChart.series.length})`
-      );
-      return false;
-    }
-
-    const series = computedChart.series[actualSeriesIdx];
-    if (!series) {
-      console.warn(
-        `[updateComputedChartColorById] ❌ Series at index ${actualSeriesIdx} is null`
-      );
-      return false;
-    }
-
-    // Update the series stroke color
-    series.stroke = () => newColor;
-
-    // Clear path cache to force redraw
-    if (series._paths) {
-      series._paths = null;
-    }
-
-    // Redraw the chart
-    if (typeof computedChart.redraw === "function") {
-      computedChart.redraw(false);
-      console.log(
-        `[updateComputedChartColorById] ✅ Chart redrawn with new color for "${channelId}"`
-      );
-      return true;
-    }
-
     return true;
   } catch (e) {
     console.error(`[updateComputedChartColorById] ❌ Error:`, e.message);
     return false;
+  }
+}
+
+/**
+ * Update color for a computed channel that has been merged into analog charts.
+ * Looks for `channelId` inside each analog chart's `_computedChannelIds` and updates stroke.
+ * @param {string} channelId
+ * @param {string} newColor
+ */
+function updateAnalogMergedComputedColorById(channelId, newColor) {
+  try {
+    let updates = 0;
+    for (const chart of charts || []) {
+      if (!chart || chart._type !== "analog") continue;
+
+      const computedIdsInChart = chart._computedChannelIds || [];
+      if (!computedIdsInChart.length) continue;
+
+      const posInChart = computedIdsInChart.indexOf(channelId);
+      if (posInChart < 0) continue;
+
+      const numAnalog = chart._analogSeriesCount || 0;
+      const seriesIdx = 1 + numAnalog + posInChart; // 0:x, 1..analog, then computed
+      if (!chart.series || seriesIdx >= chart.series.length) continue;
+
+      const s = chart.series[seriesIdx];
+      const strokeFn = () => newColor;
+      s.stroke = strokeFn;
+      s._stroke = newColor;
+      if (s.points) {
+        s.points.stroke = strokeFn;
+        s.points._stroke = newColor;
+      }
+      s._paths = null; // force regeneration
+      try { chart.redraw(false); } catch {}
+      updates++;
+      console.log(
+        `[updateAnalogMergedComputedColorById] ✅ Updated analog chart series[${seriesIdx}] for computed "${channelId}" → ${newColor}`
+      );
+    }
+    if (updates === 0) {
+      console.log(
+        `[updateAnalogMergedComputedColorById] ⏭️ No analog charts contain computed "${channelId}"`
+      );
+    }
+  } catch (e) {
+    console.warn(`[updateAnalogMergedComputedColorById] ⚠️ Error:`, e.message);
   }
 }
 
@@ -4656,12 +4646,13 @@ window.addEventListener("message", (ev) => {
         );
 
         const color = payload?.color || payload?.newValue;
-        const channelId = payload?.id || payload?.channelID || payload?.row?.id;
+        // Canonical identifier for computed channels is `id`.
+        const channelId = payload?.id || payload?.row?.id || payload?.row?.name;
 
         if (!color || !channelId) {
           console.warn(
-            `[COMPUTED COLOR HANDLER] ❌ Missing color or channelId:`,
-            { color, channelId }
+            `[COMPUTED COLOR HANDLER] ❌ Missing color or id:`,
+            { color, id: channelId }
           );
           break;
         }
@@ -4684,6 +4675,8 @@ window.addEventListener("message", (ev) => {
           console.warn(
             `[COMPUTED COLOR HANDLER] ⚠️ State update failed for channel: ${channelId}`
           );
+          // 🔄 Directly update analog charts that have this computed merged
+          updateAnalogMergedComputedColorById(channelId, color);
         }
 
         // ✅ STEP 2: Update chart using ID-based lookup
@@ -4863,42 +4856,168 @@ window.addEventListener("message", (ev) => {
           );
         }
 
-        // ✅ STEP 4: Trigger chart rebuild
-        // This is critical because the computed channel needs to be rendered
-        // with its new group's analog chart instead of in the separate computed chart
+        // ✅ STEP 4: Check if the target group exists in analog channels
+        const analogGroupExists = channelState?.analog?.groups?.includes(newGroup);
+        console.log(
+          `[COMPUTED GROUP HANDLER] 🔍 Checking if analog group "${newGroup}" exists: ${analogGroupExists}`
+        );
+
+        if (analogGroupExists) {
+          console.log(
+            `[COMPUTED GROUP HANDLER] ✅ Found analog group "${newGroup}" - computed channel will merge into that chart`
+          );
+        } else {
+          console.log(
+            `[COMPUTED GROUP HANDLER] ℹ️ Group "${newGroup}" does not have analog channels - computed channel will render independently`
+          );
+        }
+
+        // ✅ STEP 5: Trigger full chart rebuild (with data-readiness gating)
+        // Ensure analog data and computed data exist before rebuilding to avoid blank series or uPlot errors
         console.log(
           `[COMPUTED GROUP HANDLER] 🔄 Triggering chart rebuild to merge computed channel into group "${newGroup}"`
         );
+
+        const MAX_RETRY = 10;
+        const RETRY_DELAY_MS = 150;
+
+        const isDataReadyForGroup = (groupName) => {
+          try {
+            const analogGroups = channelState?.analog?.groups || [];
+            const indices = Array.isArray(cfg?.analogChannels)
+              ? cfg.analogChannels.map((_, i) => i).filter((i) => analogGroups[i] === groupName)
+              : [];
+
+            const analogReady = indices.length === 0
+              ? true
+              : indices.every((idx) => Array.isArray(data?.analogData?.[idx]) && data.analogData[idx].length > 0);
+
+            const computedReady = Array.isArray(computedChannel?.data) && computedChannel.data.length > 0;
+
+            return analogReady && computedReady;
+          } catch (e) {
+            console.warn(`[COMPUTED GROUP HANDLER] ⚠️ isDataReadyForGroup check failed:`, e.message);
+            return false;
+          }
+        };
+
+        const rebuildChartsForComputedGroup = (attempt = 0) => {
+          if (!isDataReadyForGroup(newGroup)) {
+            if (attempt < MAX_RETRY) {
+              console.log(
+                `[COMPUTED GROUP HANDLER] ⏳ Data not ready for group "${newGroup}" (attempt ${attempt + 1}/${MAX_RETRY}). Retrying in ${RETRY_DELAY_MS}ms...`
+              );
+              setTimeout(() => rebuildChartsForComputedGroup(attempt + 1), RETRY_DELAY_MS);
+              return;
+            } else {
+              console.warn(
+                `[COMPUTED GROUP HANDLER] ⚠️ Proceeding with rebuild without fully ready data after ${MAX_RETRY} attempts`
+              );
+            }
+          }
 
         try {
           showProgress("Reorganizing computed channels to new group...");
           updateProgress(25, "Updated storage and state");
 
-          // Trigger full chart re-render which will pick up the new group from storage
-          if (typeof renderComtradeCharts === "function") {
-            updateProgress(50, "Rebuilding charts...");
-
-            // Clear and re-render with updated group assignment
-            const chartsContainer = document.querySelector(
-              "[id*='charts-container'], .charts-main-container, #main-charts"
+          // Get the charts container (id="charts" from index.html)
+          const chartsContainer = document.getElementById("charts");
+          if (!chartsContainer) {
+            console.warn(
+              `[COMPUTED GROUP HANDLER] ⚠️ Could not find charts container with id="charts"`
             );
+            hideProgress();
+            return;
+          }
 
-            if (chartsContainer) {
-              // We need to re-render just to pick up the new group from storage
-              // The renderAnalogCharts will be called internally
-              renderComtradeCharts();
-              updateProgress(100, "Charts reorganized!");
-              setTimeout(hideProgress, 1000);
+          console.log(
+            `[COMPUTED GROUP HANDLER] ✅ Found charts container with id="charts"`
+          );
 
-              console.log(
-                `[COMPUTED GROUP HANDLER] ✅ Chart rebuild triggered. Channel should now appear in group "${newGroup}"`
-              );
-            } else {
+          // Strategy: Full rebuild of all charts to ensure proper merging
+          // This approach avoids subtle uPlot state issues from live-patching
+          updateProgress(50, "Clearing and rebuilding charts...");
+
+          // Step 1: Clear all chart metadata and instances
+          if (typeof clearAllCharts === "function") {
+            clearAllCharts();
+            console.log(
+              `[COMPUTED GROUP HANDLER] ✅ Cleared all chart metadata`
+            );
+          }
+
+          // Step 2: Destroy existing uPlot instances
+          if (Array.isArray(window.globalCharts) && window.globalCharts.length > 0) {
+            window.globalCharts.forEach((chart) => {
+              try {
+                if (chart?.destroy && typeof chart.destroy === "function") {
+                  chart.destroy();
+                }
+              } catch (e) {
+                console.warn(
+                  `[COMPUTED GROUP HANDLER] ⚠️ Error destroying chart:`,
+                  e.message
+                );
+              }
+            });
+            window.globalCharts = [];
+            charts = [];  // ✅ Also clear module-level charts array
+            console.log(
+              `[COMPUTED GROUP HANDLER] ✅ Destroyed uPlot instances and cleared charts arrays`
+            );
+          }
+
+          // Step 3: Clear container HTML
+          chartsContainer.innerHTML = "";
+          console.log(
+            `[COMPUTED GROUP HANDLER] ✅ Cleared charts container DOM`
+          );
+
+          // Step 4: Re-render using the same pipeline as when COMTRADE file is first loaded
+          // This ensures renderAnalogCharts picks up the computed channel from localStorage
+          // with its new group assignment and merges it properly
+          if (typeof renderComtradeCharts === "function") {
+            console.log(
+              `[COMPUTED GROUP HANDLER] 🔄 Calling renderComtradeCharts() with updated state...`
+            );
+            
+            // Prepare the parameters for renderComtradeCharts
+            // Use module-level cfg, data, charts or their global counterparts
+            const renderCfg = cfg || window.globalCfg;
+            const renderData = data || window.globalData;
+            const renderCharts = charts || window.globalCharts || [];
+            
+            if (!renderCfg || !renderData) {
               console.warn(
-                `[COMPUTED GROUP HANDLER] ⚠️ Could not find charts container`
+                `[COMPUTED GROUP HANDLER] ⚠️ Missing cfg or data for chart rebuild`
               );
               hideProgress();
+              return;
             }
+            
+            console.log(
+              `[COMPUTED GROUP HANDLER] ✅ Calling renderComtradeCharts with cfg, data, ${renderCharts.length} charts`
+            );
+            
+            // Call the render function with all required parameters
+            renderComtradeCharts(
+              renderCfg,
+              renderData,
+              chartsContainer,
+              renderCharts,
+              verticalLinesX,
+              createState,
+              calculateDeltas,
+              TIME_UNIT,
+              channelState
+            );
+            
+            updateProgress(100, "Charts reorganized!");
+            setTimeout(hideProgress, 1000);
+
+            console.log(
+              `[COMPUTED GROUP HANDLER] ✅ Chart rebuild complete. Channel "${channelId}" now assigned to group "${newGroup}"`
+            );
           } else {
             console.warn(
               `[COMPUTED GROUP HANDLER] ⚠️ renderComtradeCharts not available`
@@ -4908,10 +5027,14 @@ window.addEventListener("message", (ev) => {
         } catch (e) {
           console.error(
             `[COMPUTED GROUP HANDLER] ❌ Error during chart rebuild:`,
-            e.message
+            e
           );
           hideProgress();
         }
+        // end rebuildChartsForComputedGroup
+        };
+        // Kick off the gated rebuild
+        rebuildChartsForComputedGroup(0);
 
         break;
       }

@@ -2178,15 +2178,13 @@ export function createChannelList(
     {
       title: "Group",
       field: "group",
-      editor: "list",
+      editor: "select", // ✅ Use native select to avoid instant-close on touchpad
       width: 150,
       headerFilter: "input",
       hozAlign: "center",
       editorParams: {
-        autocomplete: true,
-        allowEmpty: false,
-        listOnEmpty: true,
         values: getAllAvailableGroups(tableData), // ✅ Dynamic groups
+        clearOnExit: false,
       },
       formatter: (cell) => {
         const value = cell.getValue();
@@ -2215,6 +2213,9 @@ export function createChannelList(
           "focus:ring-2",
           "focus:ring-blue-400"
         );
+        // Prevent table click/blur from closing picker on touchpad
+        input.addEventListener("mousedown", (e) => e.stopPropagation());
+        input.addEventListener("click", (e) => e.stopPropagation());
         input.addEventListener("change", (e) => {
           cell.setValue(e.target.value);
         });
@@ -2311,6 +2312,7 @@ export function createChannelList(
     resizableColumnFit: true,
     movableColumns: true, // ✅ Column dragging enabled
     movableRows: true,
+    rowHandle: true, // ✅ Require dragging on handle to move rows to avoid accidental closures on touchpad
     pagination: "local",
     paginationSize: 20,
     paginationSizeSelector: [5, 10, 20, 50],
